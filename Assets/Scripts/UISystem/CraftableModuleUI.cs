@@ -51,7 +51,12 @@ public class CraftableModuleUI : MonoBehaviour
         //if (_data == null) return;
         //_onClicked?.Invoke(_data);
         CarriageAssemblerUI.Instance.TryGetIndexByPanel(CarriageAssemblerUI.Instance.CurModulePanel, out int curIndex);
-        CarriageAssemblerUI.Instance.CurCarriageAssembler.Install(curIndex, moduleData);
+        bool installed = CarriageAssemblerUI.Instance.CurCarriageAssembler.Install(curIndex, moduleData);
+        // 完成组装后自动关闭模块列表面板
+        if (installed)
+        {
+            CraftableModuleListUI.Instance.ToggleCraftPanel(false);
+        }
     }
 
     public void ApplyToUI(ModuleData moduleData)

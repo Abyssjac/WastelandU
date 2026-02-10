@@ -53,6 +53,7 @@ public class CarriageAssemblerUI : MonoBehaviour
     private readonly List<ModulePanelUI> _panelByIndex = new List<ModulePanelUI>();
     private readonly Dictionary<ModulePanelUI, int> _indexByPanel = new Dictionary<ModulePanelUI, int>();
 
+
     /// <summary>
     /// index -> panel (read-only view)
     /// </summary>
@@ -84,16 +85,17 @@ public class CarriageAssemblerUI : MonoBehaviour
         return panel != null;
     }
 
-    private void RefreshCarraigeAssmeblerUI(CarriageAssembler carriageAssembler)
+    private void RefreshCarraigeAssmeblerUI()
     {
-        ClearCarriageAssmeblerUI();
+        if (uiPanel == null || !uiPanel.activeSelf) return;
+        if (curCarriageAssembler == null) return;
 
-        curCarriageAssembler = carriageAssembler;
+        ClearCarriageAssmeblerUI();
 
         if (rebuildMappingOnRefresh)
             ClearPanelIndexMapping();
 
-        CarriageRuntime runtime = carriageAssembler.runtime;
+        CarriageRuntime runtime = curCarriageAssembler.runtime;
 
         int moduleCount = runtime.modulesBySlot.Length;
 
@@ -114,7 +116,7 @@ public class CarriageAssemblerUI : MonoBehaviour
             }
 
             ModuleRuntime moduleRuntime = runtime.modulesBySlot[i];
-            panelUI.SetModuleData(moduleRuntime, carriageAssembler);
+            panelUI.SetModuleData(moduleRuntime, curCarriageAssembler);
 
             if (rebuildMappingOnRefresh)
                 RegisterPanelIndex(panelUI, i);
@@ -139,8 +141,6 @@ public class CarriageAssemblerUI : MonoBehaviour
 
     private void ClearCarriageAssmeblerUI()
     {
-        curCarriageAssembler = null;
-
         // selection runtime reset
         curModulePanel = null;
         curModuleRuntime = null;
@@ -158,13 +158,19 @@ public class CarriageAssemblerUI : MonoBehaviour
     public void OpenUIPanel(CarriageAssembler carriageAssembler)
     {
         uiPanel.SetActive(true);
-        RefreshCarraigeAssmeblerUI(carriageAssembler);
+        curCarriageAssembler = carriageAssembler;
+        carriageAssembler.OnChanged += RefreshCarraigeAssmeblerUI;
+        RefreshCarraigeAssmeblerUI();
     }
 
     public void CloseUIPanel()
     {
-        uiPanel.SetActive(false);
+        CraftableModuleListUI.Instance.ToggleCraftPanel(false);
+
+        curCarriageAssembler.OnChanged -= RefreshCarraigeAssmeblerUI;
         ClearCarriageAssmeblerUI();
+        curCarriageAssembler = null;
+        uiPanel.SetActive(false);
     }
 
     public void SetCurModulePanel(ModulePanelUI panel, ModuleRuntime moduleRuntime)
