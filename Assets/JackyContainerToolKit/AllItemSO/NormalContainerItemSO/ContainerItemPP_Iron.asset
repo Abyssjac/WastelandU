@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 93597e7a97795f8409024a639e564106, type: 3}
+  m_Name: ContainerItemPP_Iron
+  m_EditorClassIdentifier: 
+  enumKey: 1
+  stringKey: CIPP_Iron
+  maxStackCount: 5
+  icon: {fileID: 21300000, guid: b0b13fccedbbc0243acde6180912a042, type: 3}
