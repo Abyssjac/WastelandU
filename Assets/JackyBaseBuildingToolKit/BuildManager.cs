@@ -311,7 +311,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         Vector3Int[] footprintOffsets = selectedProperty.GetRotatedFootprint(currentRotationStep);
 
         previewController.UpdatePreviewPosition(
-            positionProvider.CurrentSnappedWorldPosition,
+            positionProvider.CurrentSnappedWorldPositionCenter,
             anchor,
             footprintOffsets,
             debugCanPlace
@@ -354,7 +354,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         Vector3Int[] footprintOffsets = movingData.Property.GetRotatedFootprint(currentRotationStep);
 
         previewController.UpdatePreviewPosition(
-            positionProvider.CurrentSnappedWorldPosition,
+            positionProvider.CurrentSnappedWorldPositionCenter,
             anchor,
             footprintOffsets,
             debugCanPlace
@@ -413,7 +413,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         // Spawn real object
-        Vector3 worldPos = positionProvider.CellToWorld(anchor);
+        Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
         float yaw = selectedProperty.GetRotationDegrees(currentRotationStep);
         GameObject go = Instantiate(selectedProperty.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
         data.SpawnedObject = go;
@@ -453,7 +453,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private void SyncGameObjectTransform(PlacedBuildableData data)
     {
         if (data.SpawnedObject == null) return;
-        Vector3 worldPos = positionProvider.CellToWorld(data.AnchorCell);
+        Vector3 worldPos = positionProvider.CellToWorldCenter(data.AnchorCell);
         float yaw = data.Property.GetRotationDegrees(data.RotationStep);
         data.SpawnedObject.transform.SetPositionAndRotation(worldPos, Quaternion.Euler(0f, yaw, 0f));
     }

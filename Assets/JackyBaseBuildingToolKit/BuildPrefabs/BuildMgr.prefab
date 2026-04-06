@@ -1,0 +1,118 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6407987559157291023
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3204652423643293810}
+  - component: {fileID: 5690045053215457573}
+  - component: {fileID: 5606849978644230250}
+  - component: {fileID: 1383023693414985362}
+  - component: {fileID: 634502552085456998}
+  m_Layer: 0
+  m_Name: BuildMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3204652423643293810
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5690045053215457573
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: c33859514a2776949ac954608b123c71, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionProvider: {fileID: 5606849978644230250}
+  previewController: {fileID: 1383023693414985362}
+  gridMin: {x: -50, y: -1, z: -50}
+  gridMax: {x: 50, y: 10, z: 50}
+  uiContainer: {fileID: 0}
+  containerSlotCount: 10
+  enableDebug: 1
+  grid:
+    gridMin: {x: 0, y: 0, z: 0}
+    gridMax: {x: 0, y: 0, z: 0}
+    placedCount: 0
+    occupiedCellCount: 0
+--- !u!114 &5606849978644230250
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 3c6ec0c2c72af684580171f74538b0c0, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
+  buildSurfaceMask:
+    serializedVersion: 2
+    m_Bits: 256
+  maxRayDistance: 1000
+  gridOriginWorld: {x: 0, y: 0, z: 0}
+  cellSize: {x: 1, y: 1, z: 1}
+  enableDebug: 1
+  debugSphereRadius: 0.15
+  debugHitColor: {r: 1, g: 0, b: 0, a: 1}
+  debugSnappedColor: {r: 0, g: 1, b: 0, a: 1}
+  debugSnappedCenterColor: {r: 0, g: 1, b: 1, a: 1}
+--- !u!114 &1383023693414985362
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 25ebded3dd33894409409ff2dc883409, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  validPreviewMaterial: {fileID: 2100000, guid: 8bc246c1b6057d44cbb5155765329f80, type: 2}
+  invalidPreviewMaterial: {fileID: 2100000, guid: fe26ce85d0c455d4c8f5afc2f4a1be20, type: 2}
+--- !u!114 &634502552085456998
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0775f6bf11786944cbf146739d84418c, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  addSlots:
+  - itemKey: 100
+    count: 5
+  - itemKey: 101
+    count: 5
+  - itemKey: 102
+    count: 5
