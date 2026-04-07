@@ -24,6 +24,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
     [SerializeField] private UI_Container uiContainer;
     [SerializeField] private int containerSlotCount = 6;
 
+    [Header("Preset")]
+    [Tooltip("Optional preset to auto-place buildables at game start.")]
+    [SerializeField] private BuildPreset startPreset;
+
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
 
@@ -82,6 +86,48 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         DebugConsoleManager.Instance.RegisterDebugTarget(this);
         RegisterDebugCommands();
+        LoadPreset();
+    }
+
+    /// <summary>
+    /// Load the start preset, placing all entries into the grid in order.
+    /// </summary>
+    private void LoadPreset()
+    {
+        if (startPreset == null || startPreset.entries == null) return;
+
+        var dbManager = PropertyDatabaseManager.Instance;
+        if (dbManager == null) return;
+        var db = dbManager.GetDatabase<BuildableDatabase>();
+        if (db == null)
+        {
+            Debug.LogWarning("[BuildManager] BuildableDatabase not found. Cannot load preset.");
+            return;
+        }
+
+        for (int i = 0; i < startPreset.entries.Length; i++)
+        {
+            var entry = startPreset.entries[i];
+            var prop = db.GetByEnum(entry.buildableEnumKey);
+            if (prop == null)
+            {
+                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: No BuildableProperty found for key '{entry.buildableEnumKey}'. Skipped.");
+                continue;
+            }
+
+            if (prop.prefab == null)
+            {
+                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: Property '{entry.buildableEnumKey}' has no prefab. Skipped.");
+                continue;
+            }
+
+            if (!PlaceImmediate(prop, entry.anchorCell, entry.rotationStep))
+            {
+                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: Failed to place '{entry.buildableEnumKey}' at {entry.anchorCell}.");
+            }
+        }
+
+        Debug.Log($"[BuildManager] Preset loaded: {startPreset.name} ({startPreset.entries.Length} entries)");
     }
 
     private void OnDestroy()
@@ -407,6 +453,52 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Internal ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
+    /// <summary>
+    /// Core placement logic: create data, place in grid, establish parent-child link, spawn GO.
+    /// Used by both ConfirmPlace (player action) and LoadPreset (initialization).
+    /// Returns true on success.
+    /// </summary>
+    private bool PlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    {
+        PlacedBuildableData data = new PlacedBuildableData
+        {
+            InstanceId = $"build_{instanceCounter++}",
+            Property = property,
+            AnchorCell = anchor,
+            RotationStep = rotationStep,
+        };
+
+        if (!Grid.TryPlace(data))
+            return false;
+
+        // ©¤©¤ Establish parent-child relationship ©¤©¤
+        if (property.requiredSurface != BuildSurfaceType.None)
+        {
+            PlacedBuildableData parent = Grid.FindParentAt(anchor, property.requiredSurface);
+            if (parent != null)
+            {
+                data.SetParent(parent);
+            }
+        }
+
+        // Spawn real object
+        Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
+        float yaw = property.GetRotationDegrees(rotationStep);
+        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+        data.SpawnedObject = go;
+
+        // Parent the GameObject under the parent's GO for automatic transform following
+        if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
+        {
+            if (parentData.SpawnedObject != null)
+            {
+                go.transform.SetParent(parentData.SpawnedObject.transform, worldPositionStays: true);
+            }
+        }
+
+        return true;
+    }
+
     private void ConfirmPlace(Vector3Int anchor)
     {
         // ©¤©¤ If this placement came from a container slot, consume the item first ©¤©¤
@@ -430,43 +522,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
             }
         }
 
-        PlacedBuildableData data = new PlacedBuildableData
+        if (!PlaceImmediate(selectedProperty, anchor, currentRotationStep))
         {
-            InstanceId = $"build_{instanceCounter++}",
-            Property = selectedProperty,
-            AnchorCell = anchor,
-            RotationStep = currentRotationStep,
-        };
-
-        if (!Grid.TryPlace(data))
-        {
-            Debug.LogError($"[BuildManager] TryPlace failed at {anchor} ¡ª should not happen after CanPlace check.");
+            Debug.LogError($"[BuildManager] PlaceImmediate failed at {anchor} ¡ª should not happen after CanPlace check.");
             return;
-        }
-
-        // ©¤©¤ Establish parent-child relationship ©¤©¤
-        if (selectedProperty.requiredSurface != BuildSurfaceType.None)
-        {
-            PlacedBuildableData parent = Grid.FindParentAt(anchor, selectedProperty.requiredSurface);
-            if (parent != null)
-            {
-                data.SetParent(parent);
-            }
-        }
-
-        // Spawn real object
-        Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
-        float yaw = selectedProperty.GetRotationDegrees(currentRotationStep);
-        GameObject go = Instantiate(selectedProperty.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
-        data.SpawnedObject = go;
-
-        // Parent the GameObject under the parent's GO for automatic transform following
-        if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
-        {
-            if (parentData.SpawnedObject != null)
-            {
-                go.transform.SetParent(parentData.SpawnedObject.transform, worldPositionStays: true);
-            }
         }
 
         previewController.HidePreview();
