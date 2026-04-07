@@ -1,6 +1,33 @@
 using JackyUtility;
 using UnityEngine;
 
+/// <summary>
+/// Which logical layer this buildable occupies in the grid.
+/// Multiple layers can coexist on the same XZ cell.
+/// </summary>
+public enum BuildLayer
+{
+    /// <summary>The world ground layer ¡ª platforms are placed here.</summary>
+    World = 0,
+    /// <summary>On top of a platform ¡ª rooms, stairs, etc.</summary>
+    Platform = 1,
+    /// <summary>Inside a room ¡ª furniture, decorations, etc.</summary>
+    Room = 2,
+}
+
+/// <summary>
+/// What surface type a buildable provides to the layer above it.
+/// </summary>
+public enum BuildSurfaceType
+{
+    /// <summary>This buildable does not provide any surface for others.</summary>
+    None = 0,
+    /// <summary>Provides a platform surface (rooms / stairs can be placed on it).</summary>
+    Platform = 1,
+    /// <summary>Provides a room surface (furniture can be placed inside it).</summary>
+    Room = 2,
+}
+
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
 public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>
 {
@@ -20,11 +47,25 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
              "e.g. a 2x1x3 table: (0,0,0),(1,0,0),(0,0,1),(1,0,1),(0,0,2),(1,0,2)")]
     public Vector3Int[] footprint = new Vector3Int[] { Vector3Int.zero };
 
+    [Header("Layer & Surface")]
+    [Tooltip("Which grid layer this buildable occupies.")]
+    public BuildLayer buildLayer = BuildLayer.World;
+
+    [Tooltip("What surface type is REQUIRED beneath this buildable.\n" +
+             "None = no requirement (e.g. platforms placed on bare ground).\n" +
+             "Platform = needs a platform beneath (rooms, stairs).\n" +
+             "Room = needs a room beneath (furniture).")]
+    public BuildSurfaceType requiredSurface = BuildSurfaceType.None;
+
+    [Tooltip("What surface type this buildable PROVIDES to things on top of it.\n" +
+             "None = nothing can be placed on it.\n" +
+             "Platform = rooms/stairs can be placed on it.\n" +
+             "Room = furniture can be placed inside it.")]
+    public BuildSurfaceType providedSurface = BuildSurfaceType.None;
+
     [Header("Placement Rules")]
     public bool canRotate = true;
     public bool canMove = true;
-    [Tooltip("If true, this buildable must be placed on the ground (y=0 layer only).")]
-    public bool groundOnly = true;
 
     [Header("UI Display")]
     public Sprite iconSprite;
@@ -82,8 +123,15 @@ public enum Key_BuildablePP
 {
     None = 0,
 
-    // ---- Test ----
-    Build_Cube_11 = 1,
-    Build_Cube_12 = 2,
-    Build_Cube_22 = 3,
+    // ---- Platforms ----
+    Build_Platform_11 = 1,
+    Build_Platform_12 = 2,
+    Build_Platform_22 = 3,
+
+    // ---- Rooms (5x5) ----
+    Build_Room_5x5 = 10,
+
+    // ---- Furniture ----
+    Build_Furniture_Table = 20,
+    Build_Furniture_Chair = 21,
 }
