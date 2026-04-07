@@ -16,32 +16,10 @@ MonoBehaviour:
   stringKey: BuildPP_Room55
   prefab: {fileID: 8972928939373454817, guid: 704e2577f4573d94f93b22c915569bf4, type: 3}
   previewPrefab: {fileID: 0}
-  footprint:
-  - {x: 0, y: 0, z: 0}
-  - {x: 1, y: 0, z: 0}
-  - {x: 2, y: 0, z: 0}
-  - {x: 3, y: 0, z: 0}
-  - {x: 4, y: 0, z: 0}
-  - {x: 0, y: 0, z: 1}
-  - {x: 1, y: 0, z: 1}
-  - {x: 2, y: 0, z: 1}
-  - {x: 3, y: 0, z: 1}
-  - {x: 4, y: 0, z: 1}
-  - {x: 0, y: 0, z: 2}
-  - {x: 1, y: 0, z: 2}
-  - {x: 2, y: 0, z: 2}
-  - {x: 3, y: 0, z: 2}
-  - {x: 4, y: 0, z: 2}
-  - {x: 0, y: 0, z: 3}
-  - {x: 1, y: 0, z: 3}
-  - {x: 2, y: 0, z: 3}
-  - {x: 3, y: 0, z: 3}
-  - {x: 4, y: 0, z: 3}
-  - {x: 0, y: 0, z: 4}
-  - {x: 1, y: 0, z: 4}
-  - {x: 2, y: 0, z: 4}
-  - {x: 3, y: 0, z: 4}
-  - {x: 4, y: 0, z: 4}
+  footprintBoxes:
+  - cornerA: {x: -2, y: 0, z: -2}
+    cornerB: {x: 2, y: 0, z: 2}
+  footprintCells: []
   buildLayer: 1
   requiredSurface: 1
   providedSurface: 2

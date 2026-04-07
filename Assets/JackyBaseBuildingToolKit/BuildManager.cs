@@ -63,6 +63,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     // debug cache (updated every frame for GUI display)
     private string debugCanPlaceReason = "";
     private bool debugCanPlace;
+    private bool debugDrawOccupancy = false;
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -571,6 +572,16 @@ public class BuildManager : MonoBehaviour, IDebuggable
         ));
 
         DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
+            "buildmgr-gizmo",
+            "Toggle grid occupancy gizmo visualization in Scene view.",
+            args =>
+            {
+                debugDrawOccupancy = !debugDrawOccupancy;
+                Debug.Log($"[BuildManager] Occupancy gizmo: {(debugDrawOccupancy ? "ON" : "OFF")}");
+            }
+        ));
+
+        DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
             "buildmgr-select",
             "Enter placement mode by string key. Usage: buildmgr-select <stringKey>  |  buildmgr-select ls",
             args =>
@@ -625,6 +636,52 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  layer={prop.buildLayer}");
             }
         ));
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Gizmos ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private static readonly Color GizmoColorWorld    = new Color(0.2f, 0.8f, 0.2f, 0.5f);  // green
+    private static readonly Color GizmoColorPlatform = new Color(0.2f, 0.5f, 1.0f, 0.5f);  // blue
+    private static readonly Color GizmoColorRoom     = new Color(1.0f, 0.6f, 0.1f, 0.5f);  // orange
+
+    private void OnDrawGizmos()
+    {
+        if (!debugDrawOccupancy) return;
+        if (grid == null || grid.OccupancyMap == null) return;
+        if (positionProvider == null) return;
+
+        Vector3 cellSize = positionProvider.CellSize;
+        // Slightly shrink cubes so adjacent cells don't z-fight
+        Vector3 cubeSize = cellSize * 0.92f;
+
+        foreach (var kvp in grid.OccupancyMap)
+        {
+            CellLayerKey key = kvp.Key;
+            PlacedBuildableData data = kvp.Value;
+
+            Vector3 worldCenter = positionProvider.CellToWorldCenter(key.Cell);
+
+            switch (key.Layer)
+            {
+                case BuildLayer.World:    Gizmos.color = GizmoColorWorld;    break;
+                case BuildLayer.Platform: Gizmos.color = GizmoColorPlatform; break;
+                case BuildLayer.Room:     Gizmos.color = GizmoColorRoom;     break;
+                default:                  Gizmos.color = Color.white;        break;
+            }
+
+            Gizmos.DrawCube(worldCenter, cubeSize);
+            Gizmos.DrawWireCube(worldCenter, cellSize);
+
+#if UNITY_EDITOR
+            // Label only on anchors to avoid clutter
+            if (key.Cell == data.AnchorCell)
+            {
+                UnityEditor.Handles.color = Color.white;
+                UnityEditor.Handles.Label(worldCenter + Vector3.up * (cellSize.y * 0.6f),
+                    $"{data.InstanceId}\n{data.Property.EnumKey}\n{key.Layer}");
+            }
+#endif
+        }
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug GUI (Game view top-left) ©¤©¤©¤©¤©¤©¤©¤©¤©¤

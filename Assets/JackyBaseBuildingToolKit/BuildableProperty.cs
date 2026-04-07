@@ -1,4 +1,5 @@
 using JackyUtility;
+using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -29,14 +30,41 @@ public enum BuildSurfaceType
 }
 
 /// <summary>
-/// How the footprint data is defined in the inspector.
+/// Defines a rectangular box region of footprint cells.
+/// Two opposite corners of a 3D box (like a cube's diagonal) ¡ú generates all cells within.
 /// </summary>
-public enum FootprintMode
+[System.Serializable]
+public struct FootprintBox
 {
-    /// <summary>Manually specify each occupied cell offset.</summary>
-    Manual,
-    /// <summary>Define a rectangular box via two XZ corners + height.</summary>
-    Box,
+    [Tooltip("First corner of the box (diagonal vertex A).")]
+    public Vector3Int cornerA;
+
+    [Tooltip("Second corner of the box (diagonal vertex B).")]
+    public Vector3Int cornerB;
+
+    public FootprintBox(Vector3Int cornerA, Vector3Int cornerB)
+    {
+        this.cornerA = cornerA;
+        this.cornerB = cornerB;
+    }
+
+    /// <summary>
+    /// Expand all cells this box covers into the target list.
+    /// </summary>
+    public void GenerateCells(List<Vector3Int> target)
+    {
+        int minX = Mathf.Min(cornerA.x, cornerB.x);
+        int maxX = Mathf.Max(cornerA.x, cornerB.x);
+        int minY = Mathf.Min(cornerA.y, cornerB.y);
+        int maxY = Mathf.Max(cornerA.y, cornerB.y);
+        int minZ = Mathf.Min(cornerA.z, cornerB.z);
+        int maxZ = Mathf.Max(cornerA.z, cornerB.z);
+
+        for (int y = minY; y <= maxY; y++)
+            for (int z = minZ; z <= maxZ; z++)
+                for (int x = minX; x <= maxX; x++)
+                    target.Add(new Vector3Int(x, y, z));
+    }
 }
 
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
@@ -53,23 +81,14 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public GameObject prefab;
     public GameObject previewPrefab;
 
-    [Header("Grid Footprint")]
-    [Tooltip("Manual: specify each cell offset individually.\n" +
-             "Box: define two XZ corners + height to auto-generate a rectangular footprint.")]
-    public FootprintMode footprintMode = FootprintMode.Manual;
+    [Header("Grid Footprint ¡ª Boxes (additive)")]
+    [Tooltip("Each box generates a rectangular region of cells. All boxes are merged together.")]
+    public FootprintBox[] footprintBoxes = new FootprintBox[0];
 
-    [Tooltip("(Manual mode) Each entry is one occupied cell offset relative to the anchor (0,0,0).")]
-    public Vector3Int[] footprint = new Vector3Int[] { Vector3Int.zero };
-
-    [Tooltip("(Box mode) First XZ corner of the rectangle. Y value is ignored.")]
-    public Vector3Int boxCornerA = new Vector3Int(-2, 0, -2);
-
-    [Tooltip("(Box mode) Second XZ corner of the rectangle. Y value is ignored.")]
-    public Vector3Int boxCornerB = new Vector3Int(2, 0, 2);
-
-    [Tooltip("(Box mode) Number of vertical layers (y=0 .. height-1). Minimum 1.")]
-    [Min(1)]
-    public int boxHeight = 1;
+    [Header("Grid Footprint ¡ª Manual Cells (additive)")]
+    [Tooltip("Individual cell offsets added on top of the box-generated cells.\n" +
+             "Use this for fine-tuning or irregular shapes.")]
+    public Vector3Int[] footprintCells = new Vector3Int[] { Vector3Int.zero };
 
     [Header("Layer & Surface")]
     [Tooltip("Which grid layer this buildable occupies.")]
@@ -110,7 +129,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     }
 
     /// <summary>
-    /// Returns the resolved footprint cells (either manual or box-generated).
+    /// Returns the merged footprint: all boxes expanded + all manual cells, deduplicated.
     /// Cached until the SO is modified.
     /// </summary>
     public Vector3Int[] GetFootprint()
@@ -118,11 +137,37 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         if (!footprintDirty && cachedFootprint != null)
             return cachedFootprint;
 
-        if (footprintMode == FootprintMode.Box)
-            cachedFootprint = GenerateBoxFootprint(boxCornerA, boxCornerB, boxHeight);
-        else
-            cachedFootprint = footprint ?? new Vector3Int[] { Vector3Int.zero };
+        HashSet<Vector3Int> cellSet = new HashSet<Vector3Int>();
 
+        // Expand all boxes
+        if (footprintBoxes != null)
+        {
+            List<Vector3Int> boxCells = new List<Vector3Int>();
+            for (int i = 0; i < footprintBoxes.Length; i++)
+            {
+                footprintBoxes[i].GenerateCells(boxCells);
+            }
+            for (int i = 0; i < boxCells.Count; i++)
+            {
+                cellSet.Add(boxCells[i]);
+            }
+        }
+
+        // Add manual cells
+        if (footprintCells != null)
+        {
+            for (int i = 0; i < footprintCells.Length; i++)
+            {
+                cellSet.Add(footprintCells[i]);
+            }
+        }
+
+        // Fallback: ensure at least origin
+        if (cellSet.Count == 0)
+            cellSet.Add(Vector3Int.zero);
+
+        cachedFootprint = new Vector3Int[cellSet.Count];
+        cellSet.CopyTo(cachedFootprint);
         footprintDirty = false;
         return cachedFootprint;
     }
@@ -153,36 +198,6 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public float GetRotationDegrees(int rotationStep)
     {
         return ((rotationStep % 4 + 4) % 4) * 90f;
-    }
-
-    /// <summary>
-    /// Generate a rectangular box footprint from two XZ corners and a height.
-    /// Y values of the corners are ignored; layers go from y=0 to y=height-1.
-    /// </summary>
-    private static Vector3Int[] GenerateBoxFootprint(Vector3Int cornerA, Vector3Int cornerB, int height)
-    {
-        int minX = Mathf.Min(cornerA.x, cornerB.x);
-        int maxX = Mathf.Max(cornerA.x, cornerB.x);
-        int minZ = Mathf.Min(cornerA.z, cornerB.z);
-        int maxZ = Mathf.Max(cornerA.z, cornerB.z);
-        height = Mathf.Max(1, height);
-
-        int sizeX = maxX - minX + 1;
-        int sizeZ = maxZ - minZ + 1;
-        Vector3Int[] result = new Vector3Int[sizeX * sizeZ * height];
-
-        int idx = 0;
-        for (int y = 0; y < height; y++)
-        {
-            for (int z = minZ; z <= maxZ; z++)
-            {
-                for (int x = minX; x <= maxX; x++)
-                {
-                    result[idx++] = new Vector3Int(x, y, z);
-                }
-            }
-        }
-        return result;
     }
 
     /// <summary>

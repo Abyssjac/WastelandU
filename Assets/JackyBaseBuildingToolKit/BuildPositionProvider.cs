@@ -14,6 +14,8 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
     [SerializeField] private Vector3 gridOriginWorld = Vector3.zero;
     [SerializeField] private Vector3 cellSize = Vector3.one;
 
+    public Vector3 CellSize => cellSize;
+
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
     [SerializeField] private float debugSphereRadius = 0.15f;

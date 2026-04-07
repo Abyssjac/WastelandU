@@ -64,6 +64,7 @@ public class BuildGrid3D
     public Vector3Int GridMin => gridMin;
     public Vector3Int GridMax => gridMax;
     public IReadOnlyDictionary<string, PlacedBuildableData> AllPlaced => allPlaced;
+    public IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> OccupancyMap => occupancyMap;
 
     public BuildGrid3D() { }
 
