@@ -28,6 +28,17 @@ public enum BuildSurfaceType
     Room = 2,
 }
 
+/// <summary>
+/// How the footprint data is defined in the inspector.
+/// </summary>
+public enum FootprintMode
+{
+    /// <summary>Manually specify each occupied cell offset.</summary>
+    Manual,
+    /// <summary>Define a rectangular box via two XZ corners + height.</summary>
+    Box,
+}
+
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
 public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>
 {
@@ -43,9 +54,22 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public GameObject previewPrefab;
 
     [Header("Grid Footprint")]
-    [Tooltip("Each entry is one occupied cell offset relative to the anchor (0,0,0). " +
-             "e.g. a 2x1x3 table: (0,0,0),(1,0,0),(0,0,1),(1,0,1),(0,0,2),(1,0,2)")]
+    [Tooltip("Manual: specify each cell offset individually.\n" +
+             "Box: define two XZ corners + height to auto-generate a rectangular footprint.")]
+    public FootprintMode footprintMode = FootprintMode.Manual;
+
+    [Tooltip("(Manual mode) Each entry is one occupied cell offset relative to the anchor (0,0,0).")]
     public Vector3Int[] footprint = new Vector3Int[] { Vector3Int.zero };
+
+    [Tooltip("(Box mode) First XZ corner of the rectangle. Y value is ignored.")]
+    public Vector3Int boxCornerA = new Vector3Int(-2, 0, -2);
+
+    [Tooltip("(Box mode) Second XZ corner of the rectangle. Y value is ignored.")]
+    public Vector3Int boxCornerB = new Vector3Int(2, 0, 2);
+
+    [Tooltip("(Box mode) Number of vertical layers (y=0 .. height-1). Minimum 1.")]
+    [Min(1)]
+    public int boxHeight = 1;
 
     [Header("Layer & Surface")]
     [Tooltip("Which grid layer this buildable occupies.")]
@@ -71,20 +95,54 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public Sprite iconSprite;
     public string displayName;
 
+    // йдйдйд Cached footprint (generated on first access) йдйдйд
+    private Vector3Int[] cachedFootprint;
+    private bool footprintDirty = true;
+
+    private void OnValidate()
+    {
+        footprintDirty = true;
+    }
+
+    private void OnEnable()
+    {
+        footprintDirty = true;
+    }
+
+    /// <summary>
+    /// Returns the resolved footprint cells (either manual or box-generated).
+    /// Cached until the SO is modified.
+    /// </summary>
+    public Vector3Int[] GetFootprint()
+    {
+        if (!footprintDirty && cachedFootprint != null)
+            return cachedFootprint;
+
+        if (footprintMode == FootprintMode.Box)
+            cachedFootprint = GenerateBoxFootprint(boxCornerA, boxCornerB, boxHeight);
+        else
+            cachedFootprint = footprint ?? new Vector3Int[] { Vector3Int.zero };
+
+        footprintDirty = false;
+        return cachedFootprint;
+    }
+
     /// <summary>
     /// Returns the footprint cells rotated by 90бу steps around Y axis.
     /// rotationStep: 0=0бу, 1=90бу, 2=180бу, 3=270бу
     /// </summary>
     public Vector3Int[] GetRotatedFootprint(int rotationStep)
     {
+        Vector3Int[] resolved = GetFootprint();
+
         rotationStep = ((rotationStep % 4) + 4) % 4;
         if (rotationStep == 0)
-            return footprint;
+            return resolved;
 
-        Vector3Int[] rotated = new Vector3Int[footprint.Length];
-        for (int i = 0; i < footprint.Length; i++)
+        Vector3Int[] rotated = new Vector3Int[resolved.Length];
+        for (int i = 0; i < resolved.Length; i++)
         {
-            rotated[i] = RotateCellY(footprint[i], rotationStep);
+            rotated[i] = RotateCellY(resolved[i], rotationStep);
         }
         return rotated;
     }
@@ -95,6 +153,36 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public float GetRotationDegrees(int rotationStep)
     {
         return ((rotationStep % 4 + 4) % 4) * 90f;
+    }
+
+    /// <summary>
+    /// Generate a rectangular box footprint from two XZ corners and a height.
+    /// Y values of the corners are ignored; layers go from y=0 to y=height-1.
+    /// </summary>
+    private static Vector3Int[] GenerateBoxFootprint(Vector3Int cornerA, Vector3Int cornerB, int height)
+    {
+        int minX = Mathf.Min(cornerA.x, cornerB.x);
+        int maxX = Mathf.Max(cornerA.x, cornerB.x);
+        int minZ = Mathf.Min(cornerA.z, cornerB.z);
+        int maxZ = Mathf.Max(cornerA.z, cornerB.z);
+        height = Mathf.Max(1, height);
+
+        int sizeX = maxX - minX + 1;
+        int sizeZ = maxZ - minZ + 1;
+        Vector3Int[] result = new Vector3Int[sizeX * sizeZ * height];
+
+        int idx = 0;
+        for (int y = 0; y < height; y++)
+        {
+            for (int z = minZ; z <= maxZ; z++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    result[idx++] = new Vector3Int(x, y, z);
+                }
+            }
+        }
+        return result;
     }
 
     /// <summary>
@@ -127,6 +215,7 @@ public enum Key_BuildablePP
     Build_Platform_11 = 1,
     Build_Platform_12 = 2,
     Build_Platform_22 = 3,
+    Build_Platform_99 = 4,
 
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,

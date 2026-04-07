@@ -46,9 +46,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   allDatabases:
-  - {fileID: 11400000, guid: b9326e078cfe24d49a1b1d6b1e9ce415, type: 2}
-  - {fileID: 11400000, guid: f3017b00b31b0cb4e9211b0af1a8da46, type: 2}
-  - {fileID: 11400000, guid: b6430a153fe02b54182f1dcebf9c3bf9, type: 2}
+  - {fileID: 11400000, guid: 4dd807d47892ff94c939a6fece54ed92, type: 2}
+  - {fileID: 11400000, guid: aebffe4ea9e2bbd4982328497531bd38, type: 2}
 --- !u!114 &7292739574960922526
 MonoBehaviour:
   m_ObjectHideFlags: 0

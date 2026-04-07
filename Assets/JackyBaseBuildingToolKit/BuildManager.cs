@@ -569,6 +569,62 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 }
             }
         ));
+
+        DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
+            "buildmgr-select",
+            "Enter placement mode by string key. Usage: buildmgr-select <stringKey>  |  buildmgr-select ls",
+            args =>
+            {
+                if (args.Length == 0)
+                {
+                    Debug.LogWarning("[buildmgr-select] Usage: buildmgr-select <stringKey>  |  buildmgr-select ls");
+                    return;
+                }
+
+                if (buildableDB == null)
+                {
+                    Debug.LogError("[buildmgr-select] BuildableDatabase not available.");
+                    return;
+                }
+
+                // Sub-command: list all entries in the database
+                if (args[0].Equals("ls", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var entries = buildableDB.Entries;
+                    if (entries.Count == 0)
+                    {
+                        Debug.Log("[buildmgr-select] Database is empty.");
+                        return;
+                    }
+                    for (int i = 0; i < entries.Count; i++)
+                    {
+                        var e = entries[i];
+                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  layer={e.buildLayer}  required={e.requiredSurface}  provides={e.providedSurface}");
+                    }
+                    return;
+                }
+
+                // Look up by string key
+                var prop = buildableDB.GetByString(args[0]);
+                if (prop == null)
+                {
+                    Debug.LogWarning($"[buildmgr-select] No BuildableProperty found for key '{args[0]}'. Use 'buildmgr-select ls' to list all.");
+                    return;
+                }
+
+                if (prop.prefab == null)
+                {
+                    Debug.LogWarning($"[buildmgr-select] BuildableProperty '{args[0]}' has no prefab assigned.");
+                    return;
+                }
+
+                if (CurrentState != BuildState.Idle)
+                    CancelCurrentAction();
+
+                BeginPlacing(prop);
+                Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  layer={prop.buildLayer}");
+            }
+        ));
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug GUI (Game view top-left) ©¤©¤©¤©¤©¤©¤©¤©¤©¤

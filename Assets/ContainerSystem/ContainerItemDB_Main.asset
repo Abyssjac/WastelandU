@@ -12,4 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1a86554cc2ea8f444a3c609a1708742b, type: 3}
   m_Name: ContainerItemDB_Main
   m_EditorClassIdentifier: 
-  entries: []
+  entries:
+  - {fileID: 11400000, guid: 24e036785633d6943bdc16511b0e5810, type: 2}
+  - {fileID: 11400000, guid: 567019b8bc8bdb247b78b4836f40f615, type: 2}
+  - {fileID: 11400000, guid: 54f2dacb829ac704d8c5d488e16adcb7, type: 2}
+  - {fileID: 11400000, guid: 7e358481482b26649b8360a9e6f468b6, type: 2}
