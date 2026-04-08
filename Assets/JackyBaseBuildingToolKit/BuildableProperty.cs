@@ -8,30 +8,27 @@ using UnityEngine;
 /// </summary>
 public enum BuildLayer
 {
-    /// <summary>The world ground layer ¡ª platforms are placed here.</summary>
     World = 0,
-    /// <summary>On top of a platform ¡ª rooms, stairs, etc.</summary>
     Platform = 1,
-    /// <summary>Inside a room ¡ª furniture, decorations, etc.</summary>
     Room = 2,
 }
 
 /// <summary>
-/// What surface type a buildable provides to the layer above it.
+/// Surface type that can be required or provided.
+/// A buildable's OccupancyZone declares what surface it requires beneath it,
+/// and a SurfaceZone declares what surface it provides to others.
 /// </summary>
 public enum BuildSurfaceType
 {
-    /// <summary>This buildable does not provide any surface for others.</summary>
     None = 0,
-    /// <summary>Provides a platform surface (rooms / stairs can be placed on it).</summary>
     Platform = 1,
-    /// <summary>Provides a room surface (furniture can be placed inside it).</summary>
-    Room = 2,
+    PlatformSupporter = 2,
+    Room = 3,
+    Wall = 4,
 }
 
 /// <summary>
-/// Defines a rectangular box region of footprint cells.
-/// Two opposite corners of a 3D box (like a cube's diagonal) ¡ú generates all cells within.
+/// Defines a rectangular box region of cells via two diagonal corners.
 /// </summary>
 [System.Serializable]
 public struct FootprintBox
@@ -48,9 +45,6 @@ public struct FootprintBox
         this.cornerB = cornerB;
     }
 
-    /// <summary>
-    /// Expand all cells this box covers into the target list.
-    /// </summary>
     public void GenerateCells(List<Vector3Int> target)
     {
         int minX = Mathf.Min(cornerA.x, cornerB.x);
@@ -67,6 +61,68 @@ public struct FootprintBox
     }
 }
 
+// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// Zone definitions ¡ª each zone is a region of cells with its own layer / surface config
+// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+
+/// <summary>
+/// An occupancy zone: a region of cells that this buildable physically occupies.
+/// Written into <c>occupancyMap</c>, blocks other buildables on the same layer.
+/// </summary>
+[System.Serializable]
+public struct OccupancyZone
+{
+    [Header("Cells (additive ¡ª boxes + manual cells merged)")]
+    public FootprintBox[] boxes;
+    public Vector3Int[] cells;
+
+    [Header("Layer & Requirement")]
+    [Tooltip("Which grid layer these cells occupy.")]
+    public BuildLayer buildLayer;
+
+    [Tooltip("What surface type is REQUIRED beneath these cells.\n" +
+             "None = no requirement.")]
+    public BuildSurfaceType requiredSurface;
+}
+
+/// <summary>
+/// A surface zone: a region of cells where this buildable provides a surface for others.
+/// Written into <c>surfaceMap</c>, does NOT block placement ¡ª only enables it for others.
+/// Can extend beyond the buildable's own occupancy footprint.
+/// </summary>
+[System.Serializable]
+public struct SurfaceZone
+{
+    [Header("Cells (additive ¡ª boxes + manual cells merged)")]
+    public FootprintBox[] boxes;
+    public Vector3Int[] cells;
+
+    [Header("Surface")]
+    [Tooltip("What surface type these cells provide.")]
+    public BuildSurfaceType providedSurface;
+}
+
+// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+
+/// <summary>
+/// Resolved cell data for a single occupancy cell, ready for grid operations.
+/// </summary>
+public struct ResolvedOccupancyCell
+{
+    public Vector3Int Cell;
+    public BuildLayer Layer;
+    public BuildSurfaceType RequiredSurface;
+}
+
+/// <summary>
+/// Resolved cell data for a single surface cell, ready for grid operations.
+/// </summary>
+public struct ResolvedSurfaceCell
+{
+    public Vector3Int Cell;
+    public BuildSurfaceType ProvidedSurface;
+}
+
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
 public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>
 {
@@ -81,30 +137,23 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public GameObject prefab;
     public GameObject previewPrefab;
 
-    [Header("Grid Footprint ¡ª Boxes (additive)")]
-    [Tooltip("Each box generates a rectangular region of cells. All boxes are merged together.")]
-    public FootprintBox[] footprintBoxes = new FootprintBox[0];
+    [Header("Occupancy Zones")]
+    [Tooltip("Regions this buildable physically occupies. Each zone has its own layer and surface requirement.")]
+    public OccupancyZone[] occupancyZones = new OccupancyZone[]
+    {
+        new OccupancyZone
+        {
+            boxes = new FootprintBox[0],
+            cells = new Vector3Int[] { Vector3Int.zero },
+            buildLayer = BuildLayer.World,
+            requiredSurface = BuildSurfaceType.None,
+        }
+    };
 
-    [Header("Grid Footprint ¡ª Manual Cells (additive)")]
-    [Tooltip("Individual cell offsets added on top of the box-generated cells.\n" +
-             "Use this for fine-tuning or irregular shapes.")]
-    public Vector3Int[] footprintCells = new Vector3Int[] { Vector3Int.zero };
-
-    [Header("Layer & Surface")]
-    [Tooltip("Which grid layer this buildable occupies.")]
-    public BuildLayer buildLayer = BuildLayer.World;
-
-    [Tooltip("What surface type is REQUIRED beneath this buildable.\n" +
-             "None = no requirement (e.g. platforms placed on bare ground).\n" +
-             "Platform = needs a platform beneath (rooms, stairs).\n" +
-             "Room = needs a room beneath (furniture).")]
-    public BuildSurfaceType requiredSurface = BuildSurfaceType.None;
-
-    [Tooltip("What surface type this buildable PROVIDES to things on top of it.\n" +
-             "None = nothing can be placed on it.\n" +
-             "Platform = rooms/stairs can be placed on it.\n" +
-             "Room = furniture can be placed inside it.")]
-    public BuildSurfaceType providedSurface = BuildSurfaceType.None;
+    [Header("Surface Zones")]
+    [Tooltip("Regions where this buildable provides surfaces for other buildables.\n" +
+             "Can extend beyond the occupancy footprint (e.g. PlatformSupporter area around a platform).")]
+    public SurfaceZone[] surfaceZones = new SurfaceZone[0];
 
     [Header("Placement Rules")]
     public bool canRotate = true;
@@ -114,104 +163,205 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public Sprite iconSprite;
     public string displayName;
 
-    // ©¤©¤©¤ Cached footprint (generated on first access) ©¤©¤©¤
-    private Vector3Int[] cachedFootprint;
-    private bool footprintDirty = true;
+    // ©¤©¤©¤ Cache ©¤©¤©¤
+    private ResolvedOccupancyCell[] cachedOccupancy;
+    private ResolvedSurfaceCell[] cachedSurface;
+    private Vector3Int[] cachedOccupancyCellsOnly;  // just the cell positions, for preview / legacy
+    private bool dirty = true;
 
-    private void OnValidate()
+    private void OnValidate() { dirty = true; }
+    private void OnEnable() { dirty = true; }
+
+    private void RebuildCache()
     {
-        footprintDirty = true;
+        if (!dirty && cachedOccupancy != null) return;
+
+        // ©¤©¤ Occupancy ©¤©¤
+        List<ResolvedOccupancyCell> occList = new List<ResolvedOccupancyCell>();
+        HashSet<Vector3Int> occCellSet = new HashSet<Vector3Int>();
+
+        if (occupancyZones != null)
+        {
+            List<Vector3Int> tmpCells = new List<Vector3Int>();
+            for (int z = 0; z < occupancyZones.Length; z++)
+            {
+                var zone = occupancyZones[z];
+                tmpCells.Clear();
+
+                if (zone.boxes != null)
+                    for (int b = 0; b < zone.boxes.Length; b++)
+                        zone.boxes[b].GenerateCells(tmpCells);
+
+                if (zone.cells != null)
+                    for (int c = 0; c < zone.cells.Length; c++)
+                        tmpCells.Add(zone.cells[c]);
+
+                for (int i = 0; i < tmpCells.Count; i++)
+                {
+                    occList.Add(new ResolvedOccupancyCell
+                    {
+                        Cell = tmpCells[i],
+                        Layer = zone.buildLayer,
+                        RequiredSurface = zone.requiredSurface,
+                    });
+                    occCellSet.Add(tmpCells[i]);
+                }
+            }
+        }
+
+        if (occList.Count == 0)
+        {
+            occList.Add(new ResolvedOccupancyCell
+            {
+                Cell = Vector3Int.zero,
+                Layer = BuildLayer.World,
+                RequiredSurface = BuildSurfaceType.None,
+            });
+            occCellSet.Add(Vector3Int.zero);
+        }
+
+        cachedOccupancy = occList.ToArray();
+
+        // occupancy cell positions only (deduplicated, for preview)
+        cachedOccupancyCellsOnly = new Vector3Int[occCellSet.Count];
+        occCellSet.CopyTo(cachedOccupancyCellsOnly);
+
+        // ©¤©¤ Surface ©¤©¤
+        List<ResolvedSurfaceCell> surfList = new List<ResolvedSurfaceCell>();
+
+        if (surfaceZones != null)
+        {
+            List<Vector3Int> tmpCells = new List<Vector3Int>();
+            for (int z = 0; z < surfaceZones.Length; z++)
+            {
+                var zone = surfaceZones[z];
+                tmpCells.Clear();
+
+                if (zone.boxes != null)
+                    for (int b = 0; b < zone.boxes.Length; b++)
+                        zone.boxes[b].GenerateCells(tmpCells);
+
+                if (zone.cells != null)
+                    for (int c = 0; c < zone.cells.Length; c++)
+                        tmpCells.Add(zone.cells[c]);
+
+                for (int i = 0; i < tmpCells.Count; i++)
+                {
+                    surfList.Add(new ResolvedSurfaceCell
+                    {
+                        Cell = tmpCells[i],
+                        ProvidedSurface = zone.providedSurface,
+                    });
+                }
+            }
+        }
+
+        cachedSurface = surfList.ToArray();
+        dirty = false;
     }
 
-    private void OnEnable()
+    // ©¤©¤©¤ Public API ©¤©¤©¤
+
+    /// <summary>
+    /// All resolved occupancy cells (with per-cell layer and required surface), unrotated.
+    /// </summary>
+    public ResolvedOccupancyCell[] GetOccupancyCells()
     {
-        footprintDirty = true;
+        RebuildCache();
+        return cachedOccupancy;
     }
 
     /// <summary>
-    /// Returns the merged footprint: all boxes expanded + all manual cells, deduplicated.
-    /// Cached until the SO is modified.
+    /// All resolved surface cells (with per-cell provided surface), unrotated.
+    /// </summary>
+    public ResolvedSurfaceCell[] GetSurfaceCells()
+    {
+        RebuildCache();
+        return cachedSurface;
+    }
+
+    /// <summary>
+    /// Occupancy cells rotated by rotation step. Each cell's Layer and RequiredSurface preserved.
+    /// </summary>
+    public ResolvedOccupancyCell[] GetRotatedOccupancyCells(int rotationStep)
+    {
+        ResolvedOccupancyCell[] src = GetOccupancyCells();
+        rotationStep = ((rotationStep % 4) + 4) % 4;
+        if (rotationStep == 0) return src;
+
+        ResolvedOccupancyCell[] result = new ResolvedOccupancyCell[src.Length];
+        for (int i = 0; i < src.Length; i++)
+        {
+            result[i] = new ResolvedOccupancyCell
+            {
+                Cell = RotateCellY(src[i].Cell, rotationStep),
+                Layer = src[i].Layer,
+                RequiredSurface = src[i].RequiredSurface,
+            };
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Surface cells rotated by rotation step. Each cell's ProvidedSurface preserved.
+    /// </summary>
+    public ResolvedSurfaceCell[] GetRotatedSurfaceCells(int rotationStep)
+    {
+        ResolvedSurfaceCell[] src = GetSurfaceCells();
+        rotationStep = ((rotationStep % 4) + 4) % 4;
+        if (rotationStep == 0) return src;
+
+        ResolvedSurfaceCell[] result = new ResolvedSurfaceCell[src.Length];
+        for (int i = 0; i < src.Length; i++)
+        {
+            result[i] = new ResolvedSurfaceCell
+            {
+                Cell = RotateCellY(src[i].Cell, rotationStep),
+                ProvidedSurface = src[i].ProvidedSurface,
+            };
+        }
+        return result;
+    }
+
+    /// <summary>
+    /// Just the occupancy cell positions (deduplicated), for preview highlighting.
     /// </summary>
     public Vector3Int[] GetFootprint()
     {
-        if (!footprintDirty && cachedFootprint != null)
-            return cachedFootprint;
-
-        HashSet<Vector3Int> cellSet = new HashSet<Vector3Int>();
-
-        // Expand all boxes
-        if (footprintBoxes != null)
-        {
-            List<Vector3Int> boxCells = new List<Vector3Int>();
-            for (int i = 0; i < footprintBoxes.Length; i++)
-            {
-                footprintBoxes[i].GenerateCells(boxCells);
-            }
-            for (int i = 0; i < boxCells.Count; i++)
-            {
-                cellSet.Add(boxCells[i]);
-            }
-        }
-
-        // Add manual cells
-        if (footprintCells != null)
-        {
-            for (int i = 0; i < footprintCells.Length; i++)
-            {
-                cellSet.Add(footprintCells[i]);
-            }
-        }
-
-        // Fallback: ensure at least origin
-        if (cellSet.Count == 0)
-            cellSet.Add(Vector3Int.zero);
-
-        cachedFootprint = new Vector3Int[cellSet.Count];
-        cellSet.CopyTo(cachedFootprint);
-        footprintDirty = false;
-        return cachedFootprint;
+        RebuildCache();
+        return cachedOccupancyCellsOnly;
     }
 
     /// <summary>
-    /// Returns the footprint cells rotated by 90¡ã steps around Y axis.
-    /// rotationStep: 0=0¡ã, 1=90¡ã, 2=180¡ã, 3=270¡ã
+    /// Rotated occupancy cell positions for preview highlighting.
     /// </summary>
     public Vector3Int[] GetRotatedFootprint(int rotationStep)
     {
-        Vector3Int[] resolved = GetFootprint();
-
+        Vector3Int[] src = GetFootprint();
         rotationStep = ((rotationStep % 4) + 4) % 4;
-        if (rotationStep == 0)
-            return resolved;
+        if (rotationStep == 0) return src;
 
-        Vector3Int[] rotated = new Vector3Int[resolved.Length];
-        for (int i = 0; i < resolved.Length; i++)
+        Vector3Int[] result = new Vector3Int[src.Length];
+        for (int i = 0; i < src.Length; i++)
         {
-            rotated[i] = RotateCellY(resolved[i], rotationStep);
+            result[i] = RotateCellY(src[i], rotationStep);
         }
-        return rotated;
+        return result;
     }
 
-    /// <summary>
-    /// Returns the Y-axis rotation in degrees for a given rotation step.
-    /// </summary>
     public float GetRotationDegrees(int rotationStep)
     {
         return ((rotationStep % 4 + 4) % 4) * 90f;
     }
 
-    /// <summary>
-    /// Rotate a single cell offset around Y axis by 90¡ã * steps.
-    /// Y component is preserved (height unchanged).
-    /// </summary>
-    private static Vector3Int RotateCellY(Vector3Int cell, int steps)
+    public static Vector3Int RotateCellY(Vector3Int cell, int steps)
     {
+        steps = ((steps % 4) + 4) % 4;
         int x = cell.x;
         int z = cell.z;
 
         for (int s = 0; s < steps; s++)
         {
-            // 90¡ã clockwise around Y: (x, z) -> (z, -x)
             int newX = z;
             int newZ = -x;
             x = newX;

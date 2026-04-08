@@ -472,12 +472,19 @@ public class BuildManager : MonoBehaviour, IDebuggable
             return false;
 
         // ©¤©¤ Establish parent-child relationship ©¤©¤
-        if (property.requiredSurface != BuildSurfaceType.None)
+        // Find a parent by checking the first occupancy cell that has a required surface.
+        ResolvedOccupancyCell[] occCells = property.GetRotatedOccupancyCells(rotationStep);
+        for (int i = 0; i < occCells.Length; i++)
         {
-            PlacedBuildableData parent = Grid.FindParentAt(anchor, property.requiredSurface);
-            if (parent != null)
+            if (occCells[i].RequiredSurface != BuildSurfaceType.None)
             {
-                data.SetParent(parent);
+                Vector3Int worldCell = anchor + occCells[i].Cell;
+                PlacedBuildableData parent = Grid.FindParentAt(worldCell, occCells[i].RequiredSurface);
+                if (parent != null)
+                {
+                    data.SetParent(parent);
+                    break;
+                }
             }
         }
 
@@ -624,8 +631,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 foreach (var kvp in Grid.AllPlaced)
                 {
                     var d = kvp.Value;
-                    Debug.Log($"  {d.InstanceId}: {d.Property.EnumKey} layer={d.Property.buildLayer} " +
-                              $"anchor={d.AnchorCell} parent={d.ParentId ?? "none"} children={d.ChildrenIds.Count}");
+                    Debug.Log($"  {d.InstanceId}: {d.Property.EnumKey} occZones={d.Property.occupancyZones.Length} " +
+                              $"surfZones={d.Property.surfaceZones.Length} anchor={d.AnchorCell} parent={d.ParentId ?? "none"} children={d.ChildrenIds.Count}");
                 }
             }
         ));
@@ -669,7 +676,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     for (int i = 0; i < entries.Count; i++)
                     {
                         var e = entries[i];
-                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  layer={e.buildLayer}  required={e.requiredSurface}  provides={e.providedSurface}");
+                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  occZones={e.occupancyZones.Length}  surfZones={e.surfaceZones.Length}");
                     }
                     return;
                 }
@@ -692,7 +699,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     CancelCurrentAction();
 
                 BeginPlacing(prop);
-                Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  layer={prop.buildLayer}");
+                Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  occZones={prop.occupancyZones.Length}");
             }
         ));
     }
@@ -741,6 +748,24 @@ public class BuildManager : MonoBehaviour, IDebuggable
             }
 #endif
         }
+
+        // Draw surface zones as small wireframe cubes
+        Color surfaceGizmoColor = new Color(1f, 0f, 1f, 0.3f); // magenta
+        Vector3 surfCubeSize = cellSize * 0.5f;
+        foreach (var kvp in grid.SurfaceMap)
+        {
+            Vector3 worldCenter = positionProvider.CellToWorldCenter(kvp.Key);
+            Gizmos.color = surfaceGizmoColor;
+            Gizmos.DrawWireCube(worldCenter, surfCubeSize);
+
+#if UNITY_EDITOR
+            string surfLabels = "";
+            for (int s = 0; s < kvp.Value.Count; s++)
+                surfLabels += kvp.Value[s].SurfaceType.ToString() + "\n";
+            UnityEditor.Handles.color = new Color(1f, 0f, 1f, 1f);
+            UnityEditor.Handles.Label(worldCenter + Vector3.down * (cellSize.y * 0.3f), surfLabels);
+#endif
+        }
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug GUI (Game view top-left) ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -763,9 +788,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
         panel.DrawLine($"Property: <color=orange>{propName}</color>");
 
         if (selectedProperty != null)
-            panel.DrawLine($"Layer: {selectedProperty.buildLayer}  Required: {selectedProperty.requiredSurface}  Provides: {selectedProperty.providedSurface}");
+            panel.DrawLine($"OccZones: {selectedProperty.occupancyZones.Length}  SurfZones: {selectedProperty.surfaceZones.Length}");
         else if (movingData != null)
-            panel.DrawLine($"Layer: {movingData.Property.buildLayer}  Children: {movingData.ChildrenIds.Count}");
+            panel.DrawLine($"OccZones: {movingData.Property.occupancyZones.Length}  Children: {movingData.ChildrenIds.Count}");
 
         panel.DrawLine($"RotationStep: {currentRotationStep}  ({currentRotationStep * 90}¡ã)");
 

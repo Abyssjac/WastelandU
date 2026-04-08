@@ -3,7 +3,6 @@ using UnityEngine;
 
 /// <summary>
 /// Composite key for the layered occupancy map: (cell position, build layer).
-/// Two buildables on the same XZ cell but different layers do not conflict.
 /// </summary>
 public struct CellLayerKey : System.IEquatable<CellLayerKey>
 {
@@ -28,43 +27,56 @@ public struct CellLayerKey : System.IEquatable<CellLayerKey>
 
     public override int GetHashCode()
     {
-        unchecked
-        {
-            return Cell.GetHashCode() * 397 ^ (int)Layer;
-        }
+        unchecked { return Cell.GetHashCode() * 397 ^ (int)Layer; }
     }
 
     public override string ToString() => $"({Cell}, {Layer})";
 }
 
 /// <summary>
-/// Pure-data 3D grid that tracks cell occupancy across multiple <see cref="BuildLayer"/>s.
-/// No MonoBehaviour �� owned and driven by BuildManager.
-/// Serializable so that inspector can display grid bounds and stats.
+/// One entry in the surface map: what surface type is provided and by whom.
+/// </summary>
+public struct SurfaceEntry
+{
+    public BuildSurfaceType SurfaceType;
+    public string OwnerInstanceId;
+
+    public SurfaceEntry(BuildSurfaceType surfaceType, string ownerInstanceId)
+    {
+        SurfaceType = surfaceType;
+        OwnerInstanceId = ownerInstanceId;
+    }
+}
+
+/// <summary>
+/// Pure-data 3D grid that tracks cell occupancy and surface provision across <see cref="BuildLayer"/>s.
 /// </summary>
 [System.Serializable]
 public class BuildGrid3D
 {
-    // (cell, layer) �� the PlacedBuildableData that occupies it (null = free)
+    // (cell, layer) -> occupant
     private Dictionary<CellLayerKey, PlacedBuildableData> occupancyMap
         = new Dictionary<CellLayerKey, PlacedBuildableData>();
 
-    // instanceId �� PlacedBuildableData (for fast lookup / iteration)
+    // cell -> list of (surfaceType, ownerInstanceId)
+    private Dictionary<Vector3Int, List<SurfaceEntry>> surfaceMap
+        = new Dictionary<Vector3Int, List<SurfaceEntry>>();
+
+    // instanceId -> PlacedBuildableData
     private Dictionary<string, PlacedBuildableData> allPlaced
         = new Dictionary<string, PlacedBuildableData>();
 
-    // boundary limits (serialized for inspector)
     [SerializeField] private Vector3Int gridMin;
     [SerializeField] private Vector3Int gridMax;
-
-    // inspector-friendly read-only stats (updated at runtime)
     [SerializeField] private int placedCount;
     [SerializeField] private int occupiedCellCount;
+    [SerializeField] private int surfaceCellCount;
 
     public Vector3Int GridMin => gridMin;
     public Vector3Int GridMax => gridMax;
     public IReadOnlyDictionary<string, PlacedBuildableData> AllPlaced => allPlaced;
     public IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> OccupancyMap => occupancyMap;
+    public IReadOnlyDictionary<Vector3Int, List<SurfaceEntry>> SurfaceMap => surfaceMap;
 
     public BuildGrid3D() { }
 
@@ -77,72 +89,60 @@ public class BuildGrid3D
     public void Initialize()
     {
         occupancyMap = new Dictionary<CellLayerKey, PlacedBuildableData>();
+        surfaceMap = new Dictionary<Vector3Int, List<SurfaceEntry>>();
         allPlaced = new Dictionary<string, PlacedBuildableData>();
         SyncInspectorStats();
     }
 
-    // ������������������ Query ������������������
+    // --------- Query ---------
 
-    /// <summary>
-    /// Returns true if every cell the buildable would occupy is free on its layer,
-    /// in-bounds, and has the required surface from the layer below.
-    /// </summary>
     public bool CanPlace(BuildableProperty property, Vector3Int anchor, int rotationStep)
     {
-        BuildLayer layer = property.buildLayer;
-        BuildSurfaceType required = property.requiredSurface;
-        Vector3Int[] offsets = property.GetRotatedFootprint(rotationStep);
+        ResolvedOccupancyCell[] occ = property.GetRotatedOccupancyCells(rotationStep);
 
-        for (int i = 0; i < offsets.Length; i++)
+        for (int i = 0; i < occ.Length; i++)
         {
-            Vector3Int worldCell = anchor + offsets[i];
+            Vector3Int worldCell = anchor + occ[i].Cell;
             if (!IsInBounds(worldCell)) return false;
 
-            // same-layer collision check
-            var key = new CellLayerKey(worldCell, layer);
+            var key = new CellLayerKey(worldCell, occ[i].Layer);
             if (occupancyMap.ContainsKey(key)) return false;
 
-            // surface requirement check
-            if (required != BuildSurfaceType.None)
+            if (occ[i].RequiredSurface != BuildSurfaceType.None)
             {
-                if (!HasSurfaceProvider(worldCell, required))
+                if (!HasSurface(worldCell, occ[i].RequiredSurface))
                     return false;
             }
         }
         return true;
     }
 
-    /// <summary>
-    /// Same as CanPlace but also outputs the specific failure reason for debugging.
-    /// </summary>
     public bool CanPlace(BuildableProperty property, Vector3Int anchor, int rotationStep, out string failReason)
     {
         failReason = null;
-        BuildLayer layer = property.buildLayer;
-        BuildSurfaceType required = property.requiredSurface;
-        Vector3Int[] offsets = property.GetRotatedFootprint(rotationStep);
+        ResolvedOccupancyCell[] occ = property.GetRotatedOccupancyCells(rotationStep);
 
-        for (int i = 0; i < offsets.Length; i++)
+        for (int i = 0; i < occ.Length; i++)
         {
-            Vector3Int worldCell = anchor + offsets[i];
+            Vector3Int worldCell = anchor + occ[i].Cell;
             if (!IsInBounds(worldCell))
             {
                 failReason = $"Cell {worldCell} out of bounds (min={gridMin}, max={gridMax})";
                 return false;
             }
 
-            var key = new CellLayerKey(worldCell, layer);
+            var key = new CellLayerKey(worldCell, occ[i].Layer);
             if (occupancyMap.ContainsKey(key))
             {
                 failReason = $"Cell {key} already occupied by '{occupancyMap[key].InstanceId}'";
                 return false;
             }
 
-            if (required != BuildSurfaceType.None)
+            if (occ[i].RequiredSurface != BuildSurfaceType.None)
             {
-                if (!HasSurfaceProvider(worldCell, required))
+                if (!HasSurface(worldCell, occ[i].RequiredSurface))
                 {
-                    failReason = $"Cell {worldCell} missing required surface '{required}'";
+                    failReason = $"Cell {worldCell} missing required surface '{occ[i].RequiredSurface}'";
                     return false;
                 }
             }
@@ -151,26 +151,17 @@ public class BuildGrid3D
     }
 
     /// <summary>
-    /// Checks whether a cell has a placed buildable (on any layer below) whose
-    /// <see cref="BuildableProperty.providedSurface"/> matches the required type.
+    /// Checks whether any surface entry at the given cell provides the required surface type.
     /// </summary>
-    private bool HasSurfaceProvider(Vector3Int cell, BuildSurfaceType required)
+    public bool HasSurface(Vector3Int cell, BuildSurfaceType required)
     {
-        // Check layers below the required one.
-        // Platform surface is provided by World-layer buildables.
-        // Room surface is provided by Platform-layer buildables.
-        BuildLayer providerLayer;
-        switch (required)
-        {
-            case BuildSurfaceType.Platform: providerLayer = BuildLayer.World; break;
-            case BuildSurfaceType.Room:     providerLayer = BuildLayer.Platform; break;
-            default: return false;
-        }
+        if (!surfaceMap.TryGetValue(cell, out List<SurfaceEntry> entries))
+            return false;
 
-        var providerKey = new CellLayerKey(cell, providerLayer);
-        if (occupancyMap.TryGetValue(providerKey, out PlacedBuildableData provider))
+        for (int i = 0; i < entries.Count; i++)
         {
-            return provider.Property.providedSurface == required;
+            if (entries[i].SurfaceType == required)
+                return true;
         }
         return false;
     }
@@ -186,13 +177,8 @@ public class BuildGrid3D
         return data;
     }
 
-    /// <summary>
-    /// Get the topmost occupant at a cell (Room > Platform > World).
-    /// Useful for click-to-select: player clicks a cell, we return the highest layer item.
-    /// </summary>
     public PlacedBuildableData GetTopmostOccupant(Vector3Int cell)
     {
-        // Check from highest layer to lowest
         for (int l = (int)BuildLayer.Room; l >= (int)BuildLayer.World; l--)
         {
             var key = new CellLayerKey(cell, (BuildLayer)l);
@@ -203,27 +189,22 @@ public class BuildGrid3D
     }
 
     /// <summary>
-    /// Find the parent buildable for a given cell and required surface type.
-    /// e.g. placing furniture (requiredSurface=Room) �� find the Room on Platform layer.
-    /// Returns null if no matching parent found.
+    /// Find a parent buildable at the given cell that provides the required surface.
     /// </summary>
     public PlacedBuildableData FindParentAt(Vector3Int cell, BuildSurfaceType requiredSurface)
     {
         if (requiredSurface == BuildSurfaceType.None) return null;
 
-        BuildLayer providerLayer;
-        switch (requiredSurface)
-        {
-            case BuildSurfaceType.Platform: providerLayer = BuildLayer.World; break;
-            case BuildSurfaceType.Room:     providerLayer = BuildLayer.Platform; break;
-            default: return null;
-        }
+        if (!surfaceMap.TryGetValue(cell, out List<SurfaceEntry> entries))
+            return null;
 
-        var key = new CellLayerKey(cell, providerLayer);
-        if (occupancyMap.TryGetValue(key, out PlacedBuildableData provider))
+        for (int i = 0; i < entries.Count; i++)
         {
-            if (provider.Property.providedSurface == requiredSurface)
-                return provider;
+            if (entries[i].SurfaceType == requiredSurface)
+            {
+                if (allPlaced.TryGetValue(entries[i].OwnerInstanceId, out PlacedBuildableData owner))
+                    return owner;
+            }
         }
         return null;
     }
@@ -235,43 +216,22 @@ public class BuildGrid3D
             && cell.z >= gridMin.z && cell.z < gridMax.z;
     }
 
-    // ������������������ Mutate ������������������
+    // --------- Mutate ---------
 
-    /// <summary>
-    /// Place a buildable. Returns false if blocked or surface requirement not met.
-    /// Does NOT establish parent-child relationships �� caller should do that via
-    /// <see cref="PlacedBuildableData.SetParent"/> after placement.
-    /// </summary>
     public bool TryPlace(PlacedBuildableData data)
     {
         if (!CanPlace(data.Property, data.AnchorCell, data.RotationStep))
             return false;
 
-        BuildLayer layer = data.Property.buildLayer;
-        Vector3Int[] cells = data.GetEffectiveWorldCells();
-        for (int i = 0; i < cells.Length; i++)
-        {
-            occupancyMap[new CellLayerKey(cells[i], layer)] = data;
-        }
-
-        allPlaced[data.InstanceId] = data;
-        SyncInspectorStats();
+        WritePlacement(data);
         return true;
     }
 
-    /// <summary>
-    /// Remove a placed buildable, freeing all cells it occupied.
-    /// Returns false if the buildable still has children (must remove children first).
-    /// </summary>
     public bool TryRemove(string instanceId)
     {
         return TryRemove(instanceId, out _);
     }
 
-    /// <summary>
-    /// Remove a placed buildable, freeing all cells it occupied.
-    /// Returns false if the buildable still has children (must remove children first).
-    /// </summary>
     public bool TryRemove(string instanceId, out string failReason)
     {
         failReason = null;
@@ -287,62 +247,83 @@ public class BuildGrid3D
             return false;
         }
 
-        // Unlink from parent
         if (data.ParentId != null && allPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parent))
         {
             parent.ChildrenIds.Remove(instanceId);
         }
 
-        BuildLayer layer = data.Property.buildLayer;
-        Vector3Int[] cells = data.GetEffectiveWorldCells();
-        for (int i = 0; i < cells.Length; i++)
-        {
-            occupancyMap.Remove(new CellLayerKey(cells[i], layer));
-        }
-
-        allPlaced.Remove(instanceId);
-        SyncInspectorStats();
+        ErasePlacement(data);
         return true;
     }
 
-    /// <summary>
-    /// Force-remove a buildable from the grid without checking children.
-    /// Used internally during batch move operations.
-    /// Does NOT unlink from parent �� caller manages relationships.
-    /// </summary>
     internal void ForceRemoveFromGrid(PlacedBuildableData data)
     {
-        BuildLayer layer = data.Property.buildLayer;
-        Vector3Int[] cells = data.GetEffectiveWorldCells();
-        for (int i = 0; i < cells.Length; i++)
-        {
-            occupancyMap.Remove(new CellLayerKey(cells[i], layer));
-        }
-        allPlaced.Remove(data.InstanceId);
-        SyncInspectorStats();
+        ErasePlacement(data);
     }
 
-    /// <summary>
-    /// Force-place a buildable into the grid without validation.
-    /// Used internally during batch move operations.
-    /// </summary>
     internal void ForcePlaceIntoGrid(PlacedBuildableData data)
     {
-        BuildLayer layer = data.Property.buildLayer;
-        Vector3Int[] cells = data.GetEffectiveWorldCells();
-        for (int i = 0; i < cells.Length; i++)
+        WritePlacement(data);
+    }
+
+    // --- Core write / erase ---
+
+    private void WritePlacement(PlacedBuildableData data)
+    {
+        // Occupancy
+        ResolvedOccupancyCell[] occ = data.Property.GetRotatedOccupancyCells(data.RotationStep);
+        for (int i = 0; i < occ.Length; i++)
         {
-            occupancyMap[new CellLayerKey(cells[i], layer)] = data;
+            Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
+            occupancyMap[new CellLayerKey(worldCell, occ[i].Layer)] = data;
         }
+
+        // Surface
+        ResolvedSurfaceCell[] surf = data.Property.GetRotatedSurfaceCells(data.RotationStep);
+        for (int i = 0; i < surf.Length; i++)
+        {
+            Vector3Int worldCell = data.AnchorCell + surf[i].Cell;
+            if (!surfaceMap.TryGetValue(worldCell, out List<SurfaceEntry> list))
+            {
+                list = new List<SurfaceEntry>(2);
+                surfaceMap[worldCell] = list;
+            }
+            list.Add(new SurfaceEntry(surf[i].ProvidedSurface, data.InstanceId));
+        }
+
         allPlaced[data.InstanceId] = data;
         SyncInspectorStats();
     }
 
-    /// <summary>
-    /// Move a buildable (and all its children) to a new anchor.
-    /// Children maintain their relative offset to the parent.
-    /// Returns false (with rollback) if the new position is invalid.
-    /// </summary>
+    private void ErasePlacement(PlacedBuildableData data)
+    {
+        // Occupancy
+        ResolvedOccupancyCell[] occ = data.Property.GetRotatedOccupancyCells(data.RotationStep);
+        for (int i = 0; i < occ.Length; i++)
+        {
+            Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
+            occupancyMap.Remove(new CellLayerKey(worldCell, occ[i].Layer));
+        }
+
+        // Surface
+        ResolvedSurfaceCell[] surf = data.Property.GetRotatedSurfaceCells(data.RotationStep);
+        for (int i = 0; i < surf.Length; i++)
+        {
+            Vector3Int worldCell = data.AnchorCell + surf[i].Cell;
+            if (surfaceMap.TryGetValue(worldCell, out List<SurfaceEntry> list))
+            {
+                list.RemoveAll(e => e.OwnerInstanceId == data.InstanceId && e.SurfaceType == surf[i].ProvidedSurface);
+                if (list.Count == 0)
+                    surfaceMap.Remove(worldCell);
+            }
+        }
+
+        allPlaced.Remove(data.InstanceId);
+        SyncInspectorStats();
+    }
+
+    // --------- Move with children ---------
+
     public bool TryMoveWithChildren(string instanceId, Vector3Int newAnchor, int newRotationStep, out string failReason)
     {
         failReason = null;
@@ -353,15 +334,11 @@ public class BuildGrid3D
             return false;
         }
 
-        Vector3Int oldAnchor = data.AnchorCell;
-        int oldRotation = data.RotationStep;
-        Vector3Int delta = newAnchor - oldAnchor;
+        Vector3Int delta = newAnchor - data.AnchorCell;
 
-        // 1. Collect everything that needs to move: self + all children (recursive)
         List<PlacedBuildableData> movedSet = new List<PlacedBuildableData>();
         CollectSelfAndChildren(data, movedSet);
 
-        // 2. Cache old anchors for rollback
         Vector3Int[] oldAnchors = new Vector3Int[movedSet.Count];
         int[] oldRotations = new int[movedSet.Count];
         for (int i = 0; i < movedSet.Count; i++)
@@ -370,21 +347,16 @@ public class BuildGrid3D
             oldRotations[i] = movedSet[i].RotationStep;
         }
 
-        // 3. Remove all from grid
         for (int i = 0; i < movedSet.Count; i++)
             ForceRemoveFromGrid(movedSet[i]);
 
-        // 4. Compute new anchors
-        // Parent gets the explicit new anchor+rotation; children shift by delta
         data.AnchorCell = newAnchor;
         data.RotationStep = newRotationStep;
-        for (int i = 1; i < movedSet.Count; i++) // skip index 0 (the parent itself)
+        for (int i = 1; i < movedSet.Count; i++)
         {
             movedSet[i].AnchorCell = oldAnchors[i] + delta;
-            // children keep their own rotation (furniture doesn't rotate when room moves)
         }
 
-        // 5. Validate: check parent placement (includes surface check)
         if (!CanPlace(data.Property, newAnchor, newRotationStep))
         {
             failReason = $"Parent cannot be placed at {newAnchor}.";
@@ -392,17 +364,14 @@ public class BuildGrid3D
             return false;
         }
 
-        // Place parent first (so children's surface check can find it)
         ForcePlaceIntoGrid(data);
 
-        // 6. Validate and place each child
         for (int i = 1; i < movedSet.Count; i++)
         {
             var child = movedSet[i];
             if (!CanPlace(child.Property, child.AnchorCell, child.RotationStep))
             {
                 failReason = $"Child '{child.InstanceId}' cannot be placed at {child.AnchorCell}.";
-                // Rollback everything already placed
                 ForceRemoveFromGrid(data);
                 for (int j = 1; j < i; j++)
                     ForceRemoveFromGrid(movedSet[j]);
@@ -426,9 +395,6 @@ public class BuildGrid3D
         }
     }
 
-    /// <summary>
-    /// Recursively collect a buildable and all its descendants.
-    /// </summary>
     private void CollectSelfAndChildren(PlacedBuildableData root, List<PlacedBuildableData> result)
     {
         result.Add(root);
@@ -441,15 +407,16 @@ public class BuildGrid3D
         }
     }
 
-    // ������������������ Inspector Sync ������������������
+    // --------- Stats ---------
 
     private void SyncInspectorStats()
     {
         placedCount = allPlaced.Count;
         occupiedCellCount = occupancyMap.Count;
+        surfaceCellCount = surfaceMap.Count;
     }
 
-    // ������������������ Utility ������������������
+    // --------- Utility ---------
 
     public static Vector3Int[] GetWorldCells(Vector3Int anchor, Vector3Int[] footprintOffsets)
     {
@@ -465,23 +432,19 @@ public class BuildGrid3D
 
 /// <summary>
 /// Runtime data for one placed buildable instance.
-/// Holds layer info and parent-child relationships for hierarchical building.
 /// </summary>
 public class PlacedBuildableData
 {
     public string InstanceId;
     public BuildableProperty Property;
     public Vector3Int AnchorCell;
-    public int RotationStep;                 // 0-3, Y-axis 90�� increments
+    public int RotationStep;
     public GameObject SpawnedObject;
 
-    // ������ Hierarchy ������
+    // --- Hierarchy ---
     public string ParentId;
     public List<string> ChildrenIds = new List<string>();
 
-    /// <summary>
-    /// Establish a parent-child link between this buildable and a parent.
-    /// </summary>
     public void SetParent(PlacedBuildableData parent)
     {
         if (parent == null)

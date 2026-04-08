@@ -16,11 +16,13 @@ MonoBehaviour:
   stringKey: BuildPP_FurChair
   prefab: {fileID: 7771533598704779888, guid: 3b620512cb872ec4589ecfad7f3c373c, type: 3}
   previewPrefab: {fileID: 0}
-  footprint:
-  - {x: 0, y: 0, z: 0}
-  buildLayer: 2
-  requiredSurface: 2
-  providedSurface: 0
+  occupancyZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 2
+    requiredSurface: 3
+  surfaceZones: []
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 0}

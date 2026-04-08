@@ -16,21 +16,19 @@ MonoBehaviour:
   stringKey: BuildPP_Platform99
   prefab: {fileID: 4096283305218300819, guid: 79179ba4ab3802e4389a162d220acaa5, type: 3}
   previewPrefab: {fileID: 0}
-  footprintBoxes:
-  - cornerA: {x: -4, y: 1, z: -4}
-    cornerB: {x: 4, y: 2, z: 4}
-  footprintCells:
-  - {x: 4, y: 0, z: 4}
-  - {x: 4, y: 1, z: 4}
-  - {x: -4, y: 0, z: 4}
-  - {x: -4, y: 1, z: 4}
-  - {x: 4, y: 0, z: -4}
-  - {x: 4, y: 1, z: -4}
-  - {x: -4, y: 0, z: -4}
-  - {x: -4, y: 1, z: -4}
-  buildLayer: 0
-  requiredSurface: 0
-  providedSurface: 1
+  occupancyZones:
+  - boxes:
+    - cornerA: {x: -4, y: 2, z: -4}
+      cornerB: {x: 4, y: 2, z: 4}
+    cells: []
+    buildLayer: 0
+    requiredSurface: 0
+  surfaceZones:
+  - boxes:
+    - cornerA: {x: -4, y: 3, z: -4}
+      cornerB: {x: 4, y: 3, z: 4}
+    cells: []
+    providedSurface: 1
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 0}
