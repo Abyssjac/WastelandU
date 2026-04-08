@@ -528,7 +528,7 @@ GameObject:
   - component: {fileID: 5975904788918793908}
   - component: {fileID: 1288634911446427391}
   m_Layer: 9
-  m_Name: BookShelf_Root_113
+  m_Name: Anchor_BookStore_BookShelf_113
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
