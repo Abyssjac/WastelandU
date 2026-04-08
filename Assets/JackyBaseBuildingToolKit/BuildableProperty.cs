@@ -388,4 +388,6 @@ public enum Key_BuildablePP
     // ---- Furniture ----
     Build_Furniture_Table = 20,
     Build_Furniture_Chair = 21,
+
+    Build_Fur_BookStore_BookShelf = 30,
 }

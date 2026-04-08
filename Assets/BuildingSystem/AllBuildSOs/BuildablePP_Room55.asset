@@ -14,19 +14,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 10
   stringKey: BuildPP_Room55
-  prefab: {fileID: 8972928939373454817, guid: 704e2577f4573d94f93b22c915569bf4, type: 3}
+  prefab: {fileID: 1015512918919727171, guid: 5a4dff3f8429b414da9ea232f3f271d0, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
   - boxes:
     - cornerA: {x: -2, y: 0, z: -2}
       cornerB: {x: 2, y: 0, z: 2}
     cells: []
-    buildLayer: 2
+    buildLayer: 1
     requiredSurface: 1
   surfaceZones:
   - boxes:
-    - cornerA: {x: -2, y: 1, z: -2}
-      cornerB: {x: 2, y: 5, z: 2}
+    - cornerA: {x: -2, y: 0, z: -2}
+      cornerB: {x: 2, y: 4, z: 2}
     cells: []
     providedSurface: 3
   canRotate: 1

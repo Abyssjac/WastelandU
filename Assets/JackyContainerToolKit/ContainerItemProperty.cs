@@ -78,5 +78,7 @@ public enum Key_ContainerItemPP
     ContainerItem_Room55 = 200,
     ContainerItem_Platform11 = 201,
     COntainerItem_FurChair11 = 202,
-    ContainerItem_Platform99 = 203
+    ContainerItem_Platform99 = 203,
+
+    ContainerItem_Fur_BookStore_BookShelf_113 = 300,
 }
