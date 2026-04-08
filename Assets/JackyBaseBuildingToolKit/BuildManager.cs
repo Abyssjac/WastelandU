@@ -198,7 +198,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         currentRotationStep = 0;
         CurrentState = BuildState.Placing;
 
-        previewController.ShowPreview(selectedProperty, currentRotationStep);
+        previewController.ShowPreview(selectedProperty, currentRotationStep, positionProvider.CellSize);
     }
 
     /// <summary>
@@ -300,7 +300,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         SetGameObjectActiveRecursive(data, false);
 
         CurrentState = BuildState.Moving;
-        previewController.ShowPreview(data.Property, currentRotationStep);
+        previewController.ShowPreview(data.Property, currentRotationStep, positionProvider.CellSize);
     }
 
     /// <summary>
@@ -492,6 +492,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
         float yaw = property.GetRotationDegrees(rotationStep);
         GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+        go.transform.localScale = positionProvider.CellSize;
         data.SpawnedObject = go;
 
         // Attach BuildableBehaviour so the GO knows its own data

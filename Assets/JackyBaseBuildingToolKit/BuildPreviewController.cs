@@ -17,7 +17,7 @@ public class BuildPreviewController : MonoBehaviour
     /// <summary>
     /// Instantiate and show a preview object for the given property.
     /// </summary>
-    public void ShowPreview(BuildableProperty property, int rotationStep)
+    public void ShowPreview(BuildableProperty property, int rotationStep, Vector3 cellSize)
     {
         HidePreview();
 
@@ -27,6 +27,9 @@ public class BuildPreviewController : MonoBehaviour
 
         currentPreview = Instantiate(prefab);
         currentPreview.name = "[BuildPreview]";
+
+        // Scale to match cell size
+        currentPreview.transform.localScale = cellSize;
 
         // disable all colliders on preview so it doesn't interfere with raycasts
         Collider[] cols = currentPreview.GetComponentsInChildren<Collider>();
