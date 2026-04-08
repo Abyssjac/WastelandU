@@ -37,6 +37,12 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
     public Vector3 CurrentSnappedWorldPosition { get; private set; }
     public Vector3 CurrentSnappedWorldPositionCenter { get; private set; }
 
+    /// <summary>
+    /// The BuildableBehaviour on the object hit by the raycast this frame (null if none).
+    /// Uses GetComponentInParent so child-colliders are supported.
+    /// </summary>
+    public BuildableBehaviour CurrentHitBuildable { get; private set; }
+
     private void Start()
     {
         if (targetCamera == null)
@@ -108,10 +114,12 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
             CurrentCell = WorldToCell(hit.point);
             CurrentSnappedWorldPosition = CellToWorld(CurrentCell);
             CurrentSnappedWorldPositionCenter = CellToWorldCenter(CurrentCell);
+            CurrentHitBuildable = hit.collider.GetComponentInParent<BuildableBehaviour>();
         }
         else
         {
             HasValidHit = false;
+            CurrentHitBuildable = null;
         }
     }
 

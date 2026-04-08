@@ -344,10 +344,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // left-click on an existing buildable to begin moving
         if (Input.GetMouseButtonDown(0) && positionProvider.HasValidHit)
         {
-            PlacedBuildableData occupant = Grid.GetTopmostOccupant(positionProvider.CurrentCell);
-            if (occupant != null && occupant.Property.canMove)
+            BuildableBehaviour hitBuildable = positionProvider.CurrentHitBuildable;
+            if (hitBuildable != null && hitBuildable.Data != null && hitBuildable.Data.Property.canMove)
             {
-                BeginMoving(occupant);
+                BeginMoving(hitBuildable.Data);
             }
         }
     }
@@ -493,6 +493,14 @@ public class BuildManager : MonoBehaviour, IDebuggable
         float yaw = property.GetRotationDegrees(rotationStep);
         GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
         data.SpawnedObject = go;
+
+        // Attach BuildableBehaviour so the GO knows its own data
+        var behaviour = go.GetComponent<BuildableBehaviour>();
+        if (behaviour == null) {
+            Debug.LogWarning($"GameObject {go.name} has No BuildableBehaivour Initially; Add Automatically; Should be add in inspector setting");
+            behaviour = go.AddComponent<BuildableBehaviour>();
+        }
+        behaviour.Initialize(data);
 
         // Parent the GameObject under the parent's GO for automatic transform following
         if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
@@ -800,12 +808,25 @@ public class BuildManager : MonoBehaviour, IDebuggable
             panel.DrawLine($"HitWorld: {positionProvider.CurrentHitWorldPosition:F3}");
             panel.DrawLine($"Cell: {positionProvider.CurrentCell}");
             panel.DrawLine($"Snapped: {positionProvider.CurrentSnappedWorldPosition:F2}");
+
+            BuildableBehaviour hitB = positionProvider.CurrentHitBuildable;
+            if (hitB != null && hitB.Data != null)
+            {
+                var hd = hitB.Data;
+                panel.DrawLine($"<color=yellow>HitBuildable: {hd.InstanceId} ({hd.Property.EnumKey})</color>");
+                panel.DrawLine($"  Anchor: {hd.AnchorCell}  Rot: {hd.RotationStep}  Parent: {hd.ParentId ?? "none"}");
+            }
+            else
+            {
+                panel.DrawLine("HitBuildable: <color=#888>none</color>");
+            }
         }
         else
         {
             panel.DrawLine("HitWorld: ---");
             panel.DrawLine("Cell: ---");
             panel.DrawLine("Snapped: ---");
+            panel.DrawLine("HitBuildable: ---");
         }
 
         string canPlaceColor = debugCanPlace ? "lime" : "red";
