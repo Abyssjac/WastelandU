@@ -389,5 +389,14 @@ public enum Key_BuildablePP
     Build_Furniture_Table = 20,
     Build_Furniture_Chair = 21,
 
-    Build_Fur_BookStore_BookShelf = 30,
+    Build_Bookstore_Bookshelf_0 = 30,
+    Build_Bookstore_Bookshelf_1 = 31,
+    Build_Bookstore_Bookshelf_2 = 32,
+    Build_Bookstore_Bookshelf_3 = 33,
+    Build_Bookstore_Bookshelf_4 = 34,
+    Build_Bookstore_Table_0 = 35,
+    Build_Bookstore_Couch_0 = 36,
+    Build_Bookstore_Plant_0 = 37,
+    Build_Bookstore_Plant_1 = 38,
+    Build_Bookstore_Stepladder_0 = 39,
 }
