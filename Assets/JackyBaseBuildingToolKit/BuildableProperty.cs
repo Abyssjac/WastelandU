@@ -399,4 +399,13 @@ public enum Key_BuildablePP
     Build_Bookstore_Plant_0 = 37,
     Build_Bookstore_Plant_1 = 38,
     Build_Bookstore_Stepladder_0 = 39,
+
+    Build_Artstudio_Easel_0 = 50,
+    Build_Artstudio_Easel_1 = 51,
+    Build_Artstudio_Easel_2 = 52,
+    Build_Artstudio_Chair_0 = 53,
+    Build_Artstudio_Chair_1 = 54,
+    Build_Artstudio_Plant_0 = 55,
+    Build_Artstudio_Table_0 = 56,
+    Build_Artstudio_Canvastack_0 = 57,
 }

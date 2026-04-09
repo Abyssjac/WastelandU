@@ -7,7 +7,10 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
     [SerializeField] private Camera targetCamera;
 
     [Header("Raycast")]
+    [Tooltip("Layer mask for surfaces that can be built upon.")]
     [SerializeField] private LayerMask buildSurfaceMask;
+    [Tooltip("Layer mask for selectable buildable objects.")]
+    [SerializeField] private LayerMask buildSelectableMask;
     [SerializeField] private float maxRayDistance = 1000f;
 
     [Header("Grid Settings")]
@@ -114,11 +117,27 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
             CurrentCell = WorldToCell(hit.point);
             CurrentSnappedWorldPosition = CellToWorld(CurrentCell);
             CurrentSnappedWorldPositionCenter = CellToWorldCenter(CurrentCell);
-            CurrentHitBuildable = hit.collider.GetComponentInParent<BuildableBehaviour>();
+            //CurrentHitBuildable = hit.collider.GetComponentInParent<BuildableBehaviour>();
         }
         else
         {
             HasValidHit = false;
+            //CurrentHitBuildable = null;
+        }
+
+        if (Physics.Raycast(ray, out RaycastHit selectableHit, maxRayDistance, buildSelectableMask))
+        {
+            BuildableBehaviour selectableBuildable = selectableHit.collider.GetComponentInParent<BuildableBehaviour>();
+            if (selectableBuildable != null)
+            {
+                CurrentHitBuildable = selectableBuildable;
+            }
+            else { 
+                CurrentHitBuildable = null;
+            }
+        }
+        else
+        {
             CurrentHitBuildable = null;
         }
     }
