@@ -42,7 +42,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5395994618555898772}
   - component: {fileID: 1660067032884745091}
-  m_Layer: 0
+  m_Layer: 9
   m_Name: Anchor_Bar_Carpet_0_214
   m_TagString: Untagged
   m_Icon: {fileID: 0}
