@@ -23,12 +23,32 @@ MonoBehaviour:
     cells: []
     buildLayer: 1
     requiredSurface: 1
+    requiredFacing: 0
   surfaceZones:
   - boxes:
     - cornerA: {x: -2, y: 0, z: -2}
       cornerB: {x: 2, y: 4, z: 2}
     cells: []
     providedSurface: 3
+    facing: 0
+  - boxes:
+    - cornerA: {x: -2, y: 0, z: 2}
+      cornerB: {x: 2, y: 4, z: 2}
+    cells: []
+    providedSurface: 4
+    facing: 3
+  - boxes:
+    - cornerA: {x: 2, y: 0, z: -2}
+      cornerB: {x: 2, y: 4, z: 2}
+    cells: []
+    providedSurface: 4
+    facing: 1
+  - boxes:
+    - cornerA: {x: -2, y: 0, z: -2}
+      cornerB: {x: 2, y: 0, z: 2}
+    cells: []
+    providedSurface: 5
+    facing: 0
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 0}

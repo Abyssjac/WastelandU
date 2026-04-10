@@ -10,20 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
-  m_Name: BDPP_Bookstore_Stepladder
+  m_Name: BDPP_Bar_Carpet_0
   m_EditorClassIdentifier: 
-  enumKey: 39
-  stringKey: BDPP_Bookstore_Stepladder_0
-  prefab: {fileID: 3159894322639328175, guid: dcc5a09a4936f6543864fff121fd8e3f, type: 3}
+  enumKey: 65
+  stringKey: BDPP_Bar_Carpet_0
+  prefab: {fileID: 5727756691042736592, guid: 72e5df3a2390ee1479943b1e580036ee, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
   - boxes:
     - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 1, z: 1}
-    cells:
-    - {x: 0, y: 0, z: 0}
-    buildLayer: 2
-    requiredSurface: 3
+      cornerB: {x: 1, y: 0, z: 3}
+    cells: []
+    buildLayer: 4
+    requiredSurface: 5
+    requiredFacing: 0
   surfaceZones: []
   canRotate: 1
   canMove: 1

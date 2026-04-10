@@ -8,9 +8,11 @@ using UnityEngine;
 /// </summary>
 public enum BuildLayer
 {
-    World = 0,
-    Platform = 1,
-    Room = 2,
+    BL__World = 0,
+    BL_Platform = 1,
+    BL_Room = 2,
+    BL_Wall = 3,
+    BL_Ground = 4,
 }
 
 /// <summary>
@@ -21,10 +23,24 @@ public enum BuildLayer
 public enum BuildSurfaceType
 {
     None = 0,
-    Platform = 1,
-    PlatformSupporter = 2,
-    Room = 3,
-    Wall = 4,
+    BST_Platform = 1,
+    BST_PlatformSupporter = 2,
+    BST_Room = 3,
+    BST_Wall = 4,
+    BST_Ground = 5,
+}
+
+/// <summary>
+/// Directional facing for surface zones (e.g. which direction a wall faces).
+/// Used to match wall-mounted items to the correct wall orientation.
+/// </summary>
+public enum SurfaceFacing
+{
+    None = 0,
+    XPos = 1,
+    XNeg = 2,
+    ZPos = 3,
+    ZNeg = 4,
 }
 
 /// <summary>
@@ -83,6 +99,11 @@ public struct OccupancyZone
     [Tooltip("What surface type is REQUIRED beneath these cells.\n" +
              "None = no requirement.")]
     public BuildSurfaceType requiredSurface;
+
+    [Tooltip("Required surface facing direction.\n" +
+             "None = no facing requirement (floors, platforms).\n" +
+             "Set to a direction for wall-mounted items.")]
+    public SurfaceFacing requiredFacing;
 }
 
 /// <summary>
@@ -100,6 +121,11 @@ public struct SurfaceZone
     [Header("Surface")]
     [Tooltip("What surface type these cells provide.")]
     public BuildSurfaceType providedSurface;
+
+    [Tooltip("Facing direction of this surface.\n" +
+             "None = non-directional (floors, platforms).\n" +
+             "Set to a direction for walls.")]
+    public SurfaceFacing facing;
 }
 
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
@@ -112,6 +138,7 @@ public struct ResolvedOccupancyCell
     public Vector3Int Cell;
     public BuildLayer Layer;
     public BuildSurfaceType RequiredSurface;
+    public SurfaceFacing RequiredFacing;
 }
 
 /// <summary>
@@ -121,6 +148,7 @@ public struct ResolvedSurfaceCell
 {
     public Vector3Int Cell;
     public BuildSurfaceType ProvidedSurface;
+    public SurfaceFacing Facing;
 }
 
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
@@ -145,7 +173,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         {
             boxes = new FootprintBox[0],
             cells = new Vector3Int[] { Vector3Int.zero },
-            buildLayer = BuildLayer.World,
+            buildLayer = BuildLayer.BL__World,
             requiredSurface = BuildSurfaceType.None,
         }
     };
@@ -203,6 +231,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
                         Cell = tmpCells[i],
                         Layer = zone.buildLayer,
                         RequiredSurface = zone.requiredSurface,
+                        RequiredFacing = zone.requiredFacing,
                     });
                     occCellSet.Add(tmpCells[i]);
                 }
@@ -214,7 +243,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
             occList.Add(new ResolvedOccupancyCell
             {
                 Cell = Vector3Int.zero,
-                Layer = BuildLayer.World,
+                Layer = BuildLayer.BL__World,
                 RequiredSurface = BuildSurfaceType.None,
             });
             occCellSet.Add(Vector3Int.zero);
@@ -251,6 +280,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
                     {
                         Cell = tmpCells[i],
                         ProvidedSurface = zone.providedSurface,
+                        Facing = zone.facing,
                     });
                 }
             }
@@ -297,6 +327,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
                 Cell = RotateCellY(src[i].Cell, rotationStep),
                 Layer = src[i].Layer,
                 RequiredSurface = src[i].RequiredSurface,
+                RequiredFacing = RotateFacing(src[i].RequiredFacing, rotationStep),
             };
         }
         return result;
@@ -318,6 +349,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
             {
                 Cell = RotateCellY(src[i].Cell, rotationStep),
                 ProvidedSurface = src[i].ProvidedSurface,
+                Facing = RotateFacing(src[i].Facing, rotationStep),
             };
         }
         return result;
@@ -352,6 +384,29 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public float GetRotationDegrees(int rotationStep)
     {
         return ((rotationStep % 4 + 4) % 4) * 90f;
+    }
+
+    /// <summary>
+    /// Rotate a SurfaceFacing by 90-degree steps around Y axis.
+    /// Matches the same rotation convention as RotateCellY.
+    /// </summary>
+    public static SurfaceFacing RotateFacing(SurfaceFacing facing, int steps)
+    {
+        if (facing == SurfaceFacing.None) return SurfaceFacing.None;
+        steps = ((steps % 4) + 4) % 4;
+        if (steps == 0) return facing;
+
+        // Rotation order (clockwise around Y when viewed from above, same as RotateCellY):
+        // (x,z) -> (z,-x) means:
+        // XNeg(-1,0) -> ZPos(0,1) -> XPos(1,0) -> ZNeg(0,-1) -> XNeg
+        SurfaceFacing[] cycle = { SurfaceFacing.XNeg, SurfaceFacing.ZPos, SurfaceFacing.XPos, SurfaceFacing.ZNeg };
+        int idx = -1;
+        for (int i = 0; i < 4; i++)
+        {
+            if (cycle[i] == facing) { idx = i; break; }
+        }
+        if (idx < 0) return facing;
+        return cycle[(idx + steps) % 4];
     }
 
     public static Vector3Int RotateCellY(Vector3Int cell, int steps)
@@ -408,4 +463,13 @@ public enum Key_BuildablePP
     Build_Artstudio_Plant_0 = 55,
     Build_Artstudio_Table_0 = 56,
     Build_Artstudio_Canvastack_0 = 57,
+
+    Build_Bar_Plant_0 = 60,
+    Build_Bar_Shelf_0 = 61,
+    Build_Bar_Stool_0 = 62,
+    Build_Bar_Table_0 = 63,
+    Build_Bar_Table_1 = 64,
+    Build_Bar_Carpet_0 = 65,
+    Build_Bar_Cocktailneonsign_0 = 66,
+    Build_Bar_Openneonsign_0 = 67,
 }

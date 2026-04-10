@@ -39,11 +39,13 @@ public struct CellLayerKey : System.IEquatable<CellLayerKey>
 public struct SurfaceEntry
 {
     public BuildSurfaceType SurfaceType;
+    public SurfaceFacing Facing;
     public string OwnerInstanceId;
 
-    public SurfaceEntry(BuildSurfaceType surfaceType, string ownerInstanceId)
+    public SurfaceEntry(BuildSurfaceType surfaceType, SurfaceFacing facing, string ownerInstanceId)
     {
         SurfaceType = surfaceType;
+        Facing = facing;
         OwnerInstanceId = ownerInstanceId;
     }
 }
@@ -110,8 +112,16 @@ public class BuildGrid3D
 
             if (occ[i].RequiredSurface != BuildSurfaceType.None)
             {
-                if (!HasSurface(worldCell, occ[i].RequiredSurface))
-                    return false;
+                if (occ[i].RequiredFacing != SurfaceFacing.None)
+                {
+                    if (!HasSurface(worldCell, occ[i].RequiredSurface, occ[i].RequiredFacing))
+                        return false;
+                }
+                else
+                {
+                    if (!HasSurface(worldCell, occ[i].RequiredSurface))
+                        return false;
+                }
             }
         }
         return true;
@@ -140,10 +150,21 @@ public class BuildGrid3D
 
             if (occ[i].RequiredSurface != BuildSurfaceType.None)
             {
-                if (!HasSurface(worldCell, occ[i].RequiredSurface))
+                if (occ[i].RequiredFacing != SurfaceFacing.None)
                 {
-                    failReason = $"Cell {worldCell} missing required surface '{occ[i].RequiredSurface}'";
-                    return false;
+                    if (!HasSurface(worldCell, occ[i].RequiredSurface, occ[i].RequiredFacing))
+                    {
+                        failReason = $"Cell {worldCell} missing surface '{occ[i].RequiredSurface}' facing '{occ[i].RequiredFacing}'";
+                        return false;
+                    }
+                }
+                else
+                {
+                    if (!HasSurface(worldCell, occ[i].RequiredSurface))
+                    {
+                        failReason = $"Cell {worldCell} missing required surface '{occ[i].RequiredSurface}'";
+                        return false;
+                    }
                 }
             }
         }
@@ -166,6 +187,22 @@ public class BuildGrid3D
         return false;
     }
 
+    /// <summary>
+    /// Checks whether a cell has a surface of the required type AND matching facing direction.
+    /// </summary>
+    public bool HasSurface(Vector3Int cell, BuildSurfaceType required, SurfaceFacing requiredFacing)
+    {
+        if (!surfaceMap.TryGetValue(cell, out List<SurfaceEntry> entries))
+            return false;
+
+        for (int i = 0; i < entries.Count; i++)
+        {
+            if (entries[i].SurfaceType == required && entries[i].Facing == requiredFacing)
+                return true;
+        }
+        return false;
+    }
+
     public bool IsCellOccupied(Vector3Int cell, BuildLayer layer)
     {
         return occupancyMap.ContainsKey(new CellLayerKey(cell, layer));
@@ -179,7 +216,7 @@ public class BuildGrid3D
 
     public PlacedBuildableData GetTopmostOccupant(Vector3Int cell)
     {
-        for (int l = (int)BuildLayer.Room; l >= (int)BuildLayer.World; l--)
+        for (int l = (int)BuildLayer.BL_Room; l >= (int)BuildLayer.BL__World; l--)
         {
             var key = new CellLayerKey(cell, (BuildLayer)l);
             if (occupancyMap.TryGetValue(key, out PlacedBuildableData data))
@@ -288,7 +325,7 @@ public class BuildGrid3D
                 list = new List<SurfaceEntry>(2);
                 surfaceMap[worldCell] = list;
             }
-            list.Add(new SurfaceEntry(surf[i].ProvidedSurface, data.InstanceId));
+            list.Add(new SurfaceEntry(surf[i].ProvidedSurface, surf[i].Facing, data.InstanceId));
         }
 
         allPlaced[data.InstanceId] = data;
@@ -312,7 +349,9 @@ public class BuildGrid3D
             Vector3Int worldCell = data.AnchorCell + surf[i].Cell;
             if (surfaceMap.TryGetValue(worldCell, out List<SurfaceEntry> list))
             {
-                list.RemoveAll(e => e.OwnerInstanceId == data.InstanceId && e.SurfaceType == surf[i].ProvidedSurface);
+                list.RemoveAll(e => e.OwnerInstanceId == data.InstanceId
+                    && e.SurfaceType == surf[i].ProvidedSurface
+                    && e.Facing == surf[i].Facing);
                 if (list.Count == 0)
                     surfaceMap.Remove(worldCell);
             }

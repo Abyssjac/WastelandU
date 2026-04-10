@@ -20,8 +20,25 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2119c03bcc79b02488ff71f33278572e, type: 2}
   - {fileID: 11400000, guid: 39331c0791052894a870fa687c0f3444, type: 2}
   - {fileID: 11400000, guid: 5e2c5e2bf4b86af4285021129f8f3789, type: 2}
+  - {fileID: 11400000, guid: 768bda49d39917c49ae1f74812e7debe, type: 2}
   - {fileID: 11400000, guid: 2af26af3cf333df46b96854bc3f314d5, type: 2}
   - {fileID: 11400000, guid: d170355beed706c4a9ade6a460ad7965, type: 2}
   - {fileID: 11400000, guid: 2a7557a9a40e39b458742501be7027fd, type: 2}
   - {fileID: 11400000, guid: be84324825c040843bbb393b18f408ef, type: 2}
-  - {fileID: 11400000, guid: 768bda49d39917c49ae1f74812e7debe, type: 2}
+  - {fileID: 11400000, guid: e548c5e03c1f9c541a0f35cb8823a9b6, type: 2}
+  - {fileID: 11400000, guid: 2006fb2fc1130cc40a55a801804db45d, type: 2}
+  - {fileID: 11400000, guid: d5ebe3109cdbd3144bc4cb48b81b40c8, type: 2}
+  - {fileID: 11400000, guid: 0f592a447b1597248901763f684d8a69, type: 2}
+  - {fileID: 11400000, guid: 97d03271bd768e1408d525ed2f687c86, type: 2}
+  - {fileID: 11400000, guid: fca7f9df19b04ed4eb5318c37b5a1dd9, type: 2}
+  - {fileID: 11400000, guid: 79cf900b892692743bdb1692f8e06d7c, type: 2}
+  - {fileID: 11400000, guid: 012cf9434efbf4949aca2629adad54c4, type: 2}
+  - {fileID: 11400000, guid: 4838106f16b9eb14985643b36f556d5e, type: 2}
+  - {fileID: 11400000, guid: 79434f4a10d70fb4da99f54ca354a927, type: 2}
+  - {fileID: 11400000, guid: 3d6c39917392e0e468f111f411176037, type: 2}
+  - {fileID: 11400000, guid: 24946ead40f92c941b8f2fe65b61eb92, type: 2}
+  - {fileID: 11400000, guid: 3e8d3a45468d3bc4e9b78130c59df3b1, type: 2}
+  - {fileID: 11400000, guid: 59d562070edb8ac4fb9d6f74da5f8106, type: 2}
+  - {fileID: 11400000, guid: 0a9221db3708c5146b3f70cb8ba6a5aa, type: 2}
+  - {fileID: 11400000, guid: 670377dbd2c1f244ba770b1fbc4fdef4, type: 2}
+  scanFolder: BuildingSystem/AllBuildSOs

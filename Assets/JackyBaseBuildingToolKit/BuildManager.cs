@@ -738,9 +738,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
             switch (key.Layer)
             {
-                case BuildLayer.World:    Gizmos.color = GizmoColorWorld;    break;
-                case BuildLayer.Platform: Gizmos.color = GizmoColorPlatform; break;
-                case BuildLayer.Room:     Gizmos.color = GizmoColorRoom;     break;
+                case BuildLayer.BL__World:    Gizmos.color = GizmoColorWorld;    break;
+                case BuildLayer.BL_Platform: Gizmos.color = GizmoColorPlatform; break;
+                case BuildLayer.BL_Room:     Gizmos.color = GizmoColorRoom;     break;
                 default:                  Gizmos.color = Color.white;        break;
             }
 

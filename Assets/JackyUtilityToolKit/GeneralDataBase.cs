@@ -92,6 +92,55 @@ namespace JackyUtility
         {
             InitializeDictionaries();
         }
+        [Tooltip("Folder to scan for entries (relative to Assets).\n" +
+                 "e.g. 'JackyBaseBuildingToolKit/Properties'\n" +
+                 "Leave empty to scan entire project.")]
+        [SerializeField] private string scanFolder = "";
+
+        /// <summary>
+        /// Editor-only: Scan a folder (or entire project if scanFolder is empty)
+        /// for all SO assets of type TEntry and populate the entries list.
+        /// </summary>
+        [ContextMenu("Collect Entries From Folder")]
+        protected void EditorCollectFromFolder()
+        {
+            string searchPath = string.IsNullOrWhiteSpace(scanFolder)
+                ? "Assets"
+                : "Assets/" + scanFolder.TrimStart('/');
+
+            if (!UnityEditor.AssetDatabase.IsValidFolder(searchPath))
+            {
+                Debug.LogWarning($"[{GetType().Name}] Folder not found: '{searchPath}'. Check the scanFolder field.");
+                return;
+            }
+
+            var guids = UnityEditor.AssetDatabase.FindAssets(
+                $"t:{typeof(TEntry).Name}", new[] { searchPath });
+
+            entries.Clear();
+
+            for (int i = 0; i < guids.Length; i++)
+            {
+                string path = UnityEditor.AssetDatabase.GUIDToAssetPath(guids[i]);
+                var asset = UnityEditor.AssetDatabase.LoadAssetAtPath<TEntry>(path);
+                if (asset != null)
+                    entries.Add(asset);
+            }
+
+            entries.Sort((a, b) =>
+                Comparer<TEnum>.Default.Compare(a.EnumKey, b.EnumKey));
+
+            InitializeDictionaries();
+            UnityEditor.EditorUtility.SetDirty(this);
+            Debug.Log($"[{GetType().Name}] Collected {entries.Count} entries of type " +
+                      $"{typeof(TEntry).Name} from '{searchPath}'.");
+        }
+
+        [ContextMenu("Test Void")]
+        public void EditorTestVoid()
+        {
+            Debug.Log($"[{GetType().Name}] Test Void called. This is just a placeholder for testing context menu.");
+        }
 #endif
     }
 }

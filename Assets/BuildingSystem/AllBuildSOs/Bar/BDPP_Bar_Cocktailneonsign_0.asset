@@ -10,25 +10,20 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
-  m_Name: BDPP_Artstudio_Chair_0
+  m_Name: BDPP_Bar_Cocktailneonsign_0
   m_EditorClassIdentifier: 
-  enumKey: 53
-  stringKey: BDPP_Artstudio_Chair_0
-  prefab: {fileID: 3584354587900655347, guid: 1124ff25a68ce0e41b0609f772d88872, type: 3}
+  enumKey: 66
+  stringKey: BDPP_Bar_Cocktailneonsign_0
+  prefab: {fileID: 4544529999358515296, guid: 90fad4e57be164d40a20d72db41a35f4, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
-    cells:
-    - {x: 0, y: 0, z: 0}
+  - boxes:
+    - cornerA: {x: 0, y: 0, z: 0}
+      cornerB: {x: 0, y: 1, z: 1}
+    cells: []
     buildLayer: 2
-    requiredSurface: 3
-    requiredFacing: 0
-  - boxes: []
-    cells:
-    - {x: 0, y: 0, z: 0}
-    buildLayer: 2
-    requiredSurface: 5
-    requiredFacing: 0
+    requiredSurface: 4
+    requiredFacing: 2
   surfaceZones: []
   canRotate: 1
   canMove: 1
