@@ -24,6 +24,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
     [SerializeField] private UI_Container uiContainer;
     [SerializeField] private int containerSlotCount = 6;
 
+    [Header("Remove")]
+    [Tooltip("Key to remove the hovered buildable (and its children).")]
+    [SerializeField] private KeyCode removeKey = KeyCode.C;
+
     [Header("Preset")]
     [Tooltip("Optional preset to auto-place buildables at game start.")]
     [SerializeField] private BuildPreset startPreset;
@@ -321,6 +325,27 @@ public class BuildManager : MonoBehaviour, IDebuggable
         return true;
     }
 
+    /// <summary>
+    /// Remove a buildable and all of its children recursively (children removed first, bottom-up).
+    /// </summary>
+    public void RemoveBuildableWithChildren(PlacedBuildableData data)
+    {
+        if (data == null) return;
+
+        // Collect all children (direct + indirect) first
+        List<PlacedBuildableData> children = new List<PlacedBuildableData>();
+        CollectChildren(data, children);
+
+        // Remove children in reverse order (deepest first) so TryRemove never blocks on child count
+        for (int i = children.Count - 1; i >= 0; i--)
+        {
+            RemoveBuildable(children[i]);
+        }
+
+        // Remove the target itself
+        RemoveBuildable(data);
+    }
+
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Update Loop ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     private void Update()
@@ -397,6 +422,33 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void HandleMovingUpdate()
     {
+        // Remove key ¡ª destroy the buildable (and children) instead of placing it back.
+        // movingData + movingChildren are already removed from the grid by BeginMoving,
+        // so we only need to destroy the GameObjects and clean up state.
+        if (Input.GetKeyDown(removeKey))
+        {
+            // Destroy children GameObjects
+            if (movingChildren != null)
+            {
+                for (int i = 0; i < movingChildren.Count; i++)
+                {
+                    if (movingChildren[i].SpawnedObject != null)
+                        Destroy(movingChildren[i].SpawnedObject);
+                }
+            }
+
+            // Destroy the parent GameObject
+            if (movingData.SpawnedObject != null)
+                Destroy(movingData.SpawnedObject);
+
+            movingData = null;
+            movingChildren = null;
+            CurrentState = BuildState.Idle;
+            previewController.HidePreview();
+            debugCanPlaceReason = "";
+            return;
+        }
+
         if (!positionProvider.HasValidHit)
         {
             previewController.SetPreviewValid(false);

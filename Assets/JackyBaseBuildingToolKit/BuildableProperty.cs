@@ -437,12 +437,12 @@ public enum Key_BuildablePP
     Build_Platform_22 = 3,
     Build_Platform_99 = 4,
 
+    Build_Base_Platform_0Level_0 = 20,
+    Build_Base_Platform_1Level_0 = 21,
+
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,
 
-    // ---- Furniture ----
-    Build_Furniture_Table = 20,
-    Build_Furniture_Chair = 21,
 
     Build_Bookstore_Bookshelf_0 = 30,
     Build_Bookstore_Bookshelf_1 = 31,
