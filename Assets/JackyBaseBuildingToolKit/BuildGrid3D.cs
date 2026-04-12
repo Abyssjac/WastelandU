@@ -222,7 +222,7 @@ public class BuildGrid3D
 
     public PlacedBuildableData GetTopmostOccupant(Vector3Int cell)
     {
-        for (int l = (int)BuildLayer.BL_Room; l >= (int)BuildLayer.BL__World; l--)
+        for (int l = (int)BuildLayer.BL_Room; l >= (int)BuildLayer.BL_World; l--)
         {
             var key = new CellLayerKey(cell, (BuildLayer)l);
             if (occupancyMap.TryGetValue(key, out PlacedBuildableData data))

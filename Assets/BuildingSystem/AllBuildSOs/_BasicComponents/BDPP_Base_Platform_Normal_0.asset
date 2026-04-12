@@ -20,15 +20,8 @@ MonoBehaviour:
   - boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
-    buildLayer: 1
-    occupancyFacing: 0
-    requiredSurface: 2
-    requiredFacing: 0
-  - boxes: []
-    cells:
-    - {x: 0, y: 0, z: 0}
-    buildLayer: 3
-    occupancyFacing: 5
+    buildLayer: 0
+    occupancyFacings: 32
     requiredSurface: 2
     requiredFacing: 0
   surfaceZones:

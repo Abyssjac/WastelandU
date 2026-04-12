@@ -8,7 +8,7 @@ using UnityEngine;
 /// </summary>
 public enum BuildLayer
 {
-    BL__World = 0,
+    BL_World = 0,
     BL_Platform = 1,
     BL_Room = 2,
     BL_Wall = 3,
@@ -44,6 +44,33 @@ public enum SurfaceFacing
     ZNeg = 4,
     YPos = 5,   
     YNeg = 6,
+}
+
+/// <summary>
+/// Bit-mask for selecting multiple occupancy facings at once.
+/// Each set bit causes an additional <see cref="ResolvedOccupancyCell"/> to be emitted
+/// during cache rebuild, sharing the same cell and layer.
+/// </summary>
+[System.Flags]
+public enum FacingMask
+{
+    None     = 0,
+    Cell     = 1 << 0,   // the cell itself (SurfaceFacing.None)
+    XPos     = 1 << 1,
+    XNeg     = 1 << 2,
+    ZPos     = 1 << 3,
+    ZNeg     = 1 << 4,
+    YPos     = 1 << 5,
+    YNeg     = 1 << 6,
+
+    // ©¤©¤ Common presets ©¤©¤
+
+    XWallFaces = XPos | XNeg,
+    YWallFaces = YPos | YNeg,
+    ZWallFaces = ZPos | ZNeg,
+    AllWallFaces = XPos | XNeg | ZPos | ZNeg,
+    AllFaces     = XPos | XNeg | ZPos | ZNeg | YPos | YNeg,
+    Solid        = Cell | AllFaces,
 }
 
 /// <summary>
@@ -99,10 +126,11 @@ public struct OccupancyZone
     [Tooltip("Which grid layer these cells occupy.")]
     public BuildLayer buildLayer;
 
-    [Tooltip("Directional facing for this zone's occupancy.\n" +
-             "None = non-directional (platforms, rooms, etc.).\n" +
-             "Set to a direction for walls \u2014 allows up to 4 walls per cell (one per facing).")]
-    public SurfaceFacing occupancyFacing;
+    [Tooltip("Which facings these cells occupy.\n" +
+             "Cell = the cell itself (non-directional).\n" +
+             "XPos/XNeg/ZPos/ZNeg/YPos/YNeg = directional faces.\n" +
+             "Use Solid for full-volume objects.")]
+    public FacingMask occupancyFacings;
 
     [Tooltip("What surface type is REQUIRED beneath these cells.\n" +
              "None = no requirement.")]
@@ -182,7 +210,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         {
             boxes = new FootprintBox[0],
             cells = new Vector3Int[] { Vector3Int.zero },
-            buildLayer = BuildLayer.BL__World,
+            buildLayer = BuildLayer.BL_World,
             requiredSurface = BuildSurfaceType.None,
         }
     };
@@ -233,16 +261,22 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
                     for (int c = 0; c < zone.cells.Length; c++)
                         tmpCells.Add(zone.cells[c]);
 
+                // Expand FacingMask into individual resolved cells
+                SurfaceFacing[] expandedFacings = ExpandFacingMask(zone.occupancyFacings);
+
                 for (int i = 0; i < tmpCells.Count; i++)
                 {
-                    occList.Add(new ResolvedOccupancyCell
+                    for (int f = 0; f < expandedFacings.Length; f++)
                     {
-                        Cell = tmpCells[i],
-                        Layer = zone.buildLayer,
-                        OccupancyFacing = zone.occupancyFacing,
-                        RequiredSurface = zone.requiredSurface,
-                        RequiredFacing = zone.requiredFacing,
-                    });
+                        occList.Add(new ResolvedOccupancyCell
+                        {
+                            Cell = tmpCells[i],
+                            Layer = zone.buildLayer,
+                            OccupancyFacing = expandedFacings[f],
+                            RequiredSurface = zone.requiredSurface,
+                            RequiredFacing = zone.requiredFacing,
+                        });
+                    }
                     occCellSet.Add(tmpCells[i]);
                 }
             }
@@ -253,12 +287,16 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
             occList.Add(new ResolvedOccupancyCell
             {
                 Cell = Vector3Int.zero,
-                Layer = BuildLayer.BL__World,
+                Layer = BuildLayer.BL_World,
                 OccupancyFacing = SurfaceFacing.None,
                 RequiredSurface = BuildSurfaceType.None,
             });
             occCellSet.Add(Vector3Int.zero);
         }
+
+        // NOTE: If an OccupancyZone has occupancyFacings == FacingMask.None,
+        // ExpandFacingMask returns an empty array and the zone produces zero resolved cells.
+        // This is intentional ¡ª a zone with no facings occupies nothing.
 
         cachedOccupancy = occList.ToArray();
 
@@ -397,6 +435,47 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public float GetRotationDegrees(int rotationStep)
     {
         return ((rotationStep % 4 + 4) % 4) * 90f;
+    }
+
+    // ©¤©¤©¤ FacingMask Expansion ©¤©¤©¤
+
+    private static readonly FacingMask[] s_allBits =
+    {
+        FacingMask.Cell,
+        FacingMask.XPos,
+        FacingMask.XNeg,
+        FacingMask.ZPos,
+        FacingMask.ZNeg,
+        FacingMask.YPos,
+        FacingMask.YNeg,
+    };
+
+    private static readonly SurfaceFacing[] s_bitToFacing =
+    {
+        SurfaceFacing.None,   // Cell  ¡ú None (the cell itself)
+        SurfaceFacing.XPos,
+        SurfaceFacing.XNeg,
+        SurfaceFacing.ZPos,
+        SurfaceFacing.ZNeg,
+        SurfaceFacing.YPos,
+        SurfaceFacing.YNeg,
+    };
+
+    /// <summary>
+    /// Expand a <see cref="FacingMask"/> into an array of individual <see cref="SurfaceFacing"/> values.
+    /// Each set bit produces one entry.
+    /// </summary>
+    public static SurfaceFacing[] ExpandFacingMask(FacingMask mask)
+    {
+        if (mask == FacingMask.None) return System.Array.Empty<SurfaceFacing>();
+
+        List<SurfaceFacing> result = new List<SurfaceFacing>(7);
+        for (int i = 0; i < s_allBits.Length; i++)
+        {
+            if ((mask & s_allBits[i]) != 0)
+                result.Add(s_bitToFacing[i]);
+        }
+        return result.ToArray();
     }
 
     /// <summary>
