@@ -780,6 +780,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
             case SurfaceFacing.XNeg: return Vector3.left;
             case SurfaceFacing.ZPos: return Vector3.forward;
             case SurfaceFacing.ZNeg: return Vector3.back;
+            case SurfaceFacing.YPos: return Vector3.up;
+            case SurfaceFacing.YNeg: return Vector3.down;
             default:                 return Vector3.zero;
         }
     }
@@ -814,12 +816,18 @@ public class BuildManager : MonoBehaviour, IDebuggable
             if (key.Facing != SurfaceFacing.None)
             {
                 Vector3 facingDir = FacingToVector(key.Facing);
-                Vector3 wallCenter = worldCenter + facingDir * (cellSize.x * 0.4f);
-
                 bool isXAxis = key.Facing == SurfaceFacing.XPos || key.Facing == SurfaceFacing.XNeg;
-                Vector3 slabSize = isXAxis
-                    ? new Vector3(cellSize.x * 0.15f, cellSize.y * 0.9f, cellSize.z * 0.9f)
-                    : new Vector3(cellSize.x * 0.9f, cellSize.y * 0.9f, cellSize.z * 0.15f);
+                bool isYAxis = key.Facing == SurfaceFacing.YPos || key.Facing == SurfaceFacing.YNeg;
+                float offsetScale = isYAxis ? cellSize.y : cellSize.x;
+                Vector3 wallCenter = worldCenter + facingDir * (offsetScale * 0.4f);
+
+                Vector3 slabSize;
+                if (isXAxis)
+                    slabSize = new Vector3(cellSize.x * 0.15f, cellSize.y * 0.9f, cellSize.z * 0.9f);
+                else if (isYAxis)
+                    slabSize = new Vector3(cellSize.x * 0.9f, cellSize.y * 0.15f, cellSize.z * 0.9f);
+                else
+                    slabSize = new Vector3(cellSize.x * 0.9f, cellSize.y * 0.9f, cellSize.z * 0.15f);
 
                 // Solid slab
                 Gizmos.DrawCube(wallCenter, slabSize);

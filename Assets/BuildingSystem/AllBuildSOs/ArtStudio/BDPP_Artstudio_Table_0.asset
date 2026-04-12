@@ -32,6 +32,34 @@ MonoBehaviour:
     occupancyFacing: 0
     requiredSurface: 5
     requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 3
+    occupancyFacing: 5
+    requiredSurface: 5
+    requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 3
+    occupancyFacing: 3
+    requiredSurface: 5
+    requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    buildLayer: 3
+    occupancyFacing: 6
+    requiredSurface: 0
+    requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 1}
+    buildLayer: 3
+    occupancyFacing: 6
+    requiredSurface: 5
+    requiredFacing: 0
   surfaceZones: []
   canRotate: 1
   canMove: 1

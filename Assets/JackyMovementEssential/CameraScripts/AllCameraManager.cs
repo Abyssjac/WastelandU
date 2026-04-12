@@ -21,7 +21,7 @@ public class AllCameraManager : MonoBehaviour
         // Usage: cam <mode>   e.g. "cam FollowTarget"
         DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
             "cam",
-            "Switch camera mode. Usage: cam <mode>  (BaseTest / FollowTarget / FreePerspective)",
+            "Switch camera mode. Usage: cam <mode>  (BaseTest / FollowTarget / FreePerspective / FirstPerson)",
             args =>
             {
                 if (args.Length == 0)
@@ -170,4 +170,5 @@ public enum CameraMode
     BaseTest = 1,
     FollowTarget = 2,
     FreePerspective = 3,
+    FirstPerson = 4,
 }

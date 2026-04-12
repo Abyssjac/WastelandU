@@ -1154,6 +1154,10 @@ PrefabInstance:
       propertyPath: groundMask.m_Bits
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 5987897034721831746, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
+      propertyPath: useCameraRelativeMove
+      value: 1
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

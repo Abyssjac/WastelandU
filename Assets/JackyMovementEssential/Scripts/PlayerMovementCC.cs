@@ -1,9 +1,11 @@
+using System;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 
-// 这是一个基于 CharacterController 的顶视角玩家移动脚本，包含基本的 WASD 移动、朝向、重力和 Dash 功能。
-// 记得要设置groundMask参数以正确识别地面层，调整移动和 Dash 参数以适合你的游戏感觉；即使nothing layer，charactercontroller也会自动检测地面，但是onground不会触发
+// CharacterController-based player movement script. Supports top-down and first-person camera modes.
+// Includes WASD movement, facing rotation, gravity, and dash.
+// Make sure to set groundMask so ground detection works correctly.
 [RequireComponent(typeof(CharacterController))]
 [DisallowMultipleComponent]
 public class PlayerMovementCC : MonoBehaviour
@@ -17,8 +19,8 @@ public class PlayerMovementCC : MonoBehaviour
     // ---------------------------
     // Camera Settings (for camera-relative movement)
     // ---------------------------
-    [SerializeField] private Camera playerCameraPrefab; // 仅用于编辑器提示，运行时用 moveReference 的朝向
-    [SerializeField] private Camera playerCameraInstance; // 运行时实例（如果需要）
+    [SerializeField] private Camera playerCameraPrefab;   // Camera prefab to spawn; runtime direction uses moveReference
+    [SerializeField] private Camera playerCameraInstance; // Optional pre-placed camera instance
 
     // ----------------------------
     // Movement Settings
@@ -26,10 +28,10 @@ public class PlayerMovementCC : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
 
-    [Tooltip("转向平滑度（越大越快）")]
+    [Tooltip("Rotation smoothing (higher = snappier)")]
     [SerializeField] private float rotateSpeed = 15f;
 
-    [Tooltip("是否允许相机相对移动（2.5D 常见）。不开则世界坐标 WASD。")]
+    [Tooltip("Use camera-relative movement (common for 2.5D). If off, WASD is world-space.")]
     [SerializeField] private bool useCameraRelativeMove = true;
     [SerializeField] private Transform moveReference;
 
@@ -38,10 +40,10 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     [Header("Ground / Gravity")]
     [SerializeField] private LayerMask groundMask;
-    [SerializeField] private float gravity = 20f;             // 用“正数”，代码里向下施加
+    [SerializeField] private float gravity = 20f;             // Positive value; applied downward in code
     [SerializeField] private float fallSpeedMax = 25f;
-    [SerializeField] private float groundStickVelocity = 2f;  // 贴地速度（避免小坡弹起）
-    [SerializeField] private float groundRayExtra = 0.15f;    // 射线额外长度
+    [SerializeField] private float groundStickVelocity = 2f;  // Small downward speed while grounded (prevents slope bounce)
+    [SerializeField] private float groundRayExtra = 0.15f;    // Extra ray length for ground check
 
     // ----------------------------
     // Dash Settings
@@ -51,7 +53,7 @@ public class PlayerMovementCC : MonoBehaviour
     [SerializeField] private float dashDuration = 0.15f;
     [SerializeField] private float dashCooldown = 1f;
 
-    [Tooltip("Dash 方向锁定方式：true=锁定当前面朝方向；false=锁定当前输入方向")]
+    [Tooltip("Dash direction lock: true = lock to facing direction; false = lock to input direction")]
     [SerializeField] private bool dashLockToFacing = true;
 
     // ----------------------------
@@ -65,9 +67,9 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     // Runtime State
     // ----------------------------
-    private Vector3 moveDirWorld;        // 输入方向（世界空间，y=0）
-    private Vector3 planarVelocity;      // 水平速度（x,z）
-    private float verticalVelocity;      // 垂直速度（y）
+    private Vector3 moveDirWorld;        // Input direction (world-space, y=0)
+    private Vector3 planarVelocity;      // Horizontal velocity (x,z)
+    private float verticalVelocity;      // Vertical velocity (y)
     private bool isGrounded;
 
     // Dash runtime
@@ -76,13 +78,17 @@ public class PlayerMovementCC : MonoBehaviour
     private float lastDashTime;
     private Vector3 dashDirWorld;
 
-    // Debug cache（只在变化时 log）
+    // Debug cache (only log on change)
     private bool prevGrounded;
     private bool prevDashing;
 
     // Camera runtime
     private Camera spawnedCamera;
     public Camera LocalCamera => spawnedCamera;
+
+    // Camera mode runtime
+    private bool isFirstPersonMode;
+    private CameraMode currentCameraMode;
 
     // ----------------------------
     // Unity
@@ -99,11 +105,17 @@ public class PlayerMovementCC : MonoBehaviour
     {
         EnsureLocalCamera();
         SceneManager.sceneLoaded += OnSceneLoadedEnsureCamera;
+
+        if (AllCameraManager.Instance != null)
+            AllCameraManager.Instance.OnCameraModeSwitched += OnCameraModeSwitched;
     }
 
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoadedEnsureCamera;
+
+        if (AllCameraManager.Instance != null)
+            AllCameraManager.Instance.OnCameraModeSwitched -= OnCameraModeSwitched;
 
         if (spawnedCamera != null)
             Destroy(spawnedCamera.gameObject);
@@ -111,24 +123,33 @@ public class PlayerMovementCC : MonoBehaviour
         spawnedCamera = null;
     }
 
+    private void OnCameraModeSwitched(CameraMode newMode)
+    {
+        currentCameraMode = newMode;
+        isFirstPersonMode = (newMode == CameraMode.FirstPerson);
+
+        if (debugLogStateChanges)
+            Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}", this);
+    }
+
     private void Update()
     {
         ReadInput();
         UpdateDashState();
 
-        // Ground/Gravity 放在 Update：保持同一 tick 内一致（CharacterController 通常推荐这样）
+        // Ground/Gravity in Update: keep consistent within the same tick (recommended for CharacterController)
         isGrounded = CheckGrounded();
         ApplyGravity(Time.deltaTime);
 
-        // 计算水平速度
+        // Calculate horizontal velocity
         Vector3 desiredPlanarVel = GetDesiredPlanarVelocity();
         planarVelocity = desiredPlanarVel;
 
-        // Dash 覆盖水平速度
+        // Dash overrides horizontal velocity
         if (isDashing)
             planarVelocity = dashDirWorld * dashSpeed;
 
-        // 合成移动
+        // Compose final velocity and move
         Vector3 velocity = planarVelocity + Vector3.down * verticalVelocity;
         controller.Move(velocity * Time.deltaTime);
 
@@ -177,7 +198,7 @@ public class PlayerMovementCC : MonoBehaviour
 
         if (useCameraRelativeMove && moveReference == null)
         {
-            Debug.LogWarning("[TopdownPlayerMotor] useCameraRelativeMove is true but moveReference is not set. Auto-setting to player camera.", this);
+            Debug.LogWarning("[PlayerMovementCC] useCameraRelativeMove is true but moveReference is not set. Auto-setting to player camera.", this);
             moveReference = spawnedCamera.transform;
         }
     }
@@ -186,14 +207,15 @@ public class PlayerMovementCC : MonoBehaviour
     {
         if (!debugOverlay) return;
 
-        GUILayout.BeginArea(new Rect(10, 10, 460, 220), GUI.skin.box);
-        GUILayout.Label($"[TopdownPlayerMotor]");
+        GUILayout.BeginArea(new Rect(10, 10, 460, 240), GUI.skin.box);
+        GUILayout.Label($"[PlayerMovementCC]  CameraMode: {currentCameraMode}");
         GUILayout.Label($"Grounded: {isGrounded} | Dashing: {isDashing}");
         GUILayout.Label($"MoveDir: {moveDirWorld} (mag={moveDirWorld.magnitude:0.00})");
         GUILayout.Label($"PlanarVel: {planarVelocity} (mag={planarVelocity.magnitude:0.00})");
         GUILayout.Label($"VerticalVel: {verticalVelocity:0.00}");
         float cdLeft = Mathf.Max(0f, dashCooldown - (Time.time - lastDashTime));
         GUILayout.Label($"DashTimer: {dashTimer:0.00} | DashCD left: {cdLeft:0.00}");
+        GUILayout.Label($"FirstPersonMode: {isFirstPersonMode}");
         GUILayout.EndArea();
     }
 
@@ -206,7 +228,19 @@ public class PlayerMovementCC : MonoBehaviour
         Vector3 raw = new Vector3(input.x, 0f, input.y);
         if (raw.sqrMagnitude > 1f) raw.Normalize();
 
-        if (useCameraRelativeMove && moveReference != null)
+        if (isFirstPersonMode)
+        {
+            // First-person: input is relative to player body (yaw controlled by camera)
+            Vector3 bodyF = transform.forward;
+            Vector3 bodyR = transform.right;
+            bodyF.y = 0f;
+            bodyR.y = 0f;
+            bodyF.Normalize();
+            bodyR.Normalize();
+
+            moveDirWorld = bodyR * raw.x + bodyF * raw.z;
+        }
+        else if (useCameraRelativeMove && moveReference != null)
         {
             Vector3 camF = moveReference.transform.forward;
             Vector3 camR = moveReference.transform.right;
@@ -228,10 +262,10 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     private Vector3 GetDesiredPlanarVelocity()
     {
-        // Dash 中不看输入（保持锁定）
+        // During dash, ignore input (direction is locked)
         if (isDashing) return Vector3.zero;
 
-        // 普通移动
+        // Normal movement
         return moveDirWorld * moveSpeed;
     }
 
@@ -240,7 +274,10 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     private void HandleRotation()
     {
-        // Dash 期间：你想要“冲刺时仍转向”也可以改这里
+        // First-person: camera owns rotation, movement must not interfere
+        if (isFirstPersonMode) return;
+
+        // During dash: skip rotation (modify here if you want turning while dashing)
         if (isDashing) return;
 
         if (moveDirWorld.sqrMagnitude < 0.01f) return;
@@ -254,18 +291,18 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     private bool CheckGrounded()
     {
-        // 用 CharacterController 的几何参数算射线点（更稳）
-        // 计算“脚底中心点”
+        // Use CharacterController geometry for stable ray origin
+        // Calculate foot center
         Vector3 worldCenter = transform.TransformPoint(controller.center);
         float halfHeight = Mathf.Max(0f, controller.height * 0.5f - controller.radius);
         Vector3 foot = worldCenter + Vector3.down * halfHeight;
 
         float rayLen = controller.radius + groundRayExtra;
 
-        // 中心射线
+        // Center ray
         if (RaycastDown(foot, rayLen)) return true;
 
-        // 4个边缘点（可按需改成 8 个）
+        // 4 edge points (can be extended to 8 if needed)
         float r = controller.radius * 0.9f;
         Vector3 right = transform.right * r;
         Vector3 forward = transform.forward * r;
@@ -294,12 +331,12 @@ public class PlayerMovementCC : MonoBehaviour
     {
         if (isGrounded)
         {
-            // 贴地：给一个很小的向下速度（防止“isGrounded 抖动”）
+            // Grounded: apply small downward speed to prevent isGrounded jitter
             verticalVelocity = groundStickVelocity;
             return;
         }
 
-        // 不在地面：加速下落（verticalVelocity 用“速度”，这里用正数表示“向下速度”）
+        // Airborne: accelerate downward (verticalVelocity positive = downward speed)
         verticalVelocity += gravity * dt;
         if (verticalVelocity > fallSpeedMax) verticalVelocity = fallSpeedMax;
     }
@@ -309,7 +346,7 @@ public class PlayerMovementCC : MonoBehaviour
     // ----------------------------
     private void UpdateDashState()
     {
-        // 先更新 dash 计时
+        // Update dash timer first
         if (isDashing)
         {
             dashTimer -= Time.deltaTime;
@@ -317,7 +354,7 @@ public class PlayerMovementCC : MonoBehaviour
                 isDashing = false;
         }
 
-        // 再检测是否触发 dash
+        // Then check for new dash trigger
         if (controls.DashTriggered())
             TryStartDash();
     }
@@ -327,17 +364,17 @@ public class PlayerMovementCC : MonoBehaviour
         if (isDashing) return;
         if ((Time.time - lastDashTime) < dashCooldown) return;
 
-        // 没方向不 dash（你也可以允许“原地 dash”，那就去掉）
+        // No direction, no dash (remove this check to allow stationary dash)
         if (moveDirWorld.sqrMagnitude < 0.01f && !dashLockToFacing) return;
 
         isDashing = true;
         dashTimer = dashDuration;
         lastDashTime = Time.time;
 
-        // 锁定 dash 方向
+        // Lock dash direction
         dashDirWorld = dashLockToFacing ? transform.forward : moveDirWorld.normalized;
 
-        // Dash 开始时，通常建议清掉垂直速度，避免冲刺时突然下坠/弹起
+        // Clear vertical velocity at dash start to prevent sudden fall/bounce
         verticalVelocity = groundStickVelocity;
     }
 
@@ -350,13 +387,13 @@ public class PlayerMovementCC : MonoBehaviour
 
         if (prevGrounded != isGrounded)
         {
-            Debug.Log($"[TopdownPlayerMotor] Grounded changed: {prevGrounded} -> {isGrounded}", this);
+            Debug.Log($"[PlayerMovementCC] Grounded changed: {prevGrounded} -> {isGrounded}", this);
             prevGrounded = isGrounded;
         }
 
         if (prevDashing != isDashing)
         {
-            Debug.Log($"[TopdownPlayerMotor] Dashing changed: {prevDashing} -> {isDashing}", this);
+            Debug.Log($"[PlayerMovementCC] Dashing changed: {prevDashing} -> {isDashing}", this);
             prevDashing = isDashing;
         }
     }

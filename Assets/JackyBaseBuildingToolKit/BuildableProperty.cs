@@ -42,6 +42,8 @@ public enum SurfaceFacing
     XNeg = 2,
     ZPos = 3,
     ZNeg = 4,
+    YPos = 5,   
+    YNeg = 6,
 }
 
 /// <summary>
