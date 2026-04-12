@@ -20,19 +20,11 @@ MonoBehaviour:
   - boxes:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 0, y: 0, z: 2}
-    - cornerA: {x: 0, y: 0, z: 2}
+    - cornerA: {x: 1, y: 0, z: 2}
       cornerB: {x: 3, y: 0, z: 2}
     cells: []
     buildLayer: 2
-    requiredSurface: 3
-    requiredFacing: 0
-  - boxes:
-    - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 0, z: 2}
-    - cornerA: {x: 0, y: 0, z: 2}
-      cornerB: {x: 3, y: 0, z: 2}
-    cells: []
-    buildLayer: 2
+    occupancyFacing: 0
     requiredSurface: 5
     requiredFacing: 0
   surfaceZones: []

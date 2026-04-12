@@ -79,7 +79,12 @@ public enum Key_ContainerItemPP
     ContainerItem_Platform11 = 201,
     COntainerItem_FurChair11 = 202,
     ContainerItem_Platform99 = 203,
-    ContainerItem_Base_Platform_0Layer_0 = 204,
+
+    ContainerItem_Base_Platform_Normal_0 = 204,
+    ContainerItem_Base_Platform_Elevated_0 = 206,
+    ContainerItem_Base_Platform_Elevated_1 = 207,
+
+
     ContainerItem_Base_Wall_XNegPos_OLayer_0 = 205,
 
     ContainerItem_Fur_BookStore_BookShelf_113 = 300,

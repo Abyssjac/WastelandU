@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
-  m_Name: BDPP_Base_Platform_0Layer_Free_0
+  m_Name: BDPP_Base_Platform_Normal_0
   m_EditorClassIdentifier: 
-  enumKey: 19
-  stringKey: BDPP_Base_Platform_0Layer_Free_0
+  enumKey: 2
+  stringKey: BDPP_Base_Platform_Normal_0
   prefab: {fileID: 31256695453243623, guid: 1f4d0303f42b719449fa129b457a40ee, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
@@ -22,19 +22,14 @@ MonoBehaviour:
     - {x: 0, y: 0, z: 0}
     buildLayer: 1
     occupancyFacing: 0
-    requiredSurface: 0
+    requiredSurface: 2
     requiredFacing: 0
   surfaceZones:
   - boxes: []
     cells:
     - {x: 0, y: 1, z: 0}
     providedSurface: 6
-    facing: 4
-  - boxes: []
-    cells:
-    - {x: 0, y: 1, z: 0}
-    providedSurface: 6
-    facing: 3
+    facing: 1
   - boxes: []
     cells:
     - {x: 0, y: 1, z: 0}
@@ -44,7 +39,12 @@ MonoBehaviour:
     cells:
     - {x: 0, y: 1, z: 0}
     providedSurface: 6
-    facing: 1
+    facing: 3
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 4
   - boxes: []
     cells:
     - {x: 0, y: 0, z: 1}

@@ -443,18 +443,14 @@ public enum Key_BuildablePP
     None = 0,
 
     // ---- Platforms ----
-    Build_Platform_11 = 1,
-    Build_Platform_12 = 2,
-    Build_Platform_22 = 3,
-    Build_Platform_99 = 4,
-
-    Build_Base_Platform_0Level_Free_0 = 19,
-    Build_Base_Platform_0Level_0 = 20,
-    Build_Base_Platform_1Level_0 = 21,
+    Build_Base_Platform_Normal_Free_0 = 1,
+    Build_Base_Platform_Normal_0 = 2,
+    Build_Base_Platform_Elevated_0 = 3,
+    Build_Base_Platform_Elevated_1 = 4,
 
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,
-    Build_Base_Wall_XNegPos__0Level_0 = 11,
+    Build_Base_Wall_XNegPos_1Level_0 = 11,
 
 
     Build_Bookstore_Bookshelf_0 = 30,

@@ -10,21 +10,26 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
-  m_Name: BDPP_Artstudio_Chair_1
+  m_Name: BDPP_Base_Platform_Elevated_0
   m_EditorClassIdentifier: 
-  enumKey: 54
-  stringKey: BDPP_Artstudio_Chair_1
-  prefab: {fileID: 4540400381215937976, guid: 7c1e87e06ac2088478473a4d1412d467, type: 3}
+  enumKey: 3
+  stringKey: BDPP_Base_Platform_Elevated_0
+  prefab: {fileID: 1761738599924792636, guid: 10498c881f7b4b941a6af91722a61b97, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
   - boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
-    buildLayer: 2
+    buildLayer: 1
     occupancyFacing: 0
     requiredSurface: 5
     requiredFacing: 0
-  surfaceZones: []
+  surfaceZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 5
+    facing: 0
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 0}

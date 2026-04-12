@@ -488,6 +488,46 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: cellFillColor.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: cellFillColor.b
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: cellFillColor.g
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: cellFillColor.r
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: cellWireColor.a
+      value: 0.4
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: boxes.Array.data[0].cornerA.x
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: boxes.Array.data[0].cornerA.z
+      value: -5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: boxes.Array.data[0].cornerB.x
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: boxes.Array.data[0].cornerB.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1724812185036981572, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: boxes.Array.data[0].cornerB.z
+      value: 5
+      objectReference: {fileID: 0}
     - target: {fileID: 6842794056769118043, guid: a535ad3aead5494419ab26da037111e2, type: 3}
       propertyPath: m_LocalPosition.x
       value: 0
@@ -534,7 +574,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 9167376366795419730, guid: a535ad3aead5494419ab26da037111e2, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
@@ -1129,11 +1169,23 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.size
-      value: 5
+      value: 4
+      objectReference: {fileID: 0}
+    - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: addSlots.Array.data[0].count
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: addSlots.Array.data[1].count
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: addSlots.Array.data[2].count
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[3].count
-      value: 5
+      value: 20
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[4].count
@@ -1141,19 +1193,19 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[0].itemKey
-      value: 203
+      value: 204
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[1].itemKey
-      value: 200
+      value: 206
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[2].itemKey
-      value: 300
+      value: 207
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[3].itemKey
-      value: 204
+      value: 205
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[4].itemKey

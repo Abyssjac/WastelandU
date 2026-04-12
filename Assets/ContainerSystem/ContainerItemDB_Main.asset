@@ -20,4 +20,6 @@ MonoBehaviour:
   - {fileID: 11400000, guid: c2989dcb2625078458c0f9327cbdece1, type: 2}
   - {fileID: 11400000, guid: 4a4997b306dc2d442a16f175bbcf9f3b, type: 2}
   - {fileID: 11400000, guid: b17feaa867f4c07438fdccaa4577bd08, type: 2}
+  - {fileID: 11400000, guid: d141a72a149a2754685438a0543724ef, type: 2}
+  - {fileID: 11400000, guid: 85e79c2c3ab06834e959dd8f38211ce6, type: 2}
   scanFolder: 
