@@ -2,22 +2,26 @@ using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
-/// Composite key for the layered occupancy map: (cell position, build layer).
+/// Composite key for the layered occupancy map: (cell position, build layer, facing).
+/// Facing allows multiple directional buildables (e.g. walls) to coexist on the same cell and layer.
+/// Non-directional buildables use <see cref="SurfaceFacing.None"/>.
 /// </summary>
 public struct CellLayerKey : System.IEquatable<CellLayerKey>
 {
     public Vector3Int Cell;
     public BuildLayer Layer;
+    public SurfaceFacing Facing;
 
-    public CellLayerKey(Vector3Int cell, BuildLayer layer)
+    public CellLayerKey(Vector3Int cell, BuildLayer layer, SurfaceFacing facing = SurfaceFacing.None)
     {
         Cell = cell;
         Layer = layer;
+        Facing = facing;
     }
 
     public bool Equals(CellLayerKey other)
     {
-        return Cell.Equals(other.Cell) && Layer == other.Layer;
+        return Cell.Equals(other.Cell) && Layer == other.Layer && Facing == other.Facing;
     }
 
     public override bool Equals(object obj)
@@ -27,10 +31,12 @@ public struct CellLayerKey : System.IEquatable<CellLayerKey>
 
     public override int GetHashCode()
     {
-        unchecked { return Cell.GetHashCode() * 397 ^ (int)Layer; }
+        unchecked { return (Cell.GetHashCode() * 397 ^ (int)Layer) * 397 ^ (int)Facing; }
     }
 
-    public override string ToString() => $"({Cell}, {Layer})";
+    public override string ToString() => Facing == SurfaceFacing.None
+        ? $"({Cell}, {Layer})"
+        : $"({Cell}, {Layer}, {Facing})";
 }
 
 /// <summary>
@@ -56,7 +62,7 @@ public struct SurfaceEntry
 [System.Serializable]
 public class BuildGrid3D
 {
-    // (cell, layer) -> occupant
+    // (cell, layer, facing) -> occupant
     private Dictionary<CellLayerKey, PlacedBuildableData> occupancyMap
         = new Dictionary<CellLayerKey, PlacedBuildableData>();
 
@@ -107,7 +113,7 @@ public class BuildGrid3D
             Vector3Int worldCell = anchor + occ[i].Cell;
             if (!IsInBounds(worldCell)) return false;
 
-            var key = new CellLayerKey(worldCell, occ[i].Layer);
+            var key = new CellLayerKey(worldCell, occ[i].Layer, occ[i].OccupancyFacing);
             if (occupancyMap.ContainsKey(key)) return false;
 
             if (occ[i].RequiredSurface != BuildSurfaceType.None)
@@ -141,7 +147,7 @@ public class BuildGrid3D
                 return false;
             }
 
-            var key = new CellLayerKey(worldCell, occ[i].Layer);
+            var key = new CellLayerKey(worldCell, occ[i].Layer, occ[i].OccupancyFacing);
             if (occupancyMap.ContainsKey(key))
             {
                 failReason = $"Cell {key} already occupied by '{occupancyMap[key].InstanceId}'";
@@ -203,14 +209,14 @@ public class BuildGrid3D
         return false;
     }
 
-    public bool IsCellOccupied(Vector3Int cell, BuildLayer layer)
+    public bool IsCellOccupied(Vector3Int cell, BuildLayer layer, SurfaceFacing facing = SurfaceFacing.None)
     {
-        return occupancyMap.ContainsKey(new CellLayerKey(cell, layer));
+        return occupancyMap.ContainsKey(new CellLayerKey(cell, layer, facing));
     }
 
-    public PlacedBuildableData GetOccupant(Vector3Int cell, BuildLayer layer)
+    public PlacedBuildableData GetOccupant(Vector3Int cell, BuildLayer layer, SurfaceFacing facing = SurfaceFacing.None)
     {
-        occupancyMap.TryGetValue(new CellLayerKey(cell, layer), out PlacedBuildableData data);
+        occupancyMap.TryGetValue(new CellLayerKey(cell, layer, facing), out PlacedBuildableData data);
         return data;
     }
 
@@ -312,7 +318,7 @@ public class BuildGrid3D
         for (int i = 0; i < occ.Length; i++)
         {
             Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
-            occupancyMap[new CellLayerKey(worldCell, occ[i].Layer)] = data;
+            occupancyMap[new CellLayerKey(worldCell, occ[i].Layer, occ[i].OccupancyFacing)] = data;
         }
 
         // Surface
@@ -339,7 +345,7 @@ public class BuildGrid3D
         for (int i = 0; i < occ.Length; i++)
         {
             Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
-            occupancyMap.Remove(new CellLayerKey(worldCell, occ[i].Layer));
+            occupancyMap.Remove(new CellLayerKey(worldCell, occ[i].Layer, occ[i].OccupancyFacing));
         }
 
         // Surface

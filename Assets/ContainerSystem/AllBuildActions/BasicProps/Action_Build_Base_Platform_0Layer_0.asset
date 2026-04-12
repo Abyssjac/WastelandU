@@ -9,10 +9,8 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8525a629d4660f048b06da84834d0f24, type: 3}
-  m_Name: BuildPreset_Main
+  m_Script: {fileID: 11500000, guid: eb9184b2c9f6e544e813add214309ac4, type: 3}
+  m_Name: Action_Build_Base_Platform_0Layer_0
   m_EditorClassIdentifier: 
-  entries:
-  - buildableEnumKey: 19
-    anchorCell: {x: 0, y: -1, z: 0}
-    rotationStep: 0
+  buildableKey: 20
+  costPerBuild: 1

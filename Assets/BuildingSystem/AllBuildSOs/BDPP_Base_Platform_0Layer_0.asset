@@ -1,0 +1,96 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_Base_Platform_0Layer_0
+  m_EditorClassIdentifier: 
+  enumKey: 20
+  stringKey: BDPP_Base_Platform_0Layer_0
+  prefab: {fileID: 31256695453243623, guid: 1f4d0303f42b719449fa129b457a40ee, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 1
+    occupancyFacing: 0
+    requiredSurface: 2
+    requiredFacing: 0
+  surfaceZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 1
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 2
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 3
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 4
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 1}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: -1}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 1, y: 0, z: 0}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: -1, y: 0, z: 0}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 5
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 1}
+    providedSurface: 6
+    facing: 4
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: -1}
+    providedSurface: 6
+    facing: 3
+  - boxes: []
+    cells:
+    - {x: 1, y: 1, z: 0}
+    providedSurface: 6
+    facing: 2
+  - boxes: []
+    cells:
+    - {x: -1, y: 1, z: 0}
+    providedSurface: 6
+    facing: 1
+  canRotate: 1
+  canMove: 1
+  iconSprite: {fileID: 0}
+  displayName: 

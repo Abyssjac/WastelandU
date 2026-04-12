@@ -28,6 +28,7 @@ public enum BuildSurfaceType
     BST_Room = 3,
     BST_Wall = 4,
     BST_Ground = 5,
+    BST_WallSupporter = 6,
 }
 
 /// <summary>
@@ -96,6 +97,11 @@ public struct OccupancyZone
     [Tooltip("Which grid layer these cells occupy.")]
     public BuildLayer buildLayer;
 
+    [Tooltip("Directional facing for this zone's occupancy.\n" +
+             "None = non-directional (platforms, rooms, etc.).\n" +
+             "Set to a direction for walls \u2014 allows up to 4 walls per cell (one per facing).")]
+    public SurfaceFacing occupancyFacing;
+
     [Tooltip("What surface type is REQUIRED beneath these cells.\n" +
              "None = no requirement.")]
     public BuildSurfaceType requiredSurface;
@@ -137,6 +143,7 @@ public struct ResolvedOccupancyCell
 {
     public Vector3Int Cell;
     public BuildLayer Layer;
+    public SurfaceFacing OccupancyFacing;
     public BuildSurfaceType RequiredSurface;
     public SurfaceFacing RequiredFacing;
 }
@@ -230,6 +237,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
                     {
                         Cell = tmpCells[i],
                         Layer = zone.buildLayer,
+                        OccupancyFacing = zone.occupancyFacing,
                         RequiredSurface = zone.requiredSurface,
                         RequiredFacing = zone.requiredFacing,
                     });
@@ -244,6 +252,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
             {
                 Cell = Vector3Int.zero,
                 Layer = BuildLayer.BL__World,
+                OccupancyFacing = SurfaceFacing.None,
                 RequiredSurface = BuildSurfaceType.None,
             });
             occCellSet.Add(Vector3Int.zero);
@@ -276,6 +285,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
 
                 for (int i = 0; i < tmpCells.Count; i++)
                 {
+                    //Debug.Log($"[BuildableProperty:{enumKey}] SurfZone[{z}] cell={tmpCells[i]} surface={zone.providedSurface} facing={zone.facing} (raw={(int)zone.facing})");
                     surfList.Add(new ResolvedSurfaceCell
                     {
                         Cell = tmpCells[i],
@@ -326,6 +336,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
             {
                 Cell = RotateCellY(src[i].Cell, rotationStep),
                 Layer = src[i].Layer,
+                OccupancyFacing = RotateFacing(src[i].OccupancyFacing, rotationStep),
                 RequiredSurface = src[i].RequiredSurface,
                 RequiredFacing = RotateFacing(src[i].RequiredFacing, rotationStep),
             };
@@ -437,11 +448,13 @@ public enum Key_BuildablePP
     Build_Platform_22 = 3,
     Build_Platform_99 = 4,
 
+    Build_Base_Platform_0Level_Free_0 = 19,
     Build_Base_Platform_0Level_0 = 20,
     Build_Base_Platform_1Level_0 = 21,
 
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,
+    Build_Base_Wall_XNegPos__0Level_0 = 11,
 
 
     Build_Bookstore_Bookshelf_0 = 30,

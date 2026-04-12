@@ -532,6 +532,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: GridHelper
       objectReference: {fileID: 0}
+    - target: {fileID: 9167376366795419730, guid: a535ad3aead5494419ab26da037111e2, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
@@ -949,7 +953,7 @@ GameObject:
   - component: {fileID: 1517427492}
   - component: {fileID: 1517427491}
   - component: {fileID: 1517427490}
-  m_Layer: 8
+  m_Layer: 0
   m_Name: BaseGround
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -1040,7 +1044,7 @@ Transform:
   m_GameObject: {fileID: 1517427489}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0.01, z: 0}
+  m_LocalPosition: {x: 0, y: -0.01, z: 0}
   m_LocalScale: {x: 10, y: 10, z: 10}
   m_ConstrainProportionsScale: 1
   m_Children: []
@@ -1125,10 +1129,14 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.size
-      value: 3
+      value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[3].count
+      value: 5
+      objectReference: {fileID: 0}
+    - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: addSlots.Array.data[4].count
       value: 5
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
@@ -1145,7 +1153,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: addSlots.Array.data[3].itemKey
-      value: 300
+      value: 204
+      objectReference: {fileID: 0}
+    - target: {fileID: 634502552085456998, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: addSlots.Array.data[4].itemKey
+      value: 205
       objectReference: {fileID: 0}
     - target: {fileID: 3204652423643293810, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: m_LocalScale.x
@@ -1153,7 +1165,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3204652423643293810, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 3204652423643293810, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1214,7 +1226,7 @@ PrefabInstance:
     - target: {fileID: 5690045053215457573, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: startPreset
       value: 
-      objectReference: {fileID: 0}
+      objectReference: {fileID: 11400000, guid: 0b183d3c4d6626b469c7885f6a2d3474, type: 2}
     - target: {fileID: 5690045053215457573, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: uiContainer
       value: 

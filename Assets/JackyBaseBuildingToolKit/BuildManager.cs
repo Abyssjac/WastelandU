@@ -770,6 +770,19 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private static readonly Color GizmoColorWorld    = new Color(0.2f, 0.8f, 0.2f, 0.5f);  // green
     private static readonly Color GizmoColorPlatform = new Color(0.2f, 0.5f, 1.0f, 0.5f);  // blue
     private static readonly Color GizmoColorRoom     = new Color(1.0f, 0.6f, 0.1f, 0.5f);  // orange
+    private static readonly Color GizmoColorWall     = new Color(0.9f, 0.2f, 0.2f, 0.5f);  // red
+
+    private static Vector3 FacingToVector(SurfaceFacing facing)
+    {
+        switch (facing)
+        {
+            case SurfaceFacing.XPos: return Vector3.right;
+            case SurfaceFacing.XNeg: return Vector3.left;
+            case SurfaceFacing.ZPos: return Vector3.forward;
+            case SurfaceFacing.ZNeg: return Vector3.back;
+            default:                 return Vector3.zero;
+        }
+    }
 
     private void OnDrawGizmos()
     {
@@ -790,22 +803,51 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
             switch (key.Layer)
             {
-                case BuildLayer.BL__World:    Gizmos.color = GizmoColorWorld;    break;
+                case BuildLayer.BL__World:   Gizmos.color = GizmoColorWorld;    break;
                 case BuildLayer.BL_Platform: Gizmos.color = GizmoColorPlatform; break;
                 case BuildLayer.BL_Room:     Gizmos.color = GizmoColorRoom;     break;
-                default:                  Gizmos.color = Color.white;        break;
+                case BuildLayer.BL_Wall:     Gizmos.color = GizmoColorWall;     break;
+                default:                     Gizmos.color = Color.white;        break;
             }
 
-            Gizmos.DrawCube(worldCenter, cubeSize);
-            Gizmos.DrawWireCube(worldCenter, cellSize);
+            // Directional occupancy (walls): thick slab on cell edge + bold arrow with sphere tip
+            if (key.Facing != SurfaceFacing.None)
+            {
+                Vector3 facingDir = FacingToVector(key.Facing);
+                Vector3 wallCenter = worldCenter + facingDir * (cellSize.x * 0.4f);
+
+                bool isXAxis = key.Facing == SurfaceFacing.XPos || key.Facing == SurfaceFacing.XNeg;
+                Vector3 slabSize = isXAxis
+                    ? new Vector3(cellSize.x * 0.15f, cellSize.y * 0.9f, cellSize.z * 0.9f)
+                    : new Vector3(cellSize.x * 0.9f, cellSize.y * 0.9f, cellSize.z * 0.15f);
+
+                // Solid slab
+                Gizmos.DrawCube(wallCenter, slabSize);
+
+                // Bright wireframe outline for contrast
+                Color wireColor = Gizmos.color;
+                wireColor.a = 1f;
+                Gizmos.color = wireColor;
+                Gizmos.DrawWireCube(wallCenter, slabSize);
+
+                // Arrow: line from center to wall + sphere at tip
+                Gizmos.DrawLine(worldCenter, wallCenter);
+                Gizmos.DrawSphere(wallCenter, cellSize.x * 0.06f);
+            }
+            else
+            {
+                Gizmos.DrawCube(worldCenter, cubeSize);
+                Gizmos.DrawWireCube(worldCenter, cellSize);
+            }
 
 #if UNITY_EDITOR
             // Label only on anchors to avoid clutter
             if (key.Cell == data.AnchorCell)
             {
+                string facingLabel = key.Facing != SurfaceFacing.None ? $"\n{key.Facing}" : "";
                 UnityEditor.Handles.color = Color.white;
                 UnityEditor.Handles.Label(worldCenter + Vector3.up * (cellSize.y * 0.6f),
-                    $"{data.InstanceId}\n{data.Property.EnumKey}\n{key.Layer}");
+                    $"{data.InstanceId}\n{data.Property.EnumKey}\n{key.Layer}{facingLabel}");
             }
 #endif
         }
@@ -822,7 +864,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
 #if UNITY_EDITOR
             string surfLabels = "";
             for (int s = 0; s < kvp.Value.Count; s++)
-                surfLabels += kvp.Value[s].SurfaceType.ToString() + "\n";
+            {
+                var entry = kvp.Value[s];
+                surfLabels += entry.Facing != SurfaceFacing.None
+                    ? $"{entry.SurfaceType} ({entry.Facing})\n"
+                    : $"{entry.SurfaceType}\n";
+            }
             UnityEditor.Handles.color = new Color(1f, 0f, 1f, 1f);
             UnityEditor.Handles.Label(worldCenter + Vector3.down * (cellSize.y * 0.3f), surfLabels);
 #endif
