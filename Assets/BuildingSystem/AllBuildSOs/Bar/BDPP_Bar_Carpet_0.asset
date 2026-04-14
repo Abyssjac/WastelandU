@@ -21,7 +21,8 @@ MonoBehaviour:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 1, y: 0, z: 3}
     cells: []
-    buildLayer: 4
+    buildLayer: 5
+    occupancyFacings: 64
     requiredSurface: 5
     requiredFacing: 0
   surfaceZones: []

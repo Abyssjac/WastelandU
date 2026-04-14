@@ -17,19 +17,26 @@ MonoBehaviour:
   prefab: {fileID: 6124281152884468754, guid: 6491fe2ed4e4a174ba18d3d00142b23a, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes:
-    - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 1, z: 0}
-    cells:
-    - {x: 0, y: 0, z: 0}
-    buildLayer: 2
-    requiredSurface: 3
-    requiredFacing: 0
   - boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
-    buildLayer: 2
+    buildLayer: 0
+    occupancyFacings: 33
     requiredSurface: 5
+    requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    buildLayer: 0
+    occupancyFacings: 97
+    requiredSurface: 0
+    requiredFacing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 2, z: 0}
+    buildLayer: 0
+    occupancyFacings: 65
+    requiredSurface: 0
     requiredFacing: 0
   surfaceZones: []
   canRotate: 1

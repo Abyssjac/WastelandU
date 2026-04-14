@@ -17,18 +17,18 @@ MonoBehaviour:
   prefab: {fileID: 1854866216307632041, guid: d7f1f06996f5a2b4194c8025947d1768, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes:
-    - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 0, z: 1}
-    cells: []
-    buildLayer: 2
-    requiredSurface: 3
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 0
+    occupancyFacings: 9
+    requiredSurface: 5
     requiredFacing: 0
-  - boxes:
-    - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 0, z: 1}
-    cells: []
-    buildLayer: 2
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 1}
+    buildLayer: 0
+    occupancyFacings: 17
     requiredSurface: 5
     requiredFacing: 0
   surfaceZones: []

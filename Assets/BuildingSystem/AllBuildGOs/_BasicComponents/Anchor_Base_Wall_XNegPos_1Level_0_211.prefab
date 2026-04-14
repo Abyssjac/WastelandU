@@ -128,7 +128,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7050753684009505582}
   m_Layer: 0
-  m_Name: Anchor_Bar_Wall_XNegPos_1Level_0_211
+  m_Name: Anchor_Base_Wall_XNegPos_1Level_0_211
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -19,17 +19,35 @@ MonoBehaviour:
   occupancyZones:
   - boxes:
     - cornerA: {x: 0, y: 0, z: 0}
-      cornerB: {x: 0, y: 2, z: 2}
-    cells: []
-    buildLayer: 2
-    requiredSurface: 3
-    requiredFacing: 0
-  - boxes:
-    - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 0, y: 0, z: 2}
     cells: []
-    buildLayer: 2
+    buildLayer: 0
+    occupancyFacings: 33
     requiredSurface: 5
+    requiredFacing: 0
+  - boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 0, y: 1, z: 2}
+    cells: []
+    buildLayer: 0
+    occupancyFacings: 97
+    requiredSurface: 0
+    requiredFacing: 0
+  - boxes:
+    - cornerA: {x: 0, y: 2, z: 0}
+      cornerB: {x: 0, y: 2, z: 2}
+    cells: []
+    buildLayer: 0
+    occupancyFacings: 65
+    requiredSurface: 0
+    requiredFacing: 0
+  - boxes:
+    - cornerA: {x: 0, y: 0, z: 1}
+      cornerB: {x: 0, y: 2, z: 1}
+    cells: []
+    buildLayer: 0
+    occupancyFacings: 24
+    requiredSurface: 0
     requiredFacing: 0
   surfaceZones: []
   canRotate: 1

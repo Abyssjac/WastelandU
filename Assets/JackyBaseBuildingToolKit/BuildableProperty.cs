@@ -13,6 +13,7 @@ public enum BuildLayer
     BL_Room = 2,
     BL_Wall = 3,
     BL_Ground = 4,
+    BL_EdgeAttacher = 5,
 }
 
 /// <summary>
@@ -23,9 +24,9 @@ public enum BuildLayer
 public enum BuildSurfaceType
 {
     None = 0,
-    BST_Platform = 1,
+    //BST_Platform = 1,
     BST_PlatformSupporter = 2,
-    BST_Room = 3,
+    //BST_Room = 3,
     BST_Wall = 4,
     BST_Ground = 5,
     BST_WallSupporter = 6,
