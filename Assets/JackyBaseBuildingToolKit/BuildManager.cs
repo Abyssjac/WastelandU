@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 using JackyUtility;
 using System.Collections.Generic;
@@ -46,6 +47,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
     [SerializeField] private BuildGrid3D grid;
     public BuildGrid3D Grid => grid;
     public BuildState CurrentState { get; private set; } = BuildState.Idle;
+
+    /// <summary>
+    /// Fired after any grid mutation (place / move / remove / preset load).
+    /// Subscribers should use this to react to grid changes (e.g. room recalculation).
+    /// </summary>
+    public event Action OnGridChanged;
 
     // currently active context
     private BuildableProperty selectedProperty;
@@ -132,6 +139,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         Debug.Log($"[BuildManager] Preset loaded: {startPreset.name} ({startPreset.entries.Length} entries)");
+
+        OnGridChanged?.Invoke();
     }
 
     private void OnDestroy()
@@ -344,6 +353,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         // Remove the target itself
         RemoveBuildable(data);
+
+        OnGridChanged?.Invoke();
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Update Loop ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -446,6 +457,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
             debugCanPlaceReason = "";
+
+            OnGridChanged?.Invoke();
             return;
         }
 
@@ -605,6 +618,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         if (uiContainer != null)
             uiContainer.ClearSelection();
+
+        OnGridChanged?.Invoke();
     }
 
     private void ConfirmMove(Vector3Int newAnchor)
@@ -634,6 +649,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
         movingChildren = null;
         CurrentState = BuildState.Idle;
         debugCanPlaceReason = "";
+
+        OnGridChanged?.Invoke();
     }
 
     private void SyncGameObjectTransform(PlacedBuildableData data)
