@@ -486,6 +486,8 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public static SurfaceFacing RotateFacing(SurfaceFacing facing, int steps)
     {
         if (facing == SurfaceFacing.None) return SurfaceFacing.None;
+        //if (facing == SurfaceFacing.YPos || facing == SurfaceFacing.YNeg) return facing;
+
         steps = ((steps % 4) + 4) % 4;
         if (steps == 0) return facing;
 
@@ -533,7 +535,9 @@ public enum Key_BuildablePP
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,
     Build_Base_Wall_XNegPos_1Level_0 = 11,
-
+    Build_Base_Wall_XPosNeg_1Level_0 = 12,
+    Build_Base_Wall_ZNegPos_1Level_0 = 13,
+    Build_Base_Wall_ZPosNeg_1Level_0 = 14,
 
     Build_Bookstore_Bookshelf_0 = 30,
     Build_Bookstore_Bookshelf_1 = 31,

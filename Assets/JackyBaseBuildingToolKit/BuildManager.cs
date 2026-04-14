@@ -49,7 +49,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     public BuildState CurrentState { get; private set; } = BuildState.Idle;
 
     /// <summary>
-    /// Fired after any grid mutation (place / move / remove / preset load).
+    /// Fired after any grid mutation (place / move / remove / preset load / blueprint place).
     /// Subscribers should use this to react to grid changes (e.g. room recalculation).
     /// </summary>
     public event Action OnGridChanged;
@@ -61,6 +61,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private List<PlacedBuildableData> movingChildren; // children being moved along with movingData
 
     private int instanceCounter;
+
+    // ©¤©¤©¤ Blueprint Integration ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    private BuildBlueprintDatabase blueprintDB;
+    private BuildBlueprintProperty selectedBlueprint;
+    private int blueprintRotationStep;
 
     // ©¤©¤©¤ Container Integration ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     private Container<Key_ContainerItemPP> container;
@@ -163,6 +168,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         containerItemDB = dbManager.GetDatabase<ContainerItemDatabase>();
         buildableDB = dbManager.GetDatabase<BuildableDatabase>();
+        blueprintDB = dbManager.GetDatabase<BuildBlueprintDatabase>();
 
         if (containerItemDB == null || buildableDB == null)
         {
@@ -281,10 +287,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         selectedProperty = null;
+        selectedBlueprint = null;
         pendingSlotIndex = -1;
         pendingBuildAction = null;
         CurrentState = BuildState.Idle;
         previewController.HidePreview();
+        previewController.HideBlueprintPreview();
         debugCanPlaceReason = "";
 
         if (uiContainer != null)
@@ -371,6 +379,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 break;
             case BuildState.Moving:
                 HandleMovingUpdate();
+                break;
+            case BuildState.PlacingBlueprint:
+                HandleBlueprintPlacingUpdate();
                 break;
         }
     }
@@ -514,6 +525,268 @@ public class BuildManager : MonoBehaviour, IDebuggable
             previewController.HidePreview();
             debugCanPlaceReason = "";
         }
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Blueprint Placing ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    /// <summary>
+    /// Enter blueprint placement mode. The player drags the blueprint and places it as a single unit.
+    /// </summary>
+    public void BeginPlacingBlueprint(BuildBlueprintProperty blueprint)
+    {
+        if (blueprint == null) return;
+
+        selectedBlueprint = blueprint;
+        blueprintRotationStep = 0;
+        CurrentState = BuildState.PlacingBlueprint;
+
+        SpawnBlueprintPreview(blueprint, blueprintRotationStep);
+    }
+
+    private void HandleBlueprintPlacingUpdate()
+    {
+        if (!positionProvider.HasValidHit)
+        {
+            previewController.SetBlueprintPreviewValid(false);
+            debugCanPlace = false;
+            debugCanPlaceReason = "No valid raycast hit";
+            return;
+        }
+
+        // Rotate entire blueprint
+        if (Input.GetKeyDown(KeyCode.R))
+        {
+            blueprintRotationStep = (blueprintRotationStep + 1) % 4;
+            RebuildBlueprintPreviewTransforms(selectedBlueprint, blueprintRotationStep);
+        }
+
+        Vector3Int blueprintAnchor = positionProvider.CurrentCell;
+
+        // Validate entire blueprint via sandbox
+        debugCanPlace = ValidateBlueprint(selectedBlueprint, blueprintAnchor, blueprintRotationStep, out string reason);
+        debugCanPlaceReason = reason ?? "OK";
+
+        previewController.UpdateBlueprintPreviewPosition(
+            positionProvider.CurrentSnappedWorldPositionCenter,
+            debugCanPlace
+        );
+
+        // Confirm
+        if (Input.GetMouseButtonDown(0) && debugCanPlace)
+        {
+            ConfirmBlueprintPlace(blueprintAnchor);
+        }
+
+        // Cancel
+        if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
+        {
+            CancelCurrentAction();
+        }
+    }
+
+    /// <summary>
+    /// Spawn all preview objects for a blueprint's entries.
+    /// </summary>
+    private void SpawnBlueprintPreview(BuildBlueprintProperty blueprint, int rotation)
+    {
+        if (buildableDB == null || blueprint.entries.Length == 0) return;
+
+        Vector3 cellSize = positionProvider.CellSize;
+        GameObject[] prefabs = new GameObject[blueprint.entries.Length];
+        Vector3[] offsets = new Vector3[blueprint.entries.Length];
+        Quaternion[] rotations = new Quaternion[blueprint.entries.Length];
+
+        for (int i = 0; i < blueprint.entries.Length; i++)
+        {
+            var entry = blueprint.entries[i];
+            var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
+            if (prop == null) continue;
+
+            prefabs[i] = prop.previewPrefab != null ? prop.previewPrefab : prop.prefab;
+
+            Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, rotation);
+            offsets[i] = new Vector3(
+                rotatedLocal.x * cellSize.x,
+                rotatedLocal.y * cellSize.y,
+                rotatedLocal.z * cellSize.z
+            );
+
+            int worldRot = (entry.localRotationStep + rotation) % 4;
+            rotations[i] = Quaternion.Euler(0f, worldRot * 90f, 0f);
+        }
+
+        previewController.ShowBlueprintPreview(prefabs, offsets, rotations, cellSize);
+    }
+
+    /// <summary>
+    /// Recalculate child local transforms when the blueprint rotation step changes.
+    /// </summary>
+    private void RebuildBlueprintPreviewTransforms(BuildBlueprintProperty blueprint, int rotation)
+    {
+        if (buildableDB == null || blueprint.entries.Length == 0) return;
+
+        Vector3 cellSize = positionProvider.CellSize;
+        Vector3[] offsets = new Vector3[blueprint.entries.Length];
+        Quaternion[] rotations = new Quaternion[blueprint.entries.Length];
+
+        for (int i = 0; i < blueprint.entries.Length; i++)
+        {
+            var entry = blueprint.entries[i];
+            Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, rotation);
+            offsets[i] = new Vector3(
+                rotatedLocal.x * cellSize.x,
+                rotatedLocal.y * cellSize.y,
+                rotatedLocal.z * cellSize.z
+            );
+            int worldRot = (entry.localRotationStep + rotation) % 4;
+            rotations[i] = Quaternion.Euler(0f, worldRot * 90f, 0f);
+        }
+
+        previewController.UpdateBlueprintChildTransforms(offsets, rotations);
+    }
+
+    /// <summary>
+    /// Validate all entries in a blueprint using a sandbox.
+    /// Returns true if every entry can be placed in order.
+    /// </summary>
+    private bool ValidateBlueprint(BuildBlueprintProperty blueprint, Vector3Int anchor, int rotation, out string failReason)
+    {
+        failReason = null;
+        if (blueprint == null || blueprint.entries.Length == 0)
+        {
+            failReason = "Blueprint is empty.";
+            return false;
+        }
+
+        if (buildableDB == null)
+        {
+            failReason = "BuildableDatabase not available.";
+            return false;
+        }
+
+        var sandbox = new GridSandbox(Grid);
+
+        for (int i = 0; i < blueprint.entries.Length; i++)
+        {
+            var entry = blueprint.entries[i];
+            var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
+            if (prop == null)
+            {
+                failReason = $"Entry [{i}]: No BuildableProperty for key '{entry.buildableEnumKey}'.";
+                return false;
+            }
+
+            // Compute world position: rotate local offset by blueprint rotation, then add anchor
+            Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, rotation);
+            Vector3Int worldAnchor = anchor + rotatedLocal;
+            int worldRotation = (entry.localRotationStep + rotation) % 4;
+
+            PlacedBuildableData tentative = new PlacedBuildableData
+            {
+                InstanceId = $"bp_validate_{i}",
+                Property = prop,
+                AnchorCell = worldAnchor,
+                RotationStep = worldRotation,
+            };
+
+            if (!sandbox.TryStage(tentative, out string entryFail))
+            {
+                failReason = $"Entry [{i}] ({entry.buildableEnumKey}): {entryFail}";
+                return false;
+            }
+        }
+
+        return true;
+    }
+
+    /// <summary>
+    /// Commit the blueprint: re-run sandbox validation, flush to real grid, spawn all GameObjects.
+    /// </summary>
+    private void ConfirmBlueprintPlace(Vector3Int anchor)
+    {
+        if (buildableDB == null) return;
+
+        var sandbox = new GridSandbox(Grid);
+        List<PlacedBuildableData> toSpawn = new List<PlacedBuildableData>();
+
+        for (int i = 0; i < selectedBlueprint.entries.Length; i++)
+        {
+            var entry = selectedBlueprint.entries[i];
+            var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
+            if (prop == null) continue;
+
+            Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, blueprintRotationStep);
+            Vector3Int worldAnchor = anchor + rotatedLocal;
+            int worldRotation = (entry.localRotationStep + blueprintRotationStep) % 4;
+
+            PlacedBuildableData data = new PlacedBuildableData
+            {
+                InstanceId = $"build_{instanceCounter++}",
+                Property = prop,
+                AnchorCell = worldAnchor,
+                RotationStep = worldRotation,
+            };
+
+            if (!sandbox.TryStage(data, out string fail))
+            {
+                Debug.LogError($"[BuildManager] Blueprint confirm failed at entry [{i}]: {fail}. This should not happen after validation.");
+                return;
+            }
+
+            toSpawn.Add(data);
+        }
+
+        // All validated ¡ª flush to real grid
+        sandbox.Flush();
+
+        // Establish parent-child relationships and spawn GameObjects
+        for (int i = 0; i < toSpawn.Count; i++)
+        {
+            PlacedBuildableData data = toSpawn[i];
+            BuildableProperty prop = data.Property;
+
+            // Find parent
+            ResolvedOccupancyCell[] occCells = prop.GetRotatedOccupancyCells(data.RotationStep);
+            for (int j = 0; j < occCells.Length; j++)
+            {
+                if (occCells[j].RequiredSurface != BuildSurfaceType.None)
+                {
+                    Vector3Int worldCell = data.AnchorCell + occCells[j].Cell;
+                    PlacedBuildableData parent = Grid.FindParentAt(worldCell, occCells[j].RequiredSurface);
+                    if (parent != null)
+                    {
+                        data.SetParent(parent);
+                        break;
+                    }
+                }
+            }
+
+            // Spawn
+            Vector3 worldPos = positionProvider.CellToWorldCenter(data.AnchorCell);
+            float yaw = prop.GetRotationDegrees(data.RotationStep);
+            GameObject go = Instantiate(prop.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+            go.transform.localScale = positionProvider.CellSize;
+            data.SpawnedObject = go;
+
+            var behaviour = go.GetComponent<BuildableBehaviour>();
+            if (behaviour == null)
+                behaviour = go.AddComponent<BuildableBehaviour>();
+            behaviour.Initialize(data);
+
+            // Parent GO under parent's GO
+            if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
+            {
+                if (parentData.SpawnedObject != null)
+                    go.transform.SetParent(parentData.SpawnedObject.transform, worldPositionStays: true);
+            }
+        }
+
+        previewController.HideBlueprintPreview();
+        selectedBlueprint = null;
+        CurrentState = BuildState.Idle;
+        debugCanPlaceReason = "";
+
+        OnGridChanged?.Invoke();
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Internal ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -780,6 +1053,60 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  occZones={prop.occupancyZones.Length}");
             }
         ));
+
+        DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
+            "buildmgr-blueprint",
+            "Enter blueprint placement mode. Usage: buildmgr-blueprint <stringKey>  |  buildmgr-blueprint ls",
+            args =>
+            {
+                if (args.Length == 0)
+                {
+                    Debug.LogWarning("[buildmgr-blueprint] Usage: buildmgr-blueprint <stringKey>  |  buildmgr-blueprint ls");
+                    return;
+                }
+
+                if (blueprintDB == null)
+                {
+                    Debug.LogError("[buildmgr-blueprint] BuildBlueprintDatabase not available.");
+                    return;
+                }
+
+                if (args[0].Equals("ls", System.StringComparison.OrdinalIgnoreCase))
+                {
+                    var bpEntries = blueprintDB.Entries;
+                    if (bpEntries.Count == 0)
+                    {
+                        Debug.Log("[buildmgr-blueprint] Database is empty.");
+                        return;
+                    }
+                    for (int i = 0; i < bpEntries.Count; i++)
+                    {
+                        var e = bpEntries[i];
+                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  entries={e.entries.Length}");
+                    }
+                    return;
+                }
+
+                var bp = blueprintDB.GetByString(args[0]);
+                if (bp == null)
+                {
+                    Debug.LogWarning($"[buildmgr-blueprint] No blueprint found for key '{args[0]}'. Use 'buildmgr-blueprint ls' to list all.");
+                    return;
+                }
+
+                if (bp.entries.Length == 0)
+                {
+                    Debug.LogWarning($"[buildmgr-blueprint] Blueprint '{args[0]}' has no entries.");
+                    return;
+                }
+
+                if (CurrentState != BuildState.Idle)
+                    CancelCurrentAction();
+
+                BeginPlacingBlueprint(bp);
+                Debug.Log($"[buildmgr-blueprint] Entering blueprint mode: {bp.EnumKey} ({bp.displayName})  entries={bp.entries.Length}");
+            }
+        ));
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Gizmos ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -912,10 +1239,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
         panel.DrawLine("<b>¨T¨T¨T BuildManager Debug ¨T¨T¨T</b>");
 
         string stateColor = CurrentState == BuildState.Idle ? "white" :
-                            CurrentState == BuildState.Placing ? "cyan" : "yellow";
+                            CurrentState == BuildState.Placing ? "cyan" :
+                            CurrentState == BuildState.PlacingBlueprint ? "magenta" : "yellow";
         panel.DrawLine($"State: <color={stateColor}><b>{CurrentState}</b></color>");
 
         string propName = selectedProperty != null ? $"{selectedProperty.EnumKey} ({selectedProperty.displayName})"
+                        : selectedBlueprint != null ? $"[BP] {selectedBlueprint.EnumKey} ({selectedBlueprint.displayName})"
                         : movingData != null ? $"{movingData.Property.EnumKey} (moving)"
                         : "None";
         panel.DrawLine($"Property: <color=orange>{propName}</color>");
@@ -968,7 +1297,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
 public enum BuildState
 {
     Idle,
-    Selecting, // UI choosing which buildable
-    Placing,   // dragging preview, about to place
-    Moving,    // dragging an existing buildable to a new position
+    Selecting,        // UI choosing which buildable
+    Placing,          // dragging preview, about to place
+    Moving,           // dragging an existing buildable to a new position
+    PlacingBlueprint, // dragging a blueprint (multi-buildable) to place as a unit
 }

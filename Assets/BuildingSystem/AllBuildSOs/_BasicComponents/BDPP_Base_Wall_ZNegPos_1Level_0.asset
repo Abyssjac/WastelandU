@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_Base_Wall_ZNegPos_1Level_0
+  m_EditorClassIdentifier: 
+  enumKey: 13
+  stringKey: BDPP_Base_Wall_ZNegPos_1Level_0
+  prefab: {fileID: 6638954220343408401, guid: 8fe37ced79a1b3a44babc51c01feea95, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 0
+    occupancyFacings: 16
+    requiredSurface: 6
+    requiredFacing: 4
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: -1}
+    buildLayer: 0
+    occupancyFacings: 8
+    requiredSurface: 6
+    requiredFacing: 3
+  surfaceZones:
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    providedSurface: 6
+    facing: 4
+  - boxes: []
+    cells:
+    - {x: 0, y: 1, z: -1}
+    providedSurface: 6
+    facing: 3
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: -1}
+    providedSurface: 2
+    facing: 0
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    providedSurface: 4
+    facing: 4
+  - boxes: []
+    cells:
+    - {x: 0, y: 0, z: -1}
+    providedSurface: 4
+    facing: 3
+  canRotate: 1
+  canMove: 1
+  iconSprite: {fileID: 0}
+  displayName: 

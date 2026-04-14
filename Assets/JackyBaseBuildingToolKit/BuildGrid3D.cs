@@ -178,6 +178,25 @@ public class BuildGrid3D
     }
 
     /// <summary>
+    /// CanPlace overload that queries a <see cref="GridSandbox"/> merged view
+    /// (real grid + sandbox overlay) instead of the real grid alone.
+    /// Used during blueprint validation where earlier entries provide surfaces
+    /// for later entries within the same blueprint.
+    /// </summary>
+    public bool CanPlace(BuildableProperty property, Vector3Int anchor, int rotationStep, GridSandbox sandbox)
+    {
+        return sandbox.CanPlace(property, anchor, rotationStep);
+    }
+
+    /// <summary>
+    /// CanPlace overload with fail reason that queries a <see cref="GridSandbox"/> merged view.
+    /// </summary>
+    public bool CanPlace(BuildableProperty property, Vector3Int anchor, int rotationStep, GridSandbox sandbox, out string failReason)
+    {
+        return sandbox.CanPlace(property, anchor, rotationStep, out failReason);
+    }
+
+    /// <summary>
     /// Checks whether any surface entry at the given cell provides the required surface type.
     /// </summary>
     public bool HasSurface(Vector3Int cell, BuildSurfaceType required)
