@@ -589,16 +589,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// </summary>
     private void SpawnBlueprintPreview(BuildBlueprintProperty blueprint, int rotation)
     {
-        if (buildableDB == null || blueprint.entries.Length == 0) return;
+        BlueprintEntry[] bpEntries = blueprint.Entries;
+        if (buildableDB == null || bpEntries.Length == 0) return;
 
         Vector3 cellSize = positionProvider.CellSize;
-        GameObject[] prefabs = new GameObject[blueprint.entries.Length];
-        Vector3[] offsets = new Vector3[blueprint.entries.Length];
-        Quaternion[] rotations = new Quaternion[blueprint.entries.Length];
+        GameObject[] prefabs = new GameObject[bpEntries.Length];
+        Vector3[] offsets = new Vector3[bpEntries.Length];
+        Quaternion[] rotations = new Quaternion[bpEntries.Length];
 
-        for (int i = 0; i < blueprint.entries.Length; i++)
+        for (int i = 0; i < bpEntries.Length; i++)
         {
-            var entry = blueprint.entries[i];
+            var entry = bpEntries[i];
             var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
             if (prop == null) continue;
 
@@ -623,15 +624,16 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// </summary>
     private void RebuildBlueprintPreviewTransforms(BuildBlueprintProperty blueprint, int rotation)
     {
-        if (buildableDB == null || blueprint.entries.Length == 0) return;
+        BlueprintEntry[] bpEntries = blueprint.Entries;
+        if (buildableDB == null || bpEntries.Length == 0) return;
 
         Vector3 cellSize = positionProvider.CellSize;
-        Vector3[] offsets = new Vector3[blueprint.entries.Length];
-        Quaternion[] rotations = new Quaternion[blueprint.entries.Length];
+        Vector3[] offsets = new Vector3[bpEntries.Length];
+        Quaternion[] rotations = new Quaternion[bpEntries.Length];
 
-        for (int i = 0; i < blueprint.entries.Length; i++)
+        for (int i = 0; i < bpEntries.Length; i++)
         {
-            var entry = blueprint.entries[i];
+            var entry = bpEntries[i];
             Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, rotation);
             offsets[i] = new Vector3(
                 rotatedLocal.x * cellSize.x,
@@ -652,7 +654,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private bool ValidateBlueprint(BuildBlueprintProperty blueprint, Vector3Int anchor, int rotation, out string failReason)
     {
         failReason = null;
-        if (blueprint == null || blueprint.entries.Length == 0)
+        BlueprintEntry[] bpEntries = blueprint != null ? blueprint.Entries : null;
+        if (bpEntries == null || bpEntries.Length == 0)
         {
             failReason = "Blueprint is empty.";
             return false;
@@ -666,9 +669,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         var sandbox = new GridSandbox(Grid);
 
-        for (int i = 0; i < blueprint.entries.Length; i++)
+        for (int i = 0; i < bpEntries.Length; i++)
         {
-            var entry = blueprint.entries[i];
+            var entry = bpEntries[i];
             var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
             if (prop == null)
             {
@@ -706,12 +709,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (buildableDB == null) return;
 
+        BlueprintEntry[] bpEntries = selectedBlueprint.Entries;
         var sandbox = new GridSandbox(Grid);
         List<PlacedBuildableData> toSpawn = new List<PlacedBuildableData>();
 
-        for (int i = 0; i < selectedBlueprint.entries.Length; i++)
+        for (int i = 0; i < bpEntries.Length; i++)
         {
-            var entry = selectedBlueprint.entries[i];
+            var entry = bpEntries[i];
             var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
             if (prop == null) continue;
 
@@ -1082,7 +1086,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     for (int i = 0; i < bpEntries.Count; i++)
                     {
                         var e = bpEntries[i];
-                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  entries={e.entries.Length}");
+                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  entries={e.Entries.Length}");
                     }
                     return;
                 }
@@ -1094,7 +1098,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     return;
                 }
 
-                if (bp.entries.Length == 0)
+                if (bp.Entries.Length == 0)
                 {
                     Debug.LogWarning($"[buildmgr-blueprint] Blueprint '{args[0]}' has no entries.");
                     return;
@@ -1104,7 +1108,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     CancelCurrentAction();
 
                 BeginPlacingBlueprint(bp);
-                Debug.Log($"[buildmgr-blueprint] Entering blueprint mode: {bp.EnumKey} ({bp.displayName})  entries={bp.entries.Length}");
+                Debug.Log($"[buildmgr-blueprint] Entering blueprint mode: {bp.EnumKey} ({bp.displayName})  entries={bp.Entries.Length}");
             }
         ));
     }

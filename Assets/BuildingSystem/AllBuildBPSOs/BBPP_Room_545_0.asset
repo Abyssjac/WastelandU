@@ -14,66 +14,331 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 1
   stringKey: BBPP_Room_545_0
-  entries:
-  - buildableEnumKey: 11
-    localCell: {x: -2, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 11
-    localCell: {x: -2, y: 0, z: -1}
-    localRotationStep: 0
-  - buildableEnumKey: 11
-    localCell: {x: -2, y: 0, z: 0}
-    localRotationStep: 0
-  - buildableEnumKey: 11
-    localCell: {x: -2, y: 0, z: 1}
-    localRotationStep: 0
-  - buildableEnumKey: 11
-    localCell: {x: -2, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 12
-    localCell: {x: 2, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 12
-    localCell: {x: 2, y: 0, z: -1}
-    localRotationStep: 0
-  - buildableEnumKey: 12
-    localCell: {x: 2, y: 0, z: 0}
-    localRotationStep: 0
-  - buildableEnumKey: 12
-    localCell: {x: 2, y: 0, z: 1}
-    localRotationStep: 0
-  - buildableEnumKey: 12
-    localCell: {x: 2, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 13
-    localCell: {x: -2, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 13
-    localCell: {x: -1, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 13
-    localCell: {x: 0, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 13
-    localCell: {x: 1, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 13
-    localCell: {x: 2, y: 0, z: -2}
-    localRotationStep: 0
-  - buildableEnumKey: 14
-    localCell: {x: -2, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 14
-    localCell: {x: -1, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 14
-    localCell: {x: 0, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 14
-    localCell: {x: 1, y: 0, z: 2}
-    localRotationStep: 0
-  - buildableEnumKey: 14
-    localCell: {x: 2, y: 0, z: 2}
-    localRotationStep: 0
+  groups:
+  - groupName: XNegWalls
+    entries:
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 0, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 0, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 0, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 1, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 1, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 1, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 2, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 2, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 2, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 11
+      localCell: {x: -2, y: 3, z: 2}
+      localRotationStep: 0
+  - groupName: XPosWalls
+    entries:
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 0, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 0, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 0, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 1, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 1, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 1, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 2, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 2, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 2, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 12
+      localCell: {x: 2, y: 3, z: 2}
+      localRotationStep: 0
+  - groupName: ZNegWalls
+    entries:
+    - buildableEnumKey: 13
+      localCell: {x: -2, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -1, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 0, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 1, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 2, y: 0, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -2, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -1, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 0, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 1, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 2, y: 1, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -2, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -1, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 0, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 1, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 2, y: 2, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -2, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: -1, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 0, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 1, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 13
+      localCell: {x: 2, y: 3, z: -2}
+      localRotationStep: 0
+  - groupName: ZPosWalls
+    entries:
+    - buildableEnumKey: 14
+      localCell: {x: -2, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -1, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 0, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 1, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 2, y: 0, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -2, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -1, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 0, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 1, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 2, y: 1, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -2, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -1, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 0, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 1, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 2, y: 2, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -2, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: -1, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 0, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 1, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 14
+      localCell: {x: 2, y: 3, z: 2}
+      localRotationStep: 0
+  - groupName: YPosWalls (Ceiling)
+    entries:
+    - buildableEnumKey: 2
+      localCell: {x: -2, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -2, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -2, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -2, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -2, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 3, z: 2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 2, y: 3, z: -2}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 2, y: 3, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 2, y: 3, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 2, y: 3, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 2, y: 3, z: 2}
+      localRotationStep: 0
   iconSprite: {fileID: 0}
   displayName: 

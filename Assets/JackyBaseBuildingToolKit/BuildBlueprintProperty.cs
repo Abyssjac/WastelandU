@@ -34,8 +34,22 @@ public struct BlueprintEntry
 }
 
 /// <summary>
+/// A named group of blueprint entries for Inspector organization.
+/// Groups are flattened at runtime ¡ª ordering is: Group0 entries, then Group1 entries, etc.
+/// </summary>
+[System.Serializable]
+public struct BlueprintGroup
+{
+    [Tooltip("Display label for this group in the Inspector (e.g. 'Platforms', 'Walls', 'Furniture').")]
+    public string groupName;
+
+    [Tooltip("Entries in this group, in dependency order.")]
+    public BlueprintEntry[] entries;
+}
+
+/// <summary>
 /// A blueprint (prefab room) that the player can place as a single unit.
-/// Contains an ordered list of buildable entries with local offsets.
+/// Contains grouped, ordered lists of buildable entries with local offsets.
 /// Validated and placed atomically via <see cref="GridSandbox"/>:
 /// either all entries succeed or none are placed.
 /// </summary>
@@ -49,13 +63,61 @@ public class BuildBlueprintProperty : ScriptableObject, IEnumStringKeyedEntry<Ke
     public Key_BuildBlueprintPP EnumKey => enumKey;
     public string StringKey => stringKey;
 
-    [Header("Blueprint Entries")]
-    [Tooltip("Ordered list of buildables in this blueprint.\n" +
-             "Must be in dependency order: platforms first, then walls, then ground, then furniture.\n" +
-             "Coordinates are local offsets relative to the blueprint anchor.")]
-    public BlueprintEntry[] entries = new BlueprintEntry[0];
+    [Header("Blueprint Groups")]
+    [Tooltip("Ordered groups of buildables in this blueprint.\n" +
+             "Groups are purely for Inspector organization ¡ª at runtime they are flattened in order.\n" +
+             "Must be in dependency order: platforms first, then walls, then ground, then furniture.")]
+    public BlueprintGroup[] groups = new BlueprintGroup[0];
 
     [Header("UI Display")]
     public Sprite iconSprite;
     public string displayName;
+
+    // ©¤©¤©¤ Runtime flattened cache ©¤©¤©¤
+    private BlueprintEntry[] flattenedCache;
+    private bool dirty = true;
+
+    private void OnValidate() { dirty = true; }
+    private void OnEnable() { dirty = true; }
+
+    /// <summary>
+    /// All entries flattened from groups, in order. Use this at runtime.
+    /// </summary>
+    public BlueprintEntry[] Entries
+    {
+        get
+        {
+            if (dirty || flattenedCache == null)
+            {
+                flattenedCache = FlattenGroups();
+                dirty = false;
+            }
+            return flattenedCache;
+        }
+    }
+
+    private BlueprintEntry[] FlattenGroups()
+    {
+        if (groups == null || groups.Length == 0)
+            return System.Array.Empty<BlueprintEntry>();
+
+        int total = 0;
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (groups[g].entries != null)
+                total += groups[g].entries.Length;
+        }
+
+        BlueprintEntry[] result = new BlueprintEntry[total];
+        int idx = 0;
+        for (int g = 0; g < groups.Length; g++)
+        {
+            if (groups[g].entries == null) continue;
+            for (int i = 0; i < groups[g].entries.Length; i++)
+            {
+                result[idx++] = groups[g].entries[i];
+            }
+        }
+        return result;
+    }
 }

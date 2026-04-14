@@ -14,33 +14,35 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 31
   stringKey: BBPP_Platform_33_0
-  entries:
-  - buildableEnumKey: 2
-    localCell: {x: -1, y: 0, z: -1}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: -1, y: 0, z: 0}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: -1, y: 0, z: 1}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 0, y: 0, z: -1}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 0, y: 0, z: 0}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 0, y: 0, z: 1}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 1, y: 0, z: -1}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 1, y: 0, z: 0}
-    localRotationStep: 0
-  - buildableEnumKey: 2
-    localCell: {x: 1, y: 0, z: 1}
-    localRotationStep: 0
+  groups:
+  - groupName: Platform
+    entries:
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 0, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 0, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: -1, y: 0, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 0, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 0, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 0, y: 0, z: 1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 0, z: -1}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 0, z: 0}
+      localRotationStep: 0
+    - buildableEnumKey: 2
+      localCell: {x: 1, y: 0, z: 1}
+      localRotationStep: 0
   iconSprite: {fileID: 0}
   displayName: 
