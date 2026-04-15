@@ -303,17 +303,6 @@ public class BuildGrid3D
             return false;
         }
 
-        if (data.ChildrenIds.Count > 0)
-        {
-            failReason = $"Cannot remove '{instanceId}': has {data.ChildrenIds.Count} children. Remove them first.";
-            return false;
-        }
-
-        if (data.ParentId != null && allPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parent))
-        {
-            parent.ChildrenIds.Remove(instanceId);
-        }
-
         ErasePlacement(data);
         return true;
     }
@@ -386,90 +375,7 @@ public class BuildGrid3D
         SyncInspectorStats();
     }
 
-    // --------- Move with children ---------
 
-    public bool TryMoveWithChildren(string instanceId, Vector3Int newAnchor, int newRotationStep, out string failReason)
-    {
-        failReason = null;
-
-        if (!allPlaced.TryGetValue(instanceId, out PlacedBuildableData data))
-        {
-            failReason = $"Instance '{instanceId}' not found.";
-            return false;
-        }
-
-        Vector3Int delta = newAnchor - data.AnchorCell;
-
-        List<PlacedBuildableData> movedSet = new List<PlacedBuildableData>();
-        CollectSelfAndChildren(data, movedSet);
-
-        Vector3Int[] oldAnchors = new Vector3Int[movedSet.Count];
-        int[] oldRotations = new int[movedSet.Count];
-        for (int i = 0; i < movedSet.Count; i++)
-        {
-            oldAnchors[i] = movedSet[i].AnchorCell;
-            oldRotations[i] = movedSet[i].RotationStep;
-        }
-
-        for (int i = 0; i < movedSet.Count; i++)
-            ForceRemoveFromGrid(movedSet[i]);
-
-        data.AnchorCell = newAnchor;
-        data.RotationStep = newRotationStep;
-        for (int i = 1; i < movedSet.Count; i++)
-        {
-            movedSet[i].AnchorCell = oldAnchors[i] + delta;
-        }
-
-        if (!CanPlace(data.Property, newAnchor, newRotationStep))
-        {
-            failReason = $"Parent cannot be placed at {newAnchor}.";
-            Rollback(movedSet, oldAnchors, oldRotations);
-            return false;
-        }
-
-        ForcePlaceIntoGrid(data);
-
-        for (int i = 1; i < movedSet.Count; i++)
-        {
-            var child = movedSet[i];
-            if (!CanPlace(child.Property, child.AnchorCell, child.RotationStep))
-            {
-                failReason = $"Child '{child.InstanceId}' cannot be placed at {child.AnchorCell}.";
-                ForceRemoveFromGrid(data);
-                for (int j = 1; j < i; j++)
-                    ForceRemoveFromGrid(movedSet[j]);
-                Rollback(movedSet, oldAnchors, oldRotations);
-                return false;
-            }
-            ForcePlaceIntoGrid(child);
-        }
-
-        SyncInspectorStats();
-        return true;
-    }
-
-    private void Rollback(List<PlacedBuildableData> movedSet, Vector3Int[] oldAnchors, int[] oldRotations)
-    {
-        for (int i = 0; i < movedSet.Count; i++)
-        {
-            movedSet[i].AnchorCell = oldAnchors[i];
-            movedSet[i].RotationStep = oldRotations[i];
-            ForcePlaceIntoGrid(movedSet[i]);
-        }
-    }
-
-    private void CollectSelfAndChildren(PlacedBuildableData root, List<PlacedBuildableData> result)
-    {
-        result.Add(root);
-        for (int i = 0; i < root.ChildrenIds.Count; i++)
-        {
-            if (allPlaced.TryGetValue(root.ChildrenIds[i], out PlacedBuildableData child))
-            {
-                CollectSelfAndChildren(child, result);
-            }
-        }
-    }
 
     // --------- Stats ---------
 
@@ -478,6 +384,134 @@ public class BuildGrid3D
         placedCount = allPlaced.Count;
         occupiedCellCount = occupancyMap.Count;
         surfaceCellCount = surfaceMap.Count;
+    }
+
+    // --------- Removal Impact Query ---------
+
+    /// <summary>
+    /// Result of a removal impact query.
+    /// </summary>
+    public struct RemovalImpact
+    {
+        /// <summary>True if at least one other buildable would become illegal.</summary>
+        public bool WouldAffectOthers;
+
+        /// <summary>All buildables that would lose a required surface (cascaded).</summary>
+        public List<PlacedBuildableData> AffectedBuildables;
+    }
+
+    /// <summary>
+    /// Predicts whether removing the given buildable would cause other buildables
+    /// to become illegal (lose a required surface). Checks cascading dependencies:
+    /// if A provides surface for B, and B provides surface for C, removing A affects both B and C.
+    /// Does NOT modify any state ¡ª pure read-only simulation.
+    /// 
+    /// Note: a cell may have multiple surface providers of the same type.
+    /// A dependent is only affected if ALL providers of its required surface at that cell
+    /// would be gone after the simulated removal.
+    /// </summary>
+    public RemovalImpact WouldRemoveAffectOthers(string instanceId)
+    {
+        var result = new RemovalImpact
+        {
+            WouldAffectOthers = false,
+            AffectedBuildables = new List<PlacedBuildableData>()
+        };
+
+        if (!allPlaced.TryGetValue(instanceId, out PlacedBuildableData targetData))
+            return result;
+
+        // Set of instance IDs being simulated as removed (grows with cascade)
+        HashSet<string> removedIds = new HashSet<string>();
+        removedIds.Add(instanceId);
+
+        // Queue of buildables whose surface contributions need to be checked
+        Queue<PlacedBuildableData> toProcess = new Queue<PlacedBuildableData>();
+        toProcess.Enqueue(targetData);
+
+        while (toProcess.Count > 0)
+        {
+            PlacedBuildableData removed = toProcess.Dequeue();
+
+            // 1. Collect all surface cells this buildable provides
+            ResolvedSurfaceCell[] surf = removed.Property.GetRotatedSurfaceCells(removed.RotationStep);
+            if (surf.Length == 0) continue;
+
+            // For each surface cell, find dependents that might lose their required surface
+            for (int s = 0; s < surf.Length; s++)
+            {
+                Vector3Int worldCell = removed.AnchorCell + surf[s].Cell;
+                BuildSurfaceType providedType = surf[s].ProvidedSurface;
+                SurfaceFacing providedFacing = surf[s].Facing;
+
+                // Check if other providers still supply this surface type at this cell
+                // (after all currently-removed IDs are excluded)
+                bool stillProvided = false;
+                if (surfaceMap.TryGetValue(worldCell, out List<SurfaceEntry> entries))
+                {
+                    for (int e = 0; e < entries.Count; e++)
+                    {
+                        if (removedIds.Contains(entries[e].OwnerInstanceId)) continue;
+                        if (entries[e].SurfaceType == providedType)
+                        {
+                            // For faced surfaces, only count same facing as equivalent provider
+                            if (providedFacing != SurfaceFacing.None)
+                            {
+                                if (entries[e].Facing == providedFacing)
+                                {
+                                    stillProvided = true;
+                                    break;
+                                }
+                            }
+                            else
+                            {
+                                stillProvided = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+
+                if (stillProvided) continue;
+
+                // Surface is gone at this cell ¡ª find all occupants that require it
+                foreach (var kvp in occupancyMap)
+                {
+                    if (kvp.Key.Cell != worldCell) continue;
+                    PlacedBuildableData occupant = kvp.Value;
+                    if (removedIds.Contains(occupant.InstanceId)) continue;
+
+                    // Check if this occupant actually requires the lost surface at this cell
+                    ResolvedOccupancyCell[] occCells = occupant.Property.GetRotatedOccupancyCells(occupant.RotationStep);
+                    for (int o = 0; o < occCells.Length; o++)
+                    {
+                        Vector3Int occWorldCell = occupant.AnchorCell + occCells[o].Cell;
+                        if (occWorldCell != worldCell) continue;
+                        if (occCells[o].RequiredSurface != providedType) continue;
+
+                        // Facing match check
+                        if (occCells[o].RequiredFacing != SurfaceFacing.None)
+                        {
+                            if (occCells[o].RequiredFacing != providedFacing) continue;
+                        }
+
+                        // This occupant depends on the lost surface ¡ú affected
+                        if (!removedIds.Contains(occupant.InstanceId))
+                        {
+                            removedIds.Add(occupant.InstanceId);
+                            result.AffectedBuildables.Add(occupant);
+                            result.WouldAffectOthers = true;
+
+                            // Cascade: this occupant might also provide surfaces to others
+                            toProcess.Enqueue(occupant);
+                        }
+                        break;
+                    }
+                }
+            }
+        }
+
+        return result;
     }
 
     // --------- Utility ---------
@@ -504,22 +538,6 @@ public class PlacedBuildableData
     public Vector3Int AnchorCell;
     public int RotationStep;
     public GameObject SpawnedObject;
-
-    // --- Hierarchy ---
-    public string ParentId;
-    public List<string> ChildrenIds = new List<string>();
-
-    public void SetParent(PlacedBuildableData parent)
-    {
-        if (parent == null)
-        {
-            ParentId = null;
-            return;
-        }
-        ParentId = parent.InstanceId;
-        if (!parent.ChildrenIds.Contains(InstanceId))
-            parent.ChildrenIds.Add(InstanceId);
-    }
 
     public Vector3Int[] GetEffectiveFootprint()
     {

@@ -58,7 +58,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private BuildableProperty selectedProperty;
     private int currentRotationStep;
     private PlacedBuildableData movingData;   // non-null when in Moving state
-    private List<PlacedBuildableData> movingChildren; // children being moved along with movingData
 
     private int instanceCounter;
 
@@ -279,11 +278,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (CurrentState == BuildState.Moving && movingData != null)
         {
-            // rollback: re-place parent and all children at original positions
-            Grid.TryMoveWithChildren(movingData.InstanceId, movingData.AnchorCell, movingData.RotationStep, out _);
-            SetGameObjectActiveRecursive(movingData, true);
+            // Rollback: re-place the single buildable at its original position
+            Grid.ForcePlaceIntoGrid(movingData);
+            if (movingData.SpawnedObject != null)
+                movingData.SpawnedObject.SetActive(true);
             movingData = null;
-            movingChildren = null;
         }
 
         selectedProperty = null;
@@ -300,7 +299,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     }
 
     /// <summary>
-    /// Player wants to pick up and move an existing buildable (with its children).
+    /// Player wants to pick up and move an existing buildable.
     /// </summary>
     public void BeginMoving(PlacedBuildableData data)
     {
@@ -309,24 +308,20 @@ public class BuildManager : MonoBehaviour, IDebuggable
         movingData = data;
         currentRotationStep = data.RotationStep;
 
-        // Collect children for display purposes
-        movingChildren = new List<PlacedBuildableData>();
-        CollectChildren(data, movingChildren);
-
-        // temporarily remove from grid (parent + children) so own cells don't block new position
-        for (int i = 0; i < movingChildren.Count; i++)
-            Grid.ForceRemoveFromGrid(movingChildren[i]);
+        // Temporarily remove from grid so own cells don't block new position
         Grid.ForceRemoveFromGrid(data);
 
-        SetGameObjectActiveRecursive(data, false);
+        if (data.SpawnedObject != null)
+            data.SpawnedObject.SetActive(false);
 
         CurrentState = BuildState.Moving;
         previewController.ShowPreview(data.Property, currentRotationStep, positionProvider.CellSize);
     }
 
     /// <summary>
-    /// Remove a buildable from the base entirely.
-    /// Will fail if it has children ¡ª remove children first.
+    /// Remove a single buildable from the grid and destroy its GameObject.
+    /// Use <see cref="BuildGrid3D.WouldRemoveAffectOthers"/> before calling this
+    /// to check whether the removal would make other buildables illegal.
     /// </summary>
     public bool RemoveBuildable(PlacedBuildableData data)
     {
@@ -339,31 +334,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         if (data.SpawnedObject != null) Destroy(data.SpawnedObject);
+
+        OnGridChanged?.Invoke();
         return true;
     }
 
-    /// <summary>
-    /// Remove a buildable and all of its children recursively (children removed first, bottom-up).
-    /// </summary>
-    public void RemoveBuildableWithChildren(PlacedBuildableData data)
-    {
-        if (data == null) return;
 
-        // Collect all children (direct + indirect) first
-        List<PlacedBuildableData> children = new List<PlacedBuildableData>();
-        CollectChildren(data, children);
-
-        // Remove children in reverse order (deepest first) so TryRemove never blocks on child count
-        for (int i = children.Count - 1; i >= 0; i--)
-        {
-            RemoveBuildable(children[i]);
-        }
-
-        // Remove the target itself
-        RemoveBuildable(data);
-
-        OnGridChanged?.Invoke();
-    }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Update Loop ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -444,27 +420,15 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void HandleMovingUpdate()
     {
-        // Remove key ¡ª destroy the buildable (and children) instead of placing it back.
-        // movingData + movingChildren are already removed from the grid by BeginMoving,
-        // so we only need to destroy the GameObjects and clean up state.
+        // Remove key ¡ª destroy the buildable instead of placing it back.
+        // movingData is already removed from the grid by BeginMoving,
+        // so we only need to destroy the GameObject and clean up state.
         if (Input.GetKeyDown(removeKey))
         {
-            // Destroy children GameObjects
-            if (movingChildren != null)
-            {
-                for (int i = 0; i < movingChildren.Count; i++)
-                {
-                    if (movingChildren[i].SpawnedObject != null)
-                        Destroy(movingChildren[i].SpawnedObject);
-                }
-            }
-
-            // Destroy the parent GameObject
             if (movingData.SpawnedObject != null)
                 Destroy(movingData.SpawnedObject);
 
             movingData = null;
-            movingChildren = null;
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
             debugCanPlaceReason = "";
@@ -513,14 +477,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // Cancel move ¡ª rollback
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
-            // Re-place everything at old positions for rollback
             Grid.ForcePlaceIntoGrid(movingData);
-            for (int i = 0; i < movingChildren.Count; i++)
-                Grid.ForcePlaceIntoGrid(movingChildren[i]);
-            SetGameObjectActiveRecursive(movingData, true);
+            if (movingData.SpawnedObject != null)
+                movingData.SpawnedObject.SetActive(true);
 
             movingData = null;
-            movingChildren = null;
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
             debugCanPlaceReason = "";
@@ -743,29 +704,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // All validated ¡ª flush to real grid
         sandbox.Flush();
 
-        // Establish parent-child relationships and spawn GameObjects
+        // Spawn GameObjects
         for (int i = 0; i < toSpawn.Count; i++)
         {
             PlacedBuildableData data = toSpawn[i];
             BuildableProperty prop = data.Property;
 
-            // Find parent
-            ResolvedOccupancyCell[] occCells = prop.GetRotatedOccupancyCells(data.RotationStep);
-            for (int j = 0; j < occCells.Length; j++)
-            {
-                if (occCells[j].RequiredSurface != BuildSurfaceType.None)
-                {
-                    Vector3Int worldCell = data.AnchorCell + occCells[j].Cell;
-                    PlacedBuildableData parent = Grid.FindParentAt(worldCell, occCells[j].RequiredSurface);
-                    if (parent != null)
-                    {
-                        data.SetParent(parent);
-                        break;
-                    }
-                }
-            }
-
-            // Spawn
             Vector3 worldPos = positionProvider.CellToWorldCenter(data.AnchorCell);
             float yaw = prop.GetRotationDegrees(data.RotationStep);
             GameObject go = Instantiate(prop.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
@@ -776,13 +720,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
             if (behaviour == null)
                 behaviour = go.AddComponent<BuildableBehaviour>();
             behaviour.Initialize(data);
-
-            // Parent GO under parent's GO
-            if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
-            {
-                if (parentData.SpawnedObject != null)
-                    go.transform.SetParent(parentData.SpawnedObject.transform, worldPositionStays: true);
-            }
         }
 
         previewController.HideBlueprintPreview();
@@ -813,23 +750,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
         if (!Grid.TryPlace(data))
             return false;
 
-        // ©¤©¤ Establish parent-child relationship ©¤©¤
-        // Find a parent by checking the first occupancy cell that has a required surface.
-        ResolvedOccupancyCell[] occCells = property.GetRotatedOccupancyCells(rotationStep);
-        for (int i = 0; i < occCells.Length; i++)
-        {
-            if (occCells[i].RequiredSurface != BuildSurfaceType.None)
-            {
-                Vector3Int worldCell = anchor + occCells[i].Cell;
-                PlacedBuildableData parent = Grid.FindParentAt(worldCell, occCells[i].RequiredSurface);
-                if (parent != null)
-                {
-                    data.SetParent(parent);
-                    break;
-                }
-            }
-        }
-
         // Spawn real object
         Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
         float yaw = property.GetRotationDegrees(rotationStep);
@@ -844,15 +764,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
             behaviour = go.AddComponent<BuildableBehaviour>();
         }
         behaviour.Initialize(data);
-
-        // Parent the GameObject under the parent's GO for automatic transform following
-        if (data.ParentId != null && Grid.AllPlaced.TryGetValue(data.ParentId, out PlacedBuildableData parentData))
-        {
-            if (parentData.SpawnedObject != null)
-            {
-                go.transform.SetParent(parentData.SpawnedObject.transform, worldPositionStays: true);
-            }
-        }
 
         return true;
     }
@@ -901,29 +812,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void ConfirmMove(Vector3Int newAnchor)
     {
-        Vector3Int delta = newAnchor - movingData.AnchorCell;
-
-        // Place parent at new anchor
         movingData.AnchorCell = newAnchor;
         movingData.RotationStep = currentRotationStep;
         Grid.ForcePlaceIntoGrid(movingData);
 
-        // Place children at shifted positions
-        for (int i = 0; i < movingChildren.Count; i++)
-        {
-            movingChildren[i].AnchorCell += delta;
-            Grid.ForcePlaceIntoGrid(movingChildren[i]);
-        }
-
-        // Update visual transforms
-        SetGameObjectActiveRecursive(movingData, true);
+        // Update visual transform
         SyncGameObjectTransform(movingData);
-        // Children follow automatically via Unity transform hierarchy,
-        // but we still need to sync the grid data's anchor cells (already done above).
+        if (movingData.SpawnedObject != null)
+            movingData.SpawnedObject.SetActive(true);
 
         previewController.HidePreview();
         movingData = null;
-        movingChildren = null;
         CurrentState = BuildState.Idle;
         debugCanPlaceReason = "";
 
@@ -938,38 +837,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         data.SpawnedObject.transform.SetPositionAndRotation(worldPos, Quaternion.Euler(0f, yaw, 0f));
     }
 
-    /// <summary>
-    /// Show/hide a buildable and all its children's GameObjects.
-    /// </summary>
-    private void SetGameObjectActiveRecursive(PlacedBuildableData data, bool active)
-    {
-        if (data.SpawnedObject != null)
-            data.SpawnedObject.SetActive(active);
 
-        for (int i = 0; i < data.ChildrenIds.Count; i++)
-        {
-            if (Grid.AllPlaced.TryGetValue(data.ChildrenIds[i], out PlacedBuildableData child))
-            {
-                if (child.SpawnedObject != null)
-                    child.SpawnedObject.SetActive(active);
-            }
-        }
-    }
-
-    /// <summary>
-    /// Collect all direct + indirect children of a PlacedBuildableData.
-    /// </summary>
-    private void CollectChildren(PlacedBuildableData parent, List<PlacedBuildableData> result)
-    {
-        for (int i = 0; i < parent.ChildrenIds.Count; i++)
-        {
-            if (Grid.AllPlaced.TryGetValue(parent.ChildrenIds[i], out PlacedBuildableData child))
-            {
-                result.Add(child);
-                CollectChildren(child, result);
-            }
-        }
-    }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Commands ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -987,7 +855,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 {
                     var d = kvp.Value;
                     Debug.Log($"  {d.InstanceId}: {d.Property.EnumKey} occZones={d.Property.occupancyZones.Length} " +
-                              $"surfZones={d.Property.surfaceZones.Length} anchor={d.AnchorCell} parent={d.ParentId ?? "none"} children={d.ChildrenIds.Count}");
+                              $"surfZones={d.Property.surfaceZones.Length} anchor={d.AnchorCell}");
                 }
             }
         ));
@@ -1256,7 +1124,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         if (selectedProperty != null)
             panel.DrawLine($"OccZones: {selectedProperty.occupancyZones.Length}  SurfZones: {selectedProperty.surfaceZones.Length}");
         else if (movingData != null)
-            panel.DrawLine($"OccZones: {movingData.Property.occupancyZones.Length}  Children: {movingData.ChildrenIds.Count}");
+            panel.DrawLine($"OccZones: {movingData.Property.occupancyZones.Length}");
 
         panel.DrawLine($"RotationStep: {currentRotationStep}  ({currentRotationStep * 90}¡ã)");
 
@@ -1272,7 +1140,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             {
                 var hd = hitB.Data;
                 panel.DrawLine($"<color=yellow>HitBuildable: {hd.InstanceId} ({hd.Property.EnumKey})</color>");
-                panel.DrawLine($"  Anchor: {hd.AnchorCell}  Rot: {hd.RotationStep}  Parent: {hd.ParentId ?? "none"}");
+                panel.DrawLine($"  Anchor: {hd.AnchorCell}  Rot: {hd.RotationStep}");
             }
             else
             {
