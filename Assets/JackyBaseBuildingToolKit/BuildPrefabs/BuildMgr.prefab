@@ -53,12 +53,15 @@ MonoBehaviour:
   gridMax: {x: 50, y: 10, z: 50}
   uiContainer: {fileID: 0}
   containerSlotCount: 10
+  removeKey: 99
+  startPreset: {fileID: 0}
   enableDebug: 1
   grid:
     gridMin: {x: 0, y: 0, z: 0}
     gridMax: {x: 0, y: 0, z: 0}
     placedCount: 0
     occupiedCellCount: 0
+    surfaceCellCount: 0
 --- !u!114 &5606849978644230250
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -75,6 +78,9 @@ MonoBehaviour:
   buildSurfaceMask:
     serializedVersion: 2
     m_Bits: 256
+  buildSelectableMask:
+    serializedVersion: 2
+    m_Bits: 0
   maxRayDistance: 1000
   gridOriginWorld: {x: 0, y: 0, z: 0}
   cellSize: {x: 1, y: 1, z: 1}
@@ -95,8 +101,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25ebded3dd33894409409ff2dc883409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  validPreviewMaterial: {fileID: 2100000, guid: 8bc246c1b6057d44cbb5155765329f80, type: 2}
-  invalidPreviewMaterial: {fileID: 2100000, guid: fe26ce85d0c455d4c8f5afc2f4a1be20, type: 2}
+  validPreviewMaterial: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
+  invalidPreviewMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  previewUnitPrefab: {fileID: 8382963424789111466, guid: 282f8d74be17cd54392557f0fe044160, type: 3}
+  unitScaleFactor: 0.95
 --- !u!114 &634502552085456998
 MonoBehaviour:
   m_ObjectHideFlags: 0

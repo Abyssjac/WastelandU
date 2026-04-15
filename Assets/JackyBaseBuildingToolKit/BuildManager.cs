@@ -558,6 +558,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
         Vector3[] offsets = new Vector3[bpEntries.Length];
         Quaternion[] rotations = new Quaternion[bpEntries.Length];
 
+        HashSet<Vector3Int> mergedFootprint = new HashSet<Vector3Int>();
+
         for (int i = 0; i < bpEntries.Length; i++)
         {
             var entry = bpEntries[i];
@@ -575,9 +577,19 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
             int worldRot = (entry.localRotationStep + rotation) % 4;
             rotations[i] = Quaternion.Euler(0f, worldRot * 90f, 0f);
+
+            // Merge footprint cells (shifted by entry's local offset)
+            Vector3Int[] entryFootprint = prop.GetRotatedFootprint(worldRot);
+            for (int f = 0; f < entryFootprint.Length; f++)
+            {
+                mergedFootprint.Add(rotatedLocal + entryFootprint[f]);
+            }
         }
 
-        previewController.ShowBlueprintPreview(prefabs, offsets, rotations, cellSize);
+        Vector3Int[] footprintArray = new Vector3Int[mergedFootprint.Count];
+        mergedFootprint.CopyTo(footprintArray);
+
+        previewController.ShowBlueprintPreview(prefabs, offsets, rotations, cellSize, footprintArray);
     }
 
     /// <summary>
@@ -592,6 +604,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
         Vector3[] offsets = new Vector3[bpEntries.Length];
         Quaternion[] rotations = new Quaternion[bpEntries.Length];
 
+        HashSet<Vector3Int> mergedFootprint = new HashSet<Vector3Int>();
+
         for (int i = 0; i < bpEntries.Length; i++)
         {
             var entry = bpEntries[i];
@@ -603,9 +617,20 @@ public class BuildManager : MonoBehaviour, IDebuggable
             );
             int worldRot = (entry.localRotationStep + rotation) % 4;
             rotations[i] = Quaternion.Euler(0f, worldRot * 90f, 0f);
+
+            var prop = buildableDB.GetByEnum(entry.buildableEnumKey);
+            if (prop == null) continue;
+            Vector3Int[] entryFootprint = prop.GetRotatedFootprint(worldRot);
+            for (int f = 0; f < entryFootprint.Length; f++)
+            {
+                mergedFootprint.Add(rotatedLocal + entryFootprint[f]);
+            }
         }
 
-        previewController.UpdateBlueprintChildTransforms(offsets, rotations);
+        Vector3Int[] footprintArray = new Vector3Int[mergedFootprint.Count];
+        mergedFootprint.CopyTo(footprintArray);
+
+        previewController.UpdateBlueprintPreview(offsets, rotations, footprintArray, cellSize);
     }
 
     /// <summary>
