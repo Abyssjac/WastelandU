@@ -15,4 +15,5 @@ MonoBehaviour:
   entries:
   - {fileID: 11400000, guid: 9133f5edcee8fba45a36697a73359c8c, type: 2}
   - {fileID: 11400000, guid: ae197c571b0dd7f4585f1449ddb1b032, type: 2}
+  - {fileID: 11400000, guid: fe3e5cbecfec49d43ab7e1a7bcd98b82, type: 2}
   scanFolder: BuildingSystem/AllBuildBPSOs

@@ -14,6 +14,7 @@ public class BuildPreviewController : MonoBehaviour
     [Header("Preview Materials")]
     [SerializeField] private Material validPreviewMaterial;    // semi-transparent green
     [SerializeField] private Material invalidPreviewMaterial;  // semi-transparent red
+    [SerializeField] private Material conflictPreviewMaterial; // semi-transparent orange/yellow for conflicting buildables
 
     [Header("Preview Unit")]
     [Tooltip("A simple cube prefab (no Collider) with a BaseVisualController component.\n" +
@@ -229,6 +230,85 @@ public class BuildPreviewController : MonoBehaviour
         {
             blueprintUnitVisuals[i].SetMaterialAll(mat);
         }
+    }
+
+    // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+    // Conflict Highlights
+    // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+
+    private GameObject conflictRoot;
+    private List<BaseVisualController> conflictUnitVisuals;
+
+    /// <summary>
+    /// Show conflict highlight boxes for a list of existing buildables that
+    /// overlap with the current placement attempt.
+    /// Each buildable's footprint is drawn with the conflict material.
+    /// </summary>
+    /// <param name="conflictingBuildables">Buildables whose cells conflict.</param>
+    /// <param name="cellSize">Grid cell size for positioning and scaling.</param>
+    /// <param name="cellToWorldCenterFn">Function to convert a cell coordinate to its world-space center.</param>
+    public void ShowConflictHighlights(List<PlacedBuildableData> conflictingBuildables, Vector3 cellSize,
+                                       System.Func<Vector3Int, Vector3> cellToWorldCenterFn)
+    {
+        HideConflictHighlights();
+
+        if (conflictingBuildables == null || conflictingBuildables.Count == 0) return;
+        if (conflictPreviewMaterial == null) return;
+
+        conflictRoot = new GameObject("[ConflictHighlights]");
+        conflictUnitVisuals = new List<BaseVisualController>();
+
+        // Collect all unique footprint cells across all conflicting buildables
+        HashSet<Vector3Int> allWorldCells = new HashSet<Vector3Int>();
+        for (int b = 0; b < conflictingBuildables.Count; b++)
+        {
+            var data = conflictingBuildables[b];
+            Vector3Int[] footprint = data.Property.GetRotatedFootprint(data.RotationStep);
+            for (int f = 0; f < footprint.Length; f++)
+            {
+                allWorldCells.Add(data.AnchorCell + footprint[f]);
+            }
+        }
+
+        // Spawn unit cubes at world positions
+        Vector3 unitScale = new Vector3(
+            cellSize.x * unitScaleFactor,
+            cellSize.y * unitScaleFactor,
+            cellSize.z * unitScaleFactor
+        );
+
+        foreach (Vector3Int worldCell in allWorldCells)
+        {
+            if (previewUnitPrefab == null) break;
+
+            Vector3 worldPos = cellToWorldCenterFn(worldCell);
+
+            GameObject unit = Instantiate(previewUnitPrefab, conflictRoot.transform);
+            unit.name = "[ConflictUnit]";
+            unit.transform.position = worldPos;
+            unit.transform.rotation = Quaternion.identity;
+            unit.transform.localScale = unitScale;
+
+            var visual = unit.GetComponent<BaseVisualController>();
+            if (visual == null)
+                visual = unit.AddComponent<BaseVisualController>();
+
+            visual.SetMaterialAll(conflictPreviewMaterial);
+            conflictUnitVisuals.Add(visual);
+        }
+    }
+
+    /// <summary>
+    /// Destroy all conflict highlight objects.
+    /// </summary>
+    public void HideConflictHighlights()
+    {
+        if (conflictRoot != null)
+        {
+            Destroy(conflictRoot);
+            conflictRoot = null;
+        }
+        conflictUnitVisuals = null;
     }
 
     // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T

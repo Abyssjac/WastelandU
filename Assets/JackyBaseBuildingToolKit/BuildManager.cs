@@ -106,43 +106,115 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     /// <summary>
     /// Load the start preset, placing all entries into the grid in order.
+    /// Groups are processed sequentially. Within each group, individual entries first, then blueprints.
     /// </summary>
     private void LoadPreset()
     {
-        if (startPreset == null || startPreset.entries == null) return;
+        if (startPreset == null || startPreset.groups == null || startPreset.groups.Length == 0) return;
 
         var dbManager = PropertyDatabaseManager.Instance;
         if (dbManager == null) return;
         var db = dbManager.GetDatabase<BuildableDatabase>();
+        var bpDB = dbManager.GetDatabase<BuildBlueprintDatabase>();
         if (db == null)
         {
             Debug.LogWarning("[BuildManager] BuildableDatabase not found. Cannot load preset.");
             return;
         }
 
-        for (int i = 0; i < startPreset.entries.Length; i++)
+        int totalPlaced = 0;
+
+        for (int g = 0; g < startPreset.groups.Length; g++)
         {
-            var entry = startPreset.entries[i];
-            var prop = db.GetByEnum(entry.buildableEnumKey);
-            if (prop == null)
+            var group = startPreset.groups[g];
+            string groupLabel = string.IsNullOrEmpty(group.groupName) ? $"Group[{g}]" : group.groupName;
+
+            // ©¤©¤ Individual buildable entries ©¤©¤
+            if (group.entries != null)
             {
-                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: No BuildableProperty found for key '{entry.buildableEnumKey}'. Skipped.");
-                continue;
+                for (int i = 0; i < group.entries.Length; i++)
+                {
+                    var entry = group.entries[i];
+                    var prop = db.GetByEnum(entry.buildableEnumKey);
+                    if (prop == null)
+                    {
+                        Debug.LogWarning($"[BuildManager] Preset {groupLabel} entry [{i}]: No BuildableProperty for '{entry.buildableEnumKey}'. Skipped.");
+                        continue;
+                    }
+                    if (prop.prefab == null)
+                    {
+                        Debug.LogWarning($"[BuildManager] Preset {groupLabel} entry [{i}]: '{entry.buildableEnumKey}' has no prefab. Skipped.");
+                        continue;
+                    }
+
+                    bool ok;
+                    if (group.forced)
+                        ok = ForcePlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
+                    else
+                        ok = PlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
+
+                    if (!ok)
+                        Debug.LogWarning($"[BuildManager] Preset {groupLabel} entry [{i}]: Failed to place '{entry.buildableEnumKey}' at {entry.anchorCell}.");
+                    else
+                        totalPlaced++;
+                }
             }
 
-            if (prop.prefab == null)
+            // ©¤©¤ Blueprint entries ©¤©¤
+            if (group.blueprints != null && bpDB != null)
             {
-                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: Property '{entry.buildableEnumKey}' has no prefab. Skipped.");
-                continue;
-            }
+                for (int b = 0; b < group.blueprints.Length; b++)
+                {
+                    var bpEntry = group.blueprints[b];
+                    var blueprint = bpDB.GetByEnum(bpEntry.blueprintEnumKey);
+                    if (blueprint == null)
+                    {
+                        Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}]: No BuildBlueprintProperty for '{bpEntry.blueprintEnumKey}'. Skipped.");
+                        continue;
+                    }
 
-            if (!PlaceImmediate(prop, entry.anchorCell, entry.rotationStep))
-            {
-                Debug.LogWarning($"[BuildManager] Preset entry [{i}]: Failed to place '{entry.buildableEnumKey}' at {entry.anchorCell}.");
+                    BlueprintEntry[] bpEntries = blueprint.Entries;
+                    if (bpEntries == null || bpEntries.Length == 0)
+                    {
+                        Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}]: '{bpEntry.blueprintEnumKey}' has no entries. Skipped.");
+                        continue;
+                    }
+
+                    for (int e = 0; e < bpEntries.Length; e++)
+                    {
+                        var entry = bpEntries[e];
+                        var prop = db.GetByEnum(entry.buildableEnumKey);
+                        if (prop == null)
+                        {
+                            Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}] entry [{e}]: No BuildableProperty for '{entry.buildableEnumKey}'. Skipped.");
+                            continue;
+                        }
+                        if (prop.prefab == null)
+                        {
+                            Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}] entry [{e}]: '{entry.buildableEnumKey}' has no prefab. Skipped.");
+                            continue;
+                        }
+
+                        Vector3Int rotatedLocal = BuildableProperty.RotateCellY(entry.localCell, bpEntry.rotationStep);
+                        Vector3Int worldAnchor = bpEntry.anchorCell + rotatedLocal;
+                        int worldRotation = (entry.localRotationStep + bpEntry.rotationStep) % 4;
+
+                        bool ok;
+                        if (group.forced)
+                            ok = ForcePlaceImmediate(prop, worldAnchor, worldRotation);
+                        else
+                            ok = PlaceImmediate(prop, worldAnchor, worldRotation);
+
+                        if (!ok)
+                            Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}] entry [{e}]: Failed to place '{entry.buildableEnumKey}' at {worldAnchor}.");
+                        else
+                            totalPlaced++;
+                    }
+                }
             }
         }
 
-        Debug.Log($"[BuildManager] Preset loaded: {startPreset.name} ({startPreset.entries.Length} entries)");
+        Debug.Log($"[BuildManager] Preset loaded: {startPreset.name} ({startPreset.groups.Length} groups, {totalPlaced} placed)");
 
         OnGridChanged?.Invoke();
     }
@@ -292,6 +364,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         CurrentState = BuildState.Idle;
         previewController.HidePreview();
         previewController.HideBlueprintPreview();
+        previewController.HideConflictHighlights();
         debugCanPlaceReason = "";
 
         if (uiContainer != null)
@@ -380,6 +453,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         if (!positionProvider.HasValidHit)
         {
             previewController.SetPreviewValid(false);
+            previewController.HideConflictHighlights();
             debugCanPlace = false;
             debugCanPlaceReason = "No valid raycast hit";
             return;
@@ -404,6 +478,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
             footprintOffsets,
             debugCanPlace
         );
+
+        // Show conflict highlights when placement is blocked by existing buildables
+        if (!debugCanPlace)
+        {
+            List<PlacedBuildableData> conflicts = Grid.FindConflictingOccupants(selectedProperty, anchor, currentRotationStep);
+            previewController.ShowConflictHighlights(conflicts, positionProvider.CellSize, positionProvider.CellToWorldCenter);
+        }
+        else
+        {
+            previewController.HideConflictHighlights();
+        }
 
         // Confirm
         if (Input.GetMouseButtonDown(0) && debugCanPlace)
@@ -431,6 +516,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             movingData = null;
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
+            previewController.HideConflictHighlights();
             debugCanPlaceReason = "";
 
             OnGridChanged?.Invoke();
@@ -440,6 +526,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         if (!positionProvider.HasValidHit)
         {
             previewController.SetPreviewValid(false);
+            previewController.HideConflictHighlights();
             debugCanPlace = false;
             debugCanPlaceReason = "No valid raycast hit";
             return;
@@ -468,6 +555,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
             debugCanPlace
         );
 
+        // Show conflict highlights when move placement is blocked
+        if (!debugCanPlace)
+        {
+            List<PlacedBuildableData> conflicts = Grid.FindConflictingOccupants(movingData.Property, anchor, currentRotationStep);
+            previewController.ShowConflictHighlights(conflicts, positionProvider.CellSize, positionProvider.CellToWorldCenter);
+        }
+        else
+        {
+            previewController.HideConflictHighlights();
+        }
+
         // Confirm move
         if (Input.GetMouseButtonDown(0) && debugCanPlace)
         {
@@ -484,6 +582,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             movingData = null;
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
+            previewController.HideConflictHighlights();
             debugCanPlaceReason = "";
         }
     }
@@ -793,6 +892,40 @@ public class BuildManager : MonoBehaviour, IDebuggable
         return true;
     }
 
+    /// <summary>
+    /// Force-place a buildable into the grid, skipping all validation (CanPlace check).
+    /// Used by preset loading when <see cref="BuildPresetGroup.forced"/> is true.
+    /// </summary>
+    private bool ForcePlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    {
+        PlacedBuildableData data = new PlacedBuildableData
+        {
+            InstanceId = $"build_{instanceCounter++}",
+            Property = property,
+            AnchorCell = anchor,
+            RotationStep = rotationStep,
+        };
+
+        Grid.ForcePlaceIntoGrid(data);
+
+        // Spawn real object
+        Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
+        float yaw = property.GetRotationDegrees(rotationStep);
+        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+        go.transform.localScale = positionProvider.CellSize;
+        data.SpawnedObject = go;
+
+        var behaviour = go.GetComponent<BuildableBehaviour>();
+        if (behaviour == null)
+        {
+            Debug.LogWarning($"GameObject {go.name} has No BuildableBehaviour Initially; Add Automatically; Should be added in inspector setting");
+            behaviour = go.AddComponent<BuildableBehaviour>();
+        }
+        behaviour.Initialize(data);
+
+        return true;
+    }
+
     private void ConfirmPlace(Vector3Int anchor)
     {
         // ©¤©¤ If this placement came from a container slot, consume the item first ©¤©¤
@@ -823,6 +956,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         previewController.HidePreview();
+        previewController.HideConflictHighlights();
         CurrentState = BuildState.Idle;
         selectedProperty = null;
         pendingSlotIndex = -1;
@@ -847,6 +981,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             movingData.SpawnedObject.SetActive(true);
 
         previewController.HidePreview();
+        previewController.HideConflictHighlights();
         movingData = null;
         CurrentState = BuildState.Idle;
         debugCanPlaceReason = "";

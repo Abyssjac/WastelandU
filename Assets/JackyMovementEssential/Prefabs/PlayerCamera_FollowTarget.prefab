@@ -146,7 +146,7 @@ MonoBehaviour:
   deactivateSelfComponent: 1
   target: {fileID: 0}
   targetOffset: {x: 0, y: 1.2, z: 0}
-  yaw: 0
+  yaw: 45
   pitch: 60
   distance: 10
   enableZoom: 1

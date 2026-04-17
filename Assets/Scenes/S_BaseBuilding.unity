@@ -530,7 +530,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6842794056769118043, guid: a535ad3aead5494419ab26da037111e2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6842794056769118043, guid: a535ad3aead5494419ab26da037111e2, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1246,6 +1246,10 @@ PrefabInstance:
       propertyPath: addSlots.Array.data[4].itemKey
       value: 205
       objectReference: {fileID: 0}
+    - target: {fileID: 1383023693414985362, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: conflictPreviewMaterial
+      value: 
+      objectReference: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
     - target: {fileID: 3204652423643293810, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: m_LocalScale.x
       value: 1

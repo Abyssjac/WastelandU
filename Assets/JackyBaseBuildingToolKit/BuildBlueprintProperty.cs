@@ -11,6 +11,7 @@ public enum Key_BuildBlueprintPP
 
     BuildBlueprint_Room_545_0 = 1,
     BuildBlueprint_Platform_33_0 = 31,
+    BuildBlueprint_Platform_55_0 = 32,
 }
 
 /// <summary>

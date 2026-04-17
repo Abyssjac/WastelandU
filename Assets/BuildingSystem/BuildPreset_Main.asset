@@ -12,31 +12,35 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8525a629d4660f048b06da84834d0f24, type: 3}
   m_Name: BuildPreset_Main
   m_EditorClassIdentifier: 
-  entries:
-  - buildableEnumKey: 1
-    anchorCell: {x: 0, y: -1, z: 0}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: 1, y: -1, z: 1}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: 1, y: -1, z: 0}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: 1, y: -1, z: -1}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: -1, y: -1, z: 1}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: -1, y: -1, z: 0}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: -1, y: -1, z: -1}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: 0, y: -1, z: 1}
-    rotationStep: 0
-  - buildableEnumKey: 1
-    anchorCell: {x: 0, y: -1, z: -1}
-    rotationStep: 0
+  groups:
+  - groupName: Base Platform
+    forced: 1
+    entries: []
+    blueprints:
+    - blueprintEnumKey: 32
+      anchorCell: {x: -5, y: 0, z: -5}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: -5, y: 0, z: 0}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: -5, y: 0, z: 5}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 0, y: 0, z: -5}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 0, y: 0, z: 0}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 0, y: 0, z: 5}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 5, y: 0, z: -5}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 5, y: 0, z: 0}
+      rotationStep: 0
+    - blueprintEnumKey: 32
+      anchorCell: {x: 5, y: 0, z: 5}
+      rotationStep: 0

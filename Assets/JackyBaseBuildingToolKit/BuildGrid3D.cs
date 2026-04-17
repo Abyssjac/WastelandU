@@ -386,6 +386,35 @@ public class BuildGrid3D
         surfaceCellCount = surfaceMap.Count;
     }
 
+    // --------- Conflict Query ---------
+
+    /// <summary>
+    /// Find all distinct placed buildables that would conflict (occupy the same cell/layer/facing)
+    /// if the given property were placed at the specified anchor and rotation.
+    /// Returns an empty list if there are no occupancy conflicts.
+    /// Does NOT check surface requirements ¡ª only occupancy collisions.
+    /// </summary>
+    public List<PlacedBuildableData> FindConflictingOccupants(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    {
+        HashSet<string> seen = new HashSet<string>();
+        List<PlacedBuildableData> result = new List<PlacedBuildableData>();
+
+        ResolvedOccupancyCell[] occ = property.GetRotatedOccupancyCells(rotationStep);
+        for (int i = 0; i < occ.Length; i++)
+        {
+            Vector3Int worldCell = anchor + occ[i].Cell;
+            var key = new CellLayerKey(worldCell, occ[i].Layer, occ[i].OccupancyFacing);
+
+            if (occupancyMap.TryGetValue(key, out PlacedBuildableData occupant))
+            {
+                if (seen.Add(occupant.InstanceId))
+                    result.Add(occupant);
+            }
+        }
+
+        return result;
+    }
+
     // --------- Removal Impact Query ---------
 
     /// <summary>
