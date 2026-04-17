@@ -147,7 +147,7 @@ MonoBehaviour:
   target: {fileID: 0}
   targetOffset: {x: 0, y: 1.2, z: 0}
   yaw: 45
-  pitch: 60
+  pitch: 70
   distance: 10
   enableZoom: 1
   zoomSpeed: 2.5

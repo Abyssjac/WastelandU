@@ -90,6 +90,12 @@ public class PlayerMovementCC : MonoBehaviour
     private bool isFirstPersonMode;
     private CameraMode currentCameraMode;
 
+    /// <summary>
+    /// When false, player input is ignored (movement, dash, rotation all stop).
+    /// Set by camera mode switches or any external system that needs to freeze the player.
+    /// </summary>
+    public bool InputEnabled { get; set; } = true;
+
     // ----------------------------
     // Unity
     // ----------------------------
@@ -128,12 +134,26 @@ public class PlayerMovementCC : MonoBehaviour
         currentCameraMode = newMode;
         isFirstPersonMode = (newMode == CameraMode.FirstPerson);
 
+        // Freeze player input when using free camera
+        InputEnabled = (newMode != CameraMode.FreeCamera);
+
         if (debugLogStateChanges)
-            Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}", this);
+            Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}, InputEnabled={InputEnabled}", this);
     }
 
     private void Update()
     {
+        if (!InputEnabled)
+        {
+            // Still apply gravity so the player doesn't float
+            isGrounded = CheckGrounded();
+            ApplyGravity(Time.deltaTime);
+            controller.Move(Vector3.down * verticalVelocity * Time.deltaTime);
+            moveDirWorld = Vector3.zero;
+            planarVelocity = Vector3.zero;
+            return;
+        }
+
         ReadInput();
         UpdateDashState();
 

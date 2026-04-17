@@ -119,6 +119,7 @@ public struct FootprintBox
 [System.Serializable]
 public struct OccupancyZone
 {
+    public string zoneName;  // for debugging and readability in the inspector
     [Header("Cells (additive ¡ª boxes + manual cells merged)")]
     public FootprintBox[] boxes;
     public Vector3Int[] cells;
@@ -151,6 +152,7 @@ public struct OccupancyZone
 [System.Serializable]
 public struct SurfaceZone
 {
+    public string zoneName;  // for debugging and readability in the inspector
     [Header("Cells (additive ¡ª boxes + manual cells merged)")]
     public FootprintBox[] boxes;
     public Vector3Int[] cells;
@@ -538,6 +540,8 @@ public enum Key_BuildablePP
     Build_Base_Wall_XPosNeg_1Level_0 = 12,
     Build_Base_Wall_ZNegPos_1Level_0 = 13,
     Build_Base_Wall_ZPosNeg_1Level_0 = 14,
+
+    Build_Base_Slope_2Level_0 = 20,
 
     Build_Bookstore_Bookshelf_0 = 30,
     Build_Bookstore_Bookshelf_1 = 31,

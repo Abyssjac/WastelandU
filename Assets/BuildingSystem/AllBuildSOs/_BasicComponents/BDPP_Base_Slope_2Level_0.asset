@@ -1,0 +1,54 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_Base_Slope_2Level_0
+  m_EditorClassIdentifier: 
+  enumKey: 20
+  stringKey: BDPP_Base_Slope_2Level_0
+  prefab: {fileID: 3119623997907515867, guid: e164fa28ca7319540ab1775415d42b7b, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - zoneName: SlopA
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 1}
+    buildLayer: 0
+    occupancyFacings: 1
+    requiredSurface: 5
+    requiredFacing: 0
+  - zoneName: Ground
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 0
+    occupancyFacings: 0
+    requiredSurface: 5
+    requiredFacing: 0
+  - zoneName: SlopeB
+    boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    buildLayer: 0
+    occupancyFacings: 1
+    requiredSurface: 0
+    requiredFacing: 0
+  surfaceZones:
+  - zoneName: Platsupporter
+    boxes: []
+    cells:
+    - {x: 0, y: 1, z: -1}
+    providedSurface: 2
+    facing: 0
+  canRotate: 1
+  canMove: 1
+  iconSprite: {fileID: 0}
+  displayName: 

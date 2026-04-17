@@ -1,5 +1,6 @@
 using System;
 using UnityEngine;
+using UnityEngine.EventSystems;
 using JackyUtility;
 using System.Collections.Generic;
 /// <summary>
@@ -280,39 +281,37 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void OnContainerSelectionChanged(int slotIndex)
     {
-        Debug.Log($"[BuildManager] Container selection changed: slot {slotIndex}");
-
         if (slotIndex < 0)
         {
-            // Deselected ¡ª cancel if we were placing from container
+            // Deselected ¡ª cancel if we were placing from container, hide panel
             if (CurrentState == BuildState.Placing && pendingSlotIndex >= 0)
                 CancelCurrentAction();
+
+            if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
+                buildItemInfoPanel.Close();
             return;
         }
 
-        // Build info panel flow: only available in build mode
+        // Only available in build mode
         if (!IsBuildModeActive) return;
 
+        // Resolve item and action
+        var itemProp = containerLookup != null ? containerLookup.GetPropertyByIndex(slotIndex) : null;
+        if (itemProp == null) return;
+
+        if (!itemProp.TryGetAction<ContainerItemBuildAction>(out var buildAction)) return;
+
+        // Show detail panel (informational, does not block placement)
         if (buildItemInfoPanel != null)
         {
-            Debug.Log($"[BuildManager] Container slot {slotIndex} selected. Showing info panel if valid.");
-            // Resolve the item and action for the panel
-            var itemProp = containerLookup != null ? containerLookup.GetPropertyByIndex(slotIndex) : null;
-            if (itemProp == null) return;
-
-            if (!itemProp.TryGetAction<ContainerItemBuildAction>(out var buildAction)) return;
-
             BuildActionDisplayInfo dispInfo = displayDB != null
                 ? displayDB.GetByEnum(buildAction.displayType)
                 : null;
-
             buildItemInfoPanel.Show(slotIndex, itemProp, buildAction, dispInfo);
         }
-        else
-        {
-            // Fallback: no info panel assigned ¡ª go directly to placement
-            SelectSlotForBuild(slotIndex);
-        }
+
+        // Immediately enter placement mode
+        SelectSlotForBuild(slotIndex);
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Build Mode Toggle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -502,10 +501,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void Update()
     {
-        // Block build input while the info panel is open
-        if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
-            return;
-
         switch (CurrentState)
         {
             case BuildState.Inactive:
@@ -525,63 +520,60 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
     }
 
+    /// <summary>True when the mouse is over a UI element (prevents click-through to the 3D world).</summary>
+    private bool IsPointerOverUI()
+    {
+        return EventSystem.current != null && EventSystem.current.IsPointerOverGameObject();
+    }
+
     // Tracks the current hover state for the idle buildable selection
     private BuildableBehaviour lastHoveredBuildable;
-    private bool lastHoverCanSelect;
 
     private void HandleIdleInput()
     {
         BuildableBehaviour hitBuildable = positionProvider.HasValidHit ? positionProvider.CurrentHitBuildable : null;
 
-        // ©¤©¤ Hover preview logic ©¤©¤
         if (hitBuildable != null && hitBuildable.Data != null)
         {
-            string hitId = hitBuildable.Data.InstanceId;
-
-            // Only recalculate when the hovered object changes
+            // Track hover target change ¡ª clear old alert highlights when moving to a different object
             if (lastHoveredBuildable != hitBuildable)
             {
+                previewController.HideHoverPreview();
                 lastHoveredBuildable = hitBuildable;
+            }
+
+            if (Input.GetMouseButtonDown(0) && !IsPointerOverUI())
+            {
                 var data = hitBuildable.Data;
 
                 if (!data.Property.canMove)
                 {
-                    // canMove == false ¡ú disabled visual, cannot select
+                    // canMove == false ¡ú show disabled highlight + affected buildables on click
+                    var impact = Grid.WouldRemoveAffectOthers(data.InstanceId);
                     previewController.ShowHoverPreview(data,
                         BuildPreviewController.HoverState.Disabled,
-                        null, positionProvider.CellSize, positionProvider.CellToWorldCenter);
-                    lastHoverCanSelect = false;
+                        impact.WouldAffectOthers ? impact.AffectedBuildables : null,
+                        positionProvider.CellSize, positionProvider.CellToWorldCenter);
                 }
                 else
                 {
-                    // Check removal impact
-                    var impact = Grid.WouldRemoveAffectOthers(hitId);
+                    var impact = Grid.WouldRemoveAffectOthers(data.InstanceId);
                     if (impact.WouldAffectOthers)
                     {
-                        // Would affect others ¡ú alert visual, cannot select
+                        // Would affect others ¡ú show alert highlight on click
                         previewController.ShowHoverPreview(data,
                             BuildPreviewController.HoverState.Alert,
                             impact.AffectedBuildables,
                             positionProvider.CellSize, positionProvider.CellToWorldCenter);
-                        lastHoverCanSelect = false;
                     }
                     else
                     {
-                        // Safe to move ¡ú valid visual
-                        previewController.ShowHoverPreview(data,
-                            BuildPreviewController.HoverState.Valid,
-                            null, positionProvider.CellSize, positionProvider.CellToWorldCenter);
-                        lastHoverCanSelect = true;
+                        // Safe ¡ú immediately begin moving
+                        previewController.HideHoverPreview();
+                        lastHoveredBuildable = null;
+                        BeginMoving(data);
                     }
                 }
-            }
-
-            // ©¤©¤ Click to select ©¤©¤
-            if (Input.GetMouseButtonDown(0) && lastHoverCanSelect)
-            {
-                previewController.HideHoverPreview();
-                lastHoveredBuildable = null;
-                BeginMoving(hitBuildable.Data);
             }
         }
         else
@@ -591,7 +583,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
             {
                 previewController.HideHoverPreview();
                 lastHoveredBuildable = null;
-                lastHoverCanSelect = false;
             }
         }
     }
@@ -639,7 +630,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         // Confirm
-        if (Input.GetMouseButtonDown(0) && debugCanPlace)
+        if (Input.GetMouseButtonDown(0) && debugCanPlace && !IsPointerOverUI())
         {
             ConfirmPlace(anchor);
         }
@@ -715,7 +706,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
 
         // Confirm move
-        if (Input.GetMouseButtonDown(0) && debugCanPlace)
+        if (Input.GetMouseButtonDown(0) && debugCanPlace && !IsPointerOverUI())
         {
             ConfirmMove(anchor);
         }
@@ -780,7 +771,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         );
 
         // Confirm
-        if (Input.GetMouseButtonDown(0) && debugCanPlace)
+        if (Input.GetMouseButtonDown(0) && debugCanPlace && !IsPointerOverUI())
         {
             ConfirmBlueprintPlace(blueprintAnchor);
         }
