@@ -25,6 +25,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
     [SerializeField] private UI_Container uiContainer;
     [SerializeField] private int containerSlotCount = 6;
 
+    [Header("Build Info Panel")]
+    [SerializeField] private BuildItemInfoPanel buildItemInfoPanel;
+
     [Header("Remove")]
     [Tooltip("Key to remove the hovered buildable (and its children).")]
     [SerializeField] private KeyCode removeKey = KeyCode.C;
@@ -46,7 +49,15 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     [SerializeField] private BuildGrid3D grid;
     public BuildGrid3D Grid => grid;
-    public BuildState CurrentState { get; private set; } = BuildState.Idle;
+    public BuildState CurrentState { get; private set; } = BuildState.Inactive;
+
+    /// <summary>True when the build system is active (not <see cref="BuildState.Inactive"/>).</summary>
+    public bool IsBuildModeActive => CurrentState != BuildState.Inactive;
+
+    /// <summary>
+    /// Fired when build mode is toggled on or off. Parameter is true when entering build mode.
+    /// </summary>
+    public event Action<bool> OnBuildModeChanged;
 
     /// <summary>
     /// Fired after any grid mutation (place / move / remove / preset load / blueprint place).
@@ -71,6 +82,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private ContainerPropertyLookup<ContainerItemProperty, Key_ContainerItemPP> containerLookup;
     private ContainerItemDatabase containerItemDB;
     private BuildableDatabase buildableDB;
+    private BuildActionDisplayDatabase displayDB;
 
     /// <summary>The build container. Null if databases are missing.</summary>
     public Container<Key_ContainerItemPP> Container => container;
@@ -240,6 +252,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         containerItemDB = dbManager.GetDatabase<ContainerItemDatabase>();
         buildableDB = dbManager.GetDatabase<BuildableDatabase>();
         blueprintDB = dbManager.GetDatabase<BuildBlueprintDatabase>();
+        displayDB = dbManager.GetDatabase<BuildActionDisplayDatabase>();
 
         if (containerItemDB == null || buildableDB == null)
         {
@@ -260,10 +273,15 @@ public class BuildManager : MonoBehaviour, IDebuggable
             containerLookup.BindUIContainer(uiContainer);
             uiContainer.OnSelectionChanged += OnContainerSelectionChanged;
         }
+
+        if (buildItemInfoPanel != null)
+            buildItemInfoPanel.Initialize(this);
     }
 
     private void OnContainerSelectionChanged(int slotIndex)
     {
+        Debug.Log($"[BuildManager] Container selection changed: slot {slotIndex}");
+
         if (slotIndex < 0)
         {
             // Deselected ¡ª cancel if we were placing from container
@@ -272,7 +290,69 @@ public class BuildManager : MonoBehaviour, IDebuggable
             return;
         }
 
-        SelectSlotForBuild(slotIndex);
+        // Build info panel flow: only available in build mode
+        if (!IsBuildModeActive) return;
+
+        if (buildItemInfoPanel != null)
+        {
+            Debug.Log($"[BuildManager] Container slot {slotIndex} selected. Showing info panel if valid.");
+            // Resolve the item and action for the panel
+            var itemProp = containerLookup != null ? containerLookup.GetPropertyByIndex(slotIndex) : null;
+            if (itemProp == null) return;
+
+            if (!itemProp.TryGetAction<ContainerItemBuildAction>(out var buildAction)) return;
+
+            BuildActionDisplayInfo dispInfo = displayDB != null
+                ? displayDB.GetByEnum(buildAction.displayType)
+                : null;
+
+            buildItemInfoPanel.Show(slotIndex, itemProp, buildAction, dispInfo);
+        }
+        else
+        {
+            // Fallback: no info panel assigned ¡ª go directly to placement
+            SelectSlotForBuild(slotIndex);
+        }
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Build Mode Toggle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    /// <summary>
+    /// Activate the build system. Transitions from <see cref="BuildState.Inactive"/> to <see cref="BuildState.Idle"/>.
+    /// </summary>
+    public void EnterBuildMode()
+    {
+        if (IsBuildModeActive) return;
+        CurrentState = BuildState.Idle;
+        OnBuildModeChanged?.Invoke(true);
+    }
+
+    /// <summary>
+    /// Deactivate the build system. Cancels any in-progress action, hides all previews,
+    /// and transitions to <see cref="BuildState.Inactive"/>.
+    /// </summary>
+    public void ExitBuildMode()
+    {
+        if (!IsBuildModeActive) return;
+
+        // Clean up any active operation first
+        if (CurrentState != BuildState.Idle)
+            CancelCurrentAction();
+
+        // Hide hover preview if visible
+        previewController.HideHoverPreview();
+
+        CurrentState = BuildState.Inactive;
+        OnBuildModeChanged?.Invoke(false);
+    }
+
+    /// <summary>
+    /// Toggle build mode on/off.
+    /// </summary>
+    public void ToggleBuildMode()
+    {
+        if (IsBuildModeActive) ExitBuildMode();
+        else EnterBuildMode();
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -367,6 +447,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
         previewController.HideConflictHighlights();
         debugCanPlaceReason = "";
 
+        // Close info panel if open
+        if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
+            buildItemInfoPanel.Close();
+
         if (uiContainer != null)
             uiContainer.ClearSelection();
     }
@@ -418,8 +502,14 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void Update()
     {
+        // Block build input while the info panel is open
+        if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
+            return;
+
         switch (CurrentState)
         {
+            case BuildState.Inactive:
+                return; // build system is off ¡ª skip all input
             case BuildState.Idle:
                 HandleIdleInput();
                 break;
@@ -435,15 +525,73 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
     }
 
+    // Tracks the current hover state for the idle buildable selection
+    private BuildableBehaviour lastHoveredBuildable;
+    private bool lastHoverCanSelect;
+
     private void HandleIdleInput()
     {
-        // left-click on an existing buildable to begin moving
-        if (Input.GetMouseButtonDown(0) && positionProvider.HasValidHit)
+        BuildableBehaviour hitBuildable = positionProvider.HasValidHit ? positionProvider.CurrentHitBuildable : null;
+
+        // ©¤©¤ Hover preview logic ©¤©¤
+        if (hitBuildable != null && hitBuildable.Data != null)
         {
-            BuildableBehaviour hitBuildable = positionProvider.CurrentHitBuildable;
-            if (hitBuildable != null && hitBuildable.Data != null && hitBuildable.Data.Property.canMove)
+            string hitId = hitBuildable.Data.InstanceId;
+
+            // Only recalculate when the hovered object changes
+            if (lastHoveredBuildable != hitBuildable)
             {
+                lastHoveredBuildable = hitBuildable;
+                var data = hitBuildable.Data;
+
+                if (!data.Property.canMove)
+                {
+                    // canMove == false ¡ú disabled visual, cannot select
+                    previewController.ShowHoverPreview(data,
+                        BuildPreviewController.HoverState.Disabled,
+                        null, positionProvider.CellSize, positionProvider.CellToWorldCenter);
+                    lastHoverCanSelect = false;
+                }
+                else
+                {
+                    // Check removal impact
+                    var impact = Grid.WouldRemoveAffectOthers(hitId);
+                    if (impact.WouldAffectOthers)
+                    {
+                        // Would affect others ¡ú alert visual, cannot select
+                        previewController.ShowHoverPreview(data,
+                            BuildPreviewController.HoverState.Alert,
+                            impact.AffectedBuildables,
+                            positionProvider.CellSize, positionProvider.CellToWorldCenter);
+                        lastHoverCanSelect = false;
+                    }
+                    else
+                    {
+                        // Safe to move ¡ú valid visual
+                        previewController.ShowHoverPreview(data,
+                            BuildPreviewController.HoverState.Valid,
+                            null, positionProvider.CellSize, positionProvider.CellToWorldCenter);
+                        lastHoverCanSelect = true;
+                    }
+                }
+            }
+
+            // ©¤©¤ Click to select ©¤©¤
+            if (Input.GetMouseButtonDown(0) && lastHoverCanSelect)
+            {
+                previewController.HideHoverPreview();
+                lastHoveredBuildable = null;
                 BeginMoving(hitBuildable.Data);
+            }
+        }
+        else
+        {
+            // No buildable under cursor ¡ª clear hover
+            if (lastHoveredBuildable != null)
+            {
+                previewController.HideHoverPreview();
+                lastHoveredBuildable = null;
+                lastHoverCanSelect = false;
             }
         }
     }
@@ -1270,7 +1418,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         panel.DrawLine("<b>¨T¨T¨T BuildManager Debug ¨T¨T¨T</b>");
 
-        string stateColor = CurrentState == BuildState.Idle ? "white" :
+        string stateColor = CurrentState == BuildState.Inactive ? "gray" :
+                            CurrentState == BuildState.Idle ? "white" :
                             CurrentState == BuildState.Placing ? "cyan" :
                             CurrentState == BuildState.PlacingBlueprint ? "magenta" : "yellow";
         panel.DrawLine($"State: <color={stateColor}><b>{CurrentState}</b></color>");
@@ -1328,6 +1477,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
 public enum BuildState
 {
+    Inactive,         // build system is off ¡ª no input processed
     Idle,
     Selecting,        // UI choosing which buildable
     Placing,          // dragging preview, about to place

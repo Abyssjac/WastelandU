@@ -14,3 +14,4 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   buildableKey: 2
   costPerBuild: 1
+  displayType: 1

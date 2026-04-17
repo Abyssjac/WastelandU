@@ -15,4 +15,8 @@ public class ContainerItemBuildAction : ContainerItemAction
 
     [Tooltip("How many container items are consumed per build. Minimum 1.")]
     public int costPerBuild = 1;
+
+    [Header("UI Display")]
+    [Tooltip("Determines which UI info category is shown in the BuildItemInfoPanel.")]
+    public Key_BuildActionDisplayPP displayType = Key_BuildActionDisplayPP.None;
 }

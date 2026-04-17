@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Collections.Generic;
 using UnityEngine;
 
 /// <summary>
@@ -15,6 +14,11 @@ public class BuildPreviewController : MonoBehaviour
     [SerializeField] private Material validPreviewMaterial;    // semi-transparent green
     [SerializeField] private Material invalidPreviewMaterial;  // semi-transparent red
     [SerializeField] private Material conflictPreviewMaterial; // semi-transparent orange/yellow for conflicting buildables
+
+    [Header("Hover Materials")]
+    [SerializeField] private Material hoverValidMaterial;      // normal hover highlight (can move, safe)
+    [SerializeField] private Material hoverAlertMaterial;      // alert hover (can move, but would affect others)
+    [SerializeField] private Material hoverDisabledMaterial;   // disabled hover (canMove == false)
 
     [Header("Preview Unit")]
     [Tooltip("A simple cube prefab (no Collider) with a BaseVisualController component.\n" +
@@ -309,6 +313,126 @@ public class BuildPreviewController : MonoBehaviour
             conflictRoot = null;
         }
         conflictUnitVisuals = null;
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // Hover Preview (Idle state: highlight hovered buildable)
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private GameObject hoverRoot;
+    private List<BaseVisualController> hoverUnitVisuals;
+    private GameObject hoverAlertRoot;
+    private List<BaseVisualController> hoverAlertUnitVisuals;
+    private string currentHoverInstanceId;
+
+    /// <summary>The instance ID of the currently hovered buildable, or null.</summary>
+    public string CurrentHoverInstanceId => currentHoverInstanceId;
+
+    public enum HoverState { None, Valid, Alert, Disabled }
+
+    /// <summary>
+    /// Show hover preview box around a placed buildable.
+    /// </summary>
+    /// <param name="data">The buildable being hovered.</param>
+    /// <param name="state">Visual state to display.</param>
+    /// <param name="affectedBuildables">Other buildables affected by removal (shown with alert material when state is Alert).</param>
+    /// <param name="cellSize">Grid cell size.</param>
+    /// <param name="cellToWorldCenterFn">Cell-to-world converter.</param>
+    public void ShowHoverPreview(PlacedBuildableData data, HoverState state,
+                                 List<PlacedBuildableData> affectedBuildables,
+                                 Vector3 cellSize, System.Func<Vector3Int, Vector3> cellToWorldCenterFn)
+    {
+        HideHoverPreview();
+        if (data == null) return;
+
+        currentHoverInstanceId = data.InstanceId;
+
+        // Choose material based on state
+        Material mat;
+        switch (state)
+        {
+            case HoverState.Alert:    mat = hoverAlertMaterial ?? invalidPreviewMaterial; break;
+            case HoverState.Disabled: mat = hoverDisabledMaterial ?? invalidPreviewMaterial; break;
+            default:                  mat = hoverValidMaterial ?? validPreviewMaterial; break;
+        }
+
+        // Spawn hover box for the hovered buildable
+        hoverRoot = new GameObject("[HoverPreview]");
+        hoverUnitVisuals = new List<BaseVisualController>();
+
+        Vector3Int[] footprint = data.Property.GetRotatedFootprint(data.RotationStep);
+        Vector3 unitScale = new Vector3(
+            cellSize.x * unitScaleFactor,
+            cellSize.y * unitScaleFactor,
+            cellSize.z * unitScaleFactor
+        );
+
+        for (int i = 0; i < footprint.Length; i++)
+        {
+            if (previewUnitPrefab == null) break;
+            Vector3 worldPos = cellToWorldCenterFn(data.AnchorCell + footprint[i]);
+            GameObject unit = Instantiate(previewUnitPrefab, hoverRoot.transform);
+            unit.name = "[HoverUnit]";
+            unit.transform.position = worldPos;
+            unit.transform.rotation = Quaternion.identity;
+            unit.transform.localScale = unitScale;
+
+            var visual = unit.GetComponent<BaseVisualController>();
+            if (visual == null) visual = unit.AddComponent<BaseVisualController>();
+            visual.SetMaterialAll(mat);
+            hoverUnitVisuals.Add(visual);
+        }
+
+        // Show alert highlights on affected buildables
+        if (state == HoverState.Alert && affectedBuildables != null && affectedBuildables.Count > 0)
+        {
+            Material alertMat = hoverAlertMaterial ?? invalidPreviewMaterial;
+            hoverAlertRoot = new GameObject("[HoverAlertAffected]");
+            hoverAlertUnitVisuals = new List<BaseVisualController>();
+
+            for (int b = 0; b < affectedBuildables.Count; b++)
+            {
+                var affected = affectedBuildables[b];
+                Vector3Int[] affFootprint = affected.Property.GetRotatedFootprint(affected.RotationStep);
+                for (int f = 0; f < affFootprint.Length; f++)
+                {
+                    if (previewUnitPrefab == null) break;
+                    Vector3 worldPos = cellToWorldCenterFn(affected.AnchorCell + affFootprint[f]);
+                    GameObject unit = Instantiate(previewUnitPrefab, hoverAlertRoot.transform);
+                    unit.name = "[HoverAlertUnit]";
+                    unit.transform.position = worldPos;
+                    unit.transform.rotation = Quaternion.identity;
+                    unit.transform.localScale = unitScale;
+
+                    var visual = unit.GetComponent<BaseVisualController>();
+                    if (visual == null) visual = unit.AddComponent<BaseVisualController>();
+                    visual.SetMaterialAll(alertMat);
+                    hoverAlertUnitVisuals.Add(visual);
+                }
+            }
+        }
+    }
+
+    /// <summary>
+    /// Hide all hover preview objects.
+    /// </summary>
+    public void HideHoverPreview()
+    {
+        if (hoverRoot != null)
+        {
+            Destroy(hoverRoot);
+            hoverRoot = null;
+        }
+        hoverUnitVisuals = null;
+
+        if (hoverAlertRoot != null)
+        {
+            Destroy(hoverAlertRoot);
+            hoverAlertRoot = null;
+        }
+        hoverAlertUnitVisuals = null;
+
+        currentHoverInstanceId = null;
     }
 
     // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
