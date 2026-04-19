@@ -1,11 +1,19 @@
 using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JackyUtility;
 
+public enum WeaponMode
+{
+    Build,
+    Recycle,
+}
+
 /// <summary>
 /// Manages the player's weapon: which buildable is selected, ammo container,
-/// switching between ammo types, rotation control, and shooting (placing buildables on enemies).
+/// switching between ammo types, rotation control, shooting, and recycling.
+/// Supports two modes: Build (place buildables) and Recycle (pick up placed buildables).
 /// </summary>
 public class WeaponBehaviour : MonoBehaviour
 {
@@ -17,11 +25,11 @@ public class WeaponBehaviour : MonoBehaviour
     [Tooltip("Key to switch to the next available ammo type in the container.")]
     [SerializeField] private KeyCode switchKey = KeyCode.Tab;
 
-    [Tooltip("Mouse button index for shooting (0 = left, 1 = right, 2 = middle).")]
-    [SerializeField] private int shootMouseButton = 0;
+    [Tooltip("Key to toggle between Build and Recycle mode.")]
+    [SerializeField] private KeyCode modeToggleKey = KeyCode.Q;
 
-    [Tooltip("Mouse button index for recycling a placed buildable (0 = left, 1 = right, 2 = middle).")]
-    [SerializeField] private int recycleMouseButton = 1;
+    [Tooltip("Mouse button index for the primary action (shoot in Build mode, recycle in Recycle mode).")]
+    [SerializeField] private int primaryMouseButton = 0;
 
     [Tooltip("Key to rotate the buildable before shooting.")]
     [SerializeField] private KeyCode rotateKey = KeyCode.R;
@@ -41,6 +49,7 @@ public class WeaponBehaviour : MonoBehaviour
     private Key_BuildablePP curBuildableEnum = Key_BuildablePP.None;
     private BuildableProperty curBuildableProperty;
     private int currentRotationStep;
+    private WeaponMode currentMode = WeaponMode.Build;
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -48,9 +57,13 @@ public class WeaponBehaviour : MonoBehaviour
     public Key_BuildablePP CurrentBuildableEnum => curBuildableEnum;
     public BuildableProperty CurrentBuildableProperty => curBuildableProperty;
     public int CurrentRotationStep => currentRotationStep;
+    public WeaponMode CurrentMode => currentMode;
 
     /// <summary>Fired when the selected ammo type changes.</summary>
     public event Action<Key_BuildablePP> OnWeaponChanged;
+
+    /// <summary>Fired when the weapon mode changes (Build ? Recycle).</summary>
+    public event Action<WeaponMode> OnWeaponModeChanged;
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -77,29 +90,55 @@ public class WeaponBehaviour : MonoBehaviour
 
     private void HandleInput()
     {
-        // Switch ammo
-        if (Input.GetKeyDown(switchKey))
+        // Toggle mode
+        if (Input.GetKeyDown(modeToggleKey))
+        {
+            ToggleMode();
+        }
+
+        // Switch ammo (only in Build mode)
+        if (Input.GetKeyDown(switchKey) && currentMode == WeaponMode.Build)
         {
             SwitchToNextAmmo();
         }
 
-        // Rotate
-        if (Input.GetKeyDown(rotateKey) && curBuildableProperty != null && curBuildableProperty.canRotate)
+        // Rotate (only in Build mode)
+        if (Input.GetKeyDown(rotateKey) && currentMode == WeaponMode.Build
+            && curBuildableProperty != null && curBuildableProperty.canRotate)
         {
             currentRotationStep = (currentRotationStep + 1) % 4;
         }
 
-        // Shoot
-        if (Input.GetMouseButtonDown(shootMouseButton))
+        // Primary action
+        if (Input.GetMouseButtonDown(primaryMouseButton))
         {
-            TryShoot();
+            if (currentMode == WeaponMode.Build)
+                TryShoot();
+            else
+                TryRecycle();
         }
+    }
 
-        // Recycle
-        if (Input.GetMouseButtonDown(recycleMouseButton))
-        {
-            TryRecycle();
-        }
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Mode ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    public void ToggleMode()
+    {
+        SetMode(currentMode == WeaponMode.Build ? WeaponMode.Recycle : WeaponMode.Build);
+    }
+
+    public void SetMode(WeaponMode mode)
+    {
+        if (currentMode == mode) return;
+        currentMode = mode;
+
+        // Force hide preview on mode switch so the correct preview type rebuilds
+        if (previewController != null)
+            previewController.HidePreview();
+
+        OnWeaponModeChanged?.Invoke(currentMode);
+
+        if (enableDebug)
+            Debug.Log($"[WeaponBehaviour] Mode switched to {currentMode}");
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Ammo Switching ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -256,10 +295,19 @@ public class WeaponBehaviour : MonoBehaviour
             return;
         }
 
-        previewController.UpdatePreview(
-            shootProvider.HasValidHit,
-            shootProvider.CurrentHitResult,
-            curBuildableProperty,
-            currentRotationStep);
+        if (currentMode == WeaponMode.Build)
+        {
+            previewController.UpdateBuildPreview(
+                shootProvider.HasValidHit,
+                shootProvider.CurrentHitResult,
+                curBuildableProperty,
+                currentRotationStep);
+        }
+        else
+        {
+            previewController.UpdateRecyclePreview(
+                shootProvider.HasValidHit,
+                shootProvider.CurrentHitResult);
+        }
     }
 }

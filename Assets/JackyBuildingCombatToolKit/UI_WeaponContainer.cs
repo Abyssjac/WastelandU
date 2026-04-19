@@ -39,6 +39,10 @@ public class UI_WeaponContainer : MonoBehaviour
     [Tooltip("Maps each BuildableProperty enum to a ContainerItemProperty enum for display lookup.")]
     [SerializeField] private BuildableToContainerItemMapping[] mappings = new BuildableToContainerItemMapping[0];
 
+    [Header("Panels")]
+    [SerializeField] private GameObject weaponBuildPanel;
+    [SerializeField] private GameObject weaponRecyclePanel;
+
     // Runtime
     private Dictionary<Key_BuildablePP, Key_ContainerItemPP> buildableToContainerMap;
     private ContainerItemDatabase containerItemDB;
@@ -69,6 +73,7 @@ public class UI_WeaponContainer : MonoBehaviour
         {
             weaponBehaviour.OnWeaponChanged += OnWeaponChanged;
             weaponBehaviour.Container.OnContainerChanged += OnContainerChanged;
+            weaponBehaviour.OnWeaponModeChanged += RefreshDisplayByMode;
         }
     }
 
@@ -79,6 +84,7 @@ public class UI_WeaponContainer : MonoBehaviour
             weaponBehaviour.OnWeaponChanged -= OnWeaponChanged;
             if (weaponBehaviour.Container != null)
                 weaponBehaviour.Container.OnContainerChanged -= OnContainerChanged;
+            weaponBehaviour.OnWeaponModeChanged -= RefreshDisplayByMode;
         }
     }
 
@@ -139,6 +145,13 @@ public class UI_WeaponContainer : MonoBehaviour
             else
                 subSlot.SetSlot(1, subData.icon, subData.iconColor, subData.count);
         }
+    }
+
+    public void RefreshDisplayByMode(WeaponMode mode)
+    {
+        // Implementation for refreshing display based on weapon mode
+        weaponBuildPanel.SetActive(mode == WeaponMode.Build);
+        weaponRecyclePanel.SetActive(mode == WeaponMode.Recycle);
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Internal ©¤©¤©¤©¤©¤©¤©¤©¤©¤
