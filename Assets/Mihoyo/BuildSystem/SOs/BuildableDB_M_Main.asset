@@ -14,4 +14,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - {fileID: 11400000, guid: 428193ee7aecb5b409194e0451246908, type: 2}
+  - {fileID: 11400000, guid: 0b45a5e56fb060843b633db3ba9f3351, type: 2}
+  - {fileID: 11400000, guid: 9a7edeaff1127d34abe64ccef10153ba, type: 2}
   scanFolder: Mihoyo/BuildSystem/SOs/AllBuildableSOs
