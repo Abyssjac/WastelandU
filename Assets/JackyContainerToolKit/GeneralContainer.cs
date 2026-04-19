@@ -451,6 +451,97 @@ public class Container<TEnum> where TEnum : struct
         }
         return -1;
     }
+
+    // ©¤©¤©¤ Navigation / Cycling ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    /// <summary>
+    /// Find the slot index of the first non-empty slot whose enum matches <paramref name="itemEnum"/>.
+    /// Returns -1 if not found.
+    /// </summary>
+    public int FindSlotIndex(TEnum itemEnum)
+    {
+        return FindSlotIndexByEnum(itemEnum);
+    }
+
+    /// <summary>
+    /// Find the next non-empty enum after <paramref name="currentEnum"/> (wrapping around).
+    /// Returns <c>default(TEnum)</c> if the container is empty or only contains <paramref name="currentEnum"/>.
+    /// </summary>
+    public TEnum FindNextEnum(TEnum currentEnum)
+    {
+        int count = slots.Count;
+        if (count == 0) return default;
+
+        int startIndex = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (!slots[i].IsEmpty && EqualityComparer<TEnum>.Default.Equals(slots[i].ItemEnum, currentEnum))
+            {
+                startIndex = i + 1;
+                break;
+            }
+        }
+
+        for (int offset = 0; offset < count; offset++)
+        {
+            int idx = (startIndex + offset) % count;
+            if (!slots[idx].IsEmpty)
+            {
+                TEnum candidate = slots[idx].ItemEnum;
+                if (!EqualityComparer<TEnum>.Default.Equals(candidate, currentEnum))
+                    return candidate;
+            }
+        }
+
+        return default;
+    }
+
+    /// <summary>
+    /// Find the next non-empty enum after <paramref name="currentEnum"/> (wrapping around).
+    /// Unlike <see cref="FindNextEnum"/>, this allows returning the same enum if it's the only one.
+    /// Returns <c>default(TEnum)</c> only if the container is completely empty.
+    /// </summary>
+    public TEnum CycleNextEnum(TEnum currentEnum)
+    {
+        int count = slots.Count;
+        if (count == 0) return default;
+
+        int startIndex = 0;
+        for (int i = 0; i < count; i++)
+        {
+            if (!slots[i].IsEmpty && EqualityComparer<TEnum>.Default.Equals(slots[i].ItemEnum, currentEnum))
+            {
+                startIndex = i + 1;
+                break;
+            }
+        }
+
+        for (int offset = 0; offset < count; offset++)
+        {
+            int idx = (startIndex + offset) % count;
+            if (!slots[idx].IsEmpty)
+                return slots[idx].ItemEnum;
+        }
+
+        return default;
+    }
+
+    /// <summary>
+    /// Returns a list of all distinct non-empty enums currently in the container, in slot order.
+    /// </summary>
+    public List<TEnum> GetDistinctEnums()
+    {
+        HashSet<TEnum> seen = new HashSet<TEnum>();
+        List<TEnum> result = new List<TEnum>();
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (!slots[i].IsEmpty && seen.Add(slots[i].ItemEnum))
+                result.Add(slots[i].ItemEnum);
+        }
+
+        return result;
+    }
 }
 
 /// <summary>

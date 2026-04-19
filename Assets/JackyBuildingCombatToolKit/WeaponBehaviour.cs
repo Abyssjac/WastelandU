@@ -103,34 +103,8 @@ public class WeaponBehaviour : MonoBehaviour
     {
         if (container == null) return;
 
-        var slots = container.Slots;
-        int count = slots.Count;
-        if (count == 0) return;
-
-        // Find the current slot index (if any)
-        int startIndex = 0;
-        for (int i = 0; i < count; i++)
-        {
-            if (!slots[i].IsEmpty && EqualityComparer<Key_BuildablePP>.Default.Equals(slots[i].ItemEnum, curBuildableEnum))
-            {
-                startIndex = i + 1;
-                break;
-            }
-        }
-
-        // Search forward (wrapping) for the next non-empty slot
-        for (int offset = 0; offset < count; offset++)
-        {
-            int idx = (startIndex + offset) % count;
-            if (!slots[idx].IsEmpty)
-            {
-                SelectAmmo(slots[idx].ItemEnum);
-                return;
-            }
-        }
-
-        // Nothing available ¡ª deselect
-        SelectAmmo(Key_BuildablePP.None);
+        Key_BuildablePP next = container.CycleNextEnum(curBuildableEnum);
+        SelectAmmo(next);
     }
 
     /// <summary>

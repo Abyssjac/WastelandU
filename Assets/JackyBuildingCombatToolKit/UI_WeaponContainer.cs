@@ -144,40 +144,11 @@ public class UI_WeaponContainer : MonoBehaviour
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Internal ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     /// <summary>
-    /// Find the next non-empty buildable enum in the container after the current one.
-    /// Mirrors <see cref="WeaponBehaviour.SwitchToNextAmmo"/> logic.
+    /// Find the next non-empty buildable enum in the container after the current one (different from current).
     /// </summary>
     private Key_BuildablePP FindNextBuildableEnum(Container<Key_BuildablePP> container, Key_BuildablePP currentEnum)
     {
-        var slots = container.Slots;
-        int count = slots.Count;
-        if (count == 0) return Key_BuildablePP.None;
-
-        // Find the current slot index
-        int startIndex = 0;
-        for (int i = 0; i < count; i++)
-        {
-            if (!slots[i].IsEmpty && EqualityComparer<Key_BuildablePP>.Default.Equals(slots[i].ItemEnum, currentEnum))
-            {
-                startIndex = i + 1;
-                break;
-            }
-        }
-
-        // Search forward (wrapping) for the next non-empty slot that is different from current
-        for (int offset = 0; offset < count; offset++)
-        {
-            int idx = (startIndex + offset) % count;
-            if (!slots[idx].IsEmpty)
-            {
-                Key_BuildablePP candidate = slots[idx].ItemEnum;
-                // Skip if it's the same as current (would happen when only one ammo type exists)
-                if (!EqualityComparer<Key_BuildablePP>.Default.Equals(candidate, currentEnum))
-                    return candidate;
-            }
-        }
-
-        return Key_BuildablePP.None;
+        return container.FindNextEnum(currentEnum);
     }
 
     /// <summary>

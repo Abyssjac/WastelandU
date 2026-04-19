@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 300
   stringKey: BDPP_M_Cube11_0
-  prefab: {fileID: 7771533598704779888, guid: 3b620512cb872ec4589ecfad7f3c373c, type: 3}
+  prefab: {fileID: 8090228055518318752, guid: 4fcb6776e88bba24aad4468dd11f0595, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
   - zoneName: 
