@@ -88,6 +88,7 @@ public class PlayerMovementCC : MonoBehaviour
 
     // Camera mode runtime
     private bool isFirstPersonMode;
+    private bool isThirdPersonMode;
     private CameraMode currentCameraMode;
 
     /// <summary>
@@ -133,12 +134,25 @@ public class PlayerMovementCC : MonoBehaviour
     {
         currentCameraMode = newMode;
         isFirstPersonMode = (newMode == CameraMode.FirstPerson);
+        isThirdPersonMode = (newMode == CameraMode.ThirdPerson);
 
         // Freeze player input when using free camera
         InputEnabled = (newMode != CameraMode.FreeCamera);
 
+        // Auto-bind moveReference to the active camera for third-person mode
+        if (isThirdPersonMode)
+        {
+            var activeCams = AllCameraManager.Instance.FindCamerasByMode(CameraMode.ThirdPerson);
+            if (activeCams.Count > 0)
+            {
+                moveReference = activeCams[0].transform;
+                if (debugLogStateChanges)
+                    Debug.Log($"[PlayerMovementCC] ThirdPerson: moveReference set to '{activeCams[0].name}'", this);
+            }
+        }
+
         if (debugLogStateChanges)
-            Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}, InputEnabled={InputEnabled}", this);
+            Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}, isThirdPersonMode={isThirdPersonMode}, InputEnabled={InputEnabled}", this);
     }
 
     private void Update()
@@ -235,7 +249,7 @@ public class PlayerMovementCC : MonoBehaviour
         GUILayout.Label($"VerticalVel: {verticalVelocity:0.00}");
         float cdLeft = Mathf.Max(0f, dashCooldown - (Time.time - lastDashTime));
         GUILayout.Label($"DashTimer: {dashTimer:0.00} | DashCD left: {cdLeft:0.00}");
-        GUILayout.Label($"FirstPersonMode: {isFirstPersonMode}");
+        GUILayout.Label($"FirstPersonMode: {isFirstPersonMode} | ThirdPersonMode: {isThirdPersonMode}");
         GUILayout.EndArea();
     }
 
@@ -259,6 +273,18 @@ public class PlayerMovementCC : MonoBehaviour
             bodyR.Normalize();
 
             moveDirWorld = bodyR * raw.x + bodyF * raw.z;
+        }
+        else if (isThirdPersonMode && moveReference != null)
+        {
+            // Third-person: always camera-relative regardless of useCameraRelativeMove setting
+            Vector3 camF = moveReference.forward;
+            Vector3 camR = moveReference.right;
+            camF.y = 0f;
+            camR.y = 0f;
+            camF.Normalize();
+            camR.Normalize();
+
+            moveDirWorld = camR * raw.x + camF * raw.z;
         }
         else if (useCameraRelativeMove && moveReference != null)
         {
@@ -302,6 +328,7 @@ public class PlayerMovementCC : MonoBehaviour
 
         if (moveDirWorld.sqrMagnitude < 0.01f) return;
 
+        // Third-person & default: character faces movement direction
         Quaternion target = Quaternion.LookRotation(moveDirWorld, Vector3.up);
         transform.rotation = Quaternion.Slerp(transform.rotation, target, Time.deltaTime * rotateSpeed);
     }

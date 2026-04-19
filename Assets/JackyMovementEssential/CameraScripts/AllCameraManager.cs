@@ -172,4 +172,5 @@ public enum CameraMode
     FreePerspective = 3,
     FirstPerson = 4,
     FreeCamera = 5,
+    ThirdPerson = 6,
 }

@@ -1,38 +1,66 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
+using JackyUtility;
 
 /// <summary>
 /// Manages a local 3D grid on an enemy. Handles coordinate conversion between
 /// world space and the enemy's local grid space so that the grid automatically
 /// follows the enemy's movement and rotation.
+/// <para>
+/// Coordinate conversion uses <see cref="Transform.InverseTransformPoint"/> and
+/// <see cref="Transform.TransformPoint"/>, which inherently account for the enemy's
+/// position, rotation, and scale. No separate rotation parameter is needed.
+/// </para>
 /// </summary>
 public class EnemyGridBehaviour : MonoBehaviour
 {
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Inspector ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
-    [Header("Grid Bounds (local cells)")]
-    [Tooltip("Define the grid region using a footprint box (two diagonal corners).")]
-    [SerializeField] private FootprintBox boundsBox = new FootprintBox(Vector3Int.zero, new Vector3Int(2, 2, 2));
+    [Header("Grid Shape (local cells â€” union of boxes + individual cells)")]
+    [Tooltip("Rectangular box regions that define part of the grid shape. All boxes are merged additively.")]
+    [SerializeField] private FootprintBox[] boundsBoxes = new FootprintBox[]
+    {
+        new FootprintBox(Vector3Int.zero, new Vector3Int(2, 2, 2))
+    };
+
+    [Tooltip("Additional individual cells to include in the grid shape (merged with boxes).")]
+    [SerializeField] private Vector3Int[] boundsCells = new Vector3Int[0];
 
     [Header("Grid Settings")]
+    [Tooltip("Local-space offset of the grid origin relative to the enemy's pivot.\n" +
+             "Use this to align the grid with the enemy's visual mesh.")]
+    [SerializeField] private Vector3 gridOriginLocal = Vector3.zero;
+
     [Tooltip("Size of a single cell in world units.")]
     [SerializeField] private Vector3 cellSize = Vector3.one;
+
+    [Header("Preset")]
+    [Tooltip("Optional preset to auto-place buildables into this enemy grid at initialization.")]
+    [SerializeField] private BuildPreset startPreset;
 
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Runtime ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Runtime â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     [SerializeField] private EnemyGrid3D grid;
 
+    // Cached flat list of all valid cells (built from boundsBoxes + boundsCells)
+    private List<Vector3Int> cachedAllCells = new List<Vector3Int>();
+
     private int instanceCounter;
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     public EnemyGrid3D Grid => grid;
     public Vector3 CellSize => cellSize;
-    public FootprintBox BoundsBox => boundsBox;
+    public Vector3 GridOriginLocal => gridOriginLocal;
+    public FootprintBox[] BoundsBoxes => boundsBoxes;
+    public Vector3Int[] BoundsCells => boundsCells;
+
+    /// <summary>All valid cells in the grid shape (read-only snapshot from last initialization).</summary>
+    public IReadOnlyList<Vector3Int> AllValidCells => cachedAllCells;
 
     /// <summary>Fired after any grid mutation (place / remove).</summary>
     public event Action OnGridChanged;
@@ -40,39 +68,56 @@ public class EnemyGridBehaviour : MonoBehaviour
     /// <summary>Fired when all cells inside the grid bounds become occupied.</summary>
     public event Action OnGridFulfilled;
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
         InitializeGrid();
+        LoadPreset();
     }
 
     public void InitializeGrid()
     {
-        Vector3Int min = new Vector3Int(
-            Mathf.Min(boundsBox.cornerA.x, boundsBox.cornerB.x),
-            Mathf.Min(boundsBox.cornerA.y, boundsBox.cornerB.y),
-            Mathf.Min(boundsBox.cornerA.z, boundsBox.cornerB.z));
+        // Build the union of all boxes + individual cells (deduplicated via HashSet)
+        HashSet<Vector3Int> cellSet = new HashSet<Vector3Int>();
 
-        Vector3Int max = new Vector3Int(
-            Mathf.Max(boundsBox.cornerA.x, boundsBox.cornerB.x) + 1,
-            Mathf.Max(boundsBox.cornerA.y, boundsBox.cornerB.y) + 1,
-            Mathf.Max(boundsBox.cornerA.z, boundsBox.cornerB.z) + 1);
+        if (boundsBoxes != null)
+        {
+            List<Vector3Int> tmp = new List<Vector3Int>();
+            for (int b = 0; b < boundsBoxes.Length; b++)
+            {
+                tmp.Clear();
+                boundsBoxes[b].GenerateCells(tmp);
+                for (int i = 0; i < tmp.Count; i++)
+                    cellSet.Add(tmp[i]);
+            }
+        }
 
-        grid = new EnemyGrid3D(min, max);
-        grid.Initialize();
+        if (boundsCells != null)
+        {
+            for (int i = 0; i < boundsCells.Length; i++)
+                cellSet.Add(boundsCells[i]);
+        }
+
+        cachedAllCells = new List<Vector3Int>(cellSet);
+
+        grid = new EnemyGrid3D();
+        grid.Initialize(cellSet);
         instanceCounter = 0;
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Coordinate Conversion ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Coordinate Conversion â”€â”€â”€â”€â”€â”€â”€â”€â”€
+    // These methods use Transform.InverseTransformPoint / TransformPoint which
+    // inherently account for the enemy's position, rotation, AND scale.
+    // When the enemy moves or rotates, worldâ†”local conversion automatically adapts.
 
     /// <summary>
     /// Convert a world position to the local grid cell coordinate.
-    /// Accounts for the enemy's position and rotation.
+    /// Accounts for the enemy's position and rotation via <see cref="Transform.InverseTransformPoint"/>.
     /// </summary>
     public Vector3Int WorldToLocalCell(Vector3 worldPosition)
     {
-        Vector3 local = transform.InverseTransformPoint(worldPosition);
+        Vector3 local = transform.InverseTransformPoint(worldPosition) - gridOriginLocal;
         return new Vector3Int(
             Mathf.FloorToInt(local.x / cellSize.x),
             Mathf.FloorToInt(local.y / cellSize.y),
@@ -81,10 +126,11 @@ public class EnemyGridBehaviour : MonoBehaviour
 
     /// <summary>
     /// Convert a local cell coordinate to the world-space position (cell corner).
+    /// Accounts for the enemy's position and rotation via <see cref="Transform.TransformPoint"/>.
     /// </summary>
     public Vector3 LocalCellToWorld(Vector3Int cell)
     {
-        Vector3 local = new Vector3(
+        Vector3 local = gridOriginLocal + new Vector3(
             cell.x * cellSize.x,
             cell.y * cellSize.y,
             cell.z * cellSize.z);
@@ -93,17 +139,18 @@ public class EnemyGridBehaviour : MonoBehaviour
 
     /// <summary>
     /// Convert a local cell coordinate to the world-space position (cell center).
+    /// Accounts for the enemy's position and rotation via <see cref="Transform.TransformPoint"/>.
     /// </summary>
     public Vector3 LocalCellToWorldCenter(Vector3Int cell)
     {
-        Vector3 local = new Vector3(
+        Vector3 local = gridOriginLocal + new Vector3(
             cell.x * cellSize.x + cellSize.x * 0.5f,
             cell.y * cellSize.y + cellSize.y * 0.5f,
             cell.z * cellSize.z + cellSize.z * 0.5f);
         return transform.TransformPoint(local);
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Grid Operations ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Grid Operations â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Try to place a buildable at the given world position.
@@ -112,7 +159,7 @@ public class EnemyGridBehaviour : MonoBehaviour
     /// </summary>
     /// <param name="property">The buildable to place.</param>
     /// <param name="worldPosition">Hit world position (will be snapped to local cell).</param>
-    /// <param name="rotationStep">Rotation step (0-3, 90¡ã increments around Y).</param>
+    /// <param name="rotationStep">Rotation step (0-3, 90Â° increments around Y).</param>
     /// <param name="placed">The spawned GameObject, or null on failure.</param>
     /// <returns>True if placement succeeded.</returns>
     public bool TryPlaceAtWorld(BuildableProperty property, Vector3 worldPosition, int rotationStep, out GameObject placed)
@@ -145,21 +192,8 @@ public class EnemyGridBehaviour : MonoBehaviour
         if (!grid.TryPlace(data))
             return false;
 
-        // Spawn as child so it follows enemy transform automatically
-        Vector3 worldPos = LocalCellToWorldCenter(localAnchor);
-        float yaw = property.GetRotationDegrees(rotationStep);
-        Quaternion worldRot = transform.rotation * Quaternion.Euler(0f, yaw, 0f);
-
-        GameObject go = Instantiate(property.prefab, worldPos, worldRot, transform);
-        go.transform.localScale = cellSize;
-        data.SpawnedObject = go;
-
-        var behaviour = go.GetComponent<BuildableBehaviour>();
-        if (behaviour == null)
-            behaviour = go.AddComponent<BuildableBehaviour>();
-        behaviour.Initialize(data);
-
-        placed = go;
+        SpawnPlacedObject(data);
+        placed = data.SpawnedObject;
 
         OnGridChanged?.Invoke();
 
@@ -205,7 +239,7 @@ public class EnemyGridBehaviour : MonoBehaviour
                 Destroy(data.SpawnedObject);
         }
 
-        grid.Initialize();
+        grid.Initialize(cachedAllCells);
         OnGridChanged?.Invoke();
     }
 
@@ -226,51 +260,184 @@ public class EnemyGridBehaviour : MonoBehaviour
         return grid.CanPlace(property, localAnchor, rotationStep);
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Preset â”€â”€â”€â”€â”€â”€â”€â”€â”€
+
+    /// <summary>
+    /// Load the start preset, placing all entries into the grid.
+    /// Blueprint entries are ignored â€” only individual buildable entries are supported.
+    /// </summary>
+    private void LoadPreset()
+    {
+        if (startPreset == null || startPreset.groups == null || startPreset.groups.Length == 0) return;
+
+        var dbManager = PropertyDatabaseManager.Instance;
+        if (dbManager == null) return;
+        var db = dbManager.GetDatabase<BuildableDatabase>();
+        if (db == null)
+        {
+            Debug.LogWarning($"[EnemyGridBehaviour] BuildableDatabase not found. Cannot load preset.");
+            return;
+        }
+
+        int totalPlaced = 0;
+
+        for (int g = 0; g < startPreset.groups.Length; g++)
+        {
+            var group = startPreset.groups[g];
+            string groupLabel = string.IsNullOrEmpty(group.groupName) ? $"Group[{g}]" : group.groupName;
+
+            if (group.entries == null) continue;
+
+            for (int i = 0; i < group.entries.Length; i++)
+            {
+                var entry = group.entries[i];
+                var prop = db.GetByEnum(entry.buildableEnumKey);
+                if (prop == null)
+                {
+                    Debug.LogWarning($"[EnemyGridBehaviour] Preset {groupLabel} entry [{i}]: No BuildableProperty for '{entry.buildableEnumKey}'. Skipped.");
+                    continue;
+                }
+                if (prop.prefab == null)
+                {
+                    Debug.LogWarning($"[EnemyGridBehaviour] Preset {groupLabel} entry [{i}]: '{entry.buildableEnumKey}' has no prefab. Skipped.");
+                    continue;
+                }
+
+                bool ok;
+                if (group.forced)
+                    ok = ForcePlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
+                else
+                    ok = PlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
+
+                if (!ok)
+                    Debug.LogWarning($"[EnemyGridBehaviour] Preset {groupLabel} entry [{i}]: Failed to place '{entry.buildableEnumKey}' at {entry.anchorCell}.");
+                else
+                    totalPlaced++;
+            }
+        }
+
+        Debug.Log($"[EnemyGridBehaviour] Preset loaded: {startPreset.name} ({totalPlaced} placed)");
+
+        OnGridChanged?.Invoke();
+
+        if (grid.AreAllCellsFilled())
+            OnGridFulfilled?.Invoke();
+    }
+
+    /// <summary>
+    /// Place a buildable at the given local cell with validation. Used by preset loading.
+    /// </summary>
+    private bool PlaceImmediate(BuildableProperty property, Vector3Int localAnchor, int rotationStep)
+    {
+        string instanceId = $"enemy_{gameObject.GetInstanceID()}_{instanceCounter++}";
+
+        PlacedBuildableData data = new PlacedBuildableData
+        {
+            InstanceId = instanceId,
+            Property = property,
+            AnchorCell = localAnchor,
+            RotationStep = rotationStep,
+        };
+
+        if (!grid.TryPlace(data))
+            return false;
+
+        SpawnPlacedObject(data);
+        return true;
+    }
+
+    /// <summary>
+    /// Force-place a buildable at the given local cell, skipping validation. Used by preset loading.
+    /// </summary>
+    private bool ForcePlaceImmediate(BuildableProperty property, Vector3Int localAnchor, int rotationStep)
+    {
+        string instanceId = $"enemy_{gameObject.GetInstanceID()}_{instanceCounter++}";
+
+        PlacedBuildableData data = new PlacedBuildableData
+        {
+            InstanceId = instanceId,
+            Property = property,
+            AnchorCell = localAnchor,
+            RotationStep = rotationStep,
+        };
+
+        grid.ForcePlace(data);
+        SpawnPlacedObject(data);
+        return true;
+    }
+
+    /// <summary>
+    /// Spawn the GameObject for a placed buildable and attach it as a child of this enemy.
+    /// </summary>
+    private void SpawnPlacedObject(PlacedBuildableData data)
+    {
+        Vector3 worldPos = LocalCellToWorldCenter(data.AnchorCell);
+        float yaw = data.Property.GetRotationDegrees(data.RotationStep);
+        Quaternion worldRot = transform.rotation * Quaternion.Euler(0f, yaw, 0f);
+
+        GameObject go = Instantiate(data.Property.prefab, worldPos, worldRot, transform);
+        go.transform.localScale = cellSize;
+        data.SpawnedObject = go;
+
+        var behaviour = go.GetComponent<BuildableBehaviour>();
+        if (behaviour == null)
+            behaviour = go.AddComponent<BuildableBehaviour>();
+        behaviour.Initialize(data);
+    }
+
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Debug â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 #if UNITY_EDITOR
     private void OnDrawGizmosSelected()
     {
         if (!enableDebug) return;
 
-        // Draw grid bounds wireframe in world space
-        Vector3Int min = new Vector3Int(
-            Mathf.Min(boundsBox.cornerA.x, boundsBox.cornerB.x),
-            Mathf.Min(boundsBox.cornerA.y, boundsBox.cornerB.y),
-            Mathf.Min(boundsBox.cornerA.z, boundsBox.cornerB.z));
-        Vector3Int max = new Vector3Int(
-            Mathf.Max(boundsBox.cornerA.x, boundsBox.cornerB.x) + 1,
-            Mathf.Max(boundsBox.cornerA.y, boundsBox.cornerB.y) + 1,
-            Mathf.Max(boundsBox.cornerA.z, boundsBox.cornerB.z) + 1);
+        // Build cell list for editor preview (outside play mode cachedAllCells may be empty)
+        List<Vector3Int> drawCells = cachedAllCells;
+        if (drawCells == null || drawCells.Count == 0)
+        {
+            drawCells = new List<Vector3Int>();
+            if (boundsBoxes != null)
+                for (int b = 0; b < boundsBoxes.Length; b++)
+                    boundsBoxes[b].GenerateCells(drawCells);
+            if (boundsCells != null)
+                for (int i = 0; i < boundsCells.Length; i++)
+                    drawCells.Add(boundsCells[i]);
+        }
+
+        if (drawCells.Count == 0) return;
 
         // Draw individual cell wireframes
         Gizmos.color = new Color(0f, 1f, 1f, 0.3f);
-        for (int y = min.y; y < max.y; y++)
-            for (int z = min.z; z < max.z; z++)
-                for (int x = min.x; x < max.x; x++)
-                {
-                    Vector3Int cell = new Vector3Int(x, y, z);
-                    Vector3 center = LocalCellToWorldCenter(cell);
-                    Vector3 size = transform.TransformVector(cellSize);
-                    // Use absolute values since TransformVector may flip axes
-                    size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
-                    Gizmos.DrawWireCube(center, size * 0.95f);
-                }
+        for (int i = 0; i < drawCells.Count; i++)
+        {
+            Vector3 center = LocalCellToWorldCenter(drawCells[i]);
+            Vector3 size = transform.TransformVector(cellSize);
+            size = new Vector3(Mathf.Abs(size.x), Mathf.Abs(size.y), Mathf.Abs(size.z));
+            Gizmos.DrawWireCube(center, size * 0.95f);
+        }
 
-        // Draw overall bounds
-        Vector3 boundsMin = LocalCellToWorld(min);
-        Vector3 boundsMax = LocalCellToWorld(max);
-        Vector3 boundsCenter = (boundsMin + boundsMax) * 0.5f;
-        Vector3 boundsSize = boundsMax - boundsMin;
-        boundsSize = new Vector3(Mathf.Abs(boundsSize.x), Mathf.Abs(boundsSize.y), Mathf.Abs(boundsSize.z));
+        // Compute AABB for overall bounds display
+        Vector3 boundsMin = LocalCellToWorldCenter(drawCells[0]);
+        Vector3 boundsMax = boundsMin;
+        for (int i = 1; i < drawCells.Count; i++)
+        {
+            Vector3 p = LocalCellToWorldCenter(drawCells[i]);
+            boundsMin = Vector3.Min(boundsMin, p);
+            boundsMax = Vector3.Max(boundsMax, p);
+        }
+        Vector3 worldCellSize = transform.TransformVector(cellSize);
+        worldCellSize = new Vector3(Mathf.Abs(worldCellSize.x), Mathf.Abs(worldCellSize.y), Mathf.Abs(worldCellSize.z));
+        Vector3 overallCenter = (boundsMin + boundsMax) * 0.5f;
+        Vector3 overallSize = (boundsMax - boundsMin) + worldCellSize;
 
         Gizmos.color = Color.yellow;
-        Gizmos.DrawWireCube(boundsCenter, boundsSize);
+        Gizmos.DrawWireCube(overallCenter, overallSize);
 
         // Label
         UnityEditor.Handles.color = Color.white;
-        UnityEditor.Handles.Label(boundsCenter + Vector3.up * (boundsSize.y * 0.5f + 0.3f),
-            $"EnemyGrid [{(max.x - min.x)}x{(max.y - min.y)}x{(max.z - min.z)}]\n" +
+        UnityEditor.Handles.Label(overallCenter + Vector3.up * (overallSize.y * 0.5f + 0.3f),
+            $"EnemyGrid [{drawCells.Count} cells]\n" +
             $"Filled: {(grid != null ? grid.OccupiedCellCount : 0)}/{(grid != null ? grid.TotalCellCount : 0)}");
     }
 #endif

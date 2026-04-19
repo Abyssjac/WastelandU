@@ -169,7 +169,8 @@ namespace JackyUtility
                 }
             ));
 
-            OnConsoleToggled.Invoke(false);
+            //OnConsoleToggled.Invoke(false);
+            InvokeOnConsoleToggled(false);
         }
 
         public void InvokeOnConsoleToggled(bool isOpen)

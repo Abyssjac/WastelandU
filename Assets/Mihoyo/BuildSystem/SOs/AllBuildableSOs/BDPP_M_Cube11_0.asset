@@ -1,0 +1,32 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_M_Cube11_0
+  m_EditorClassIdentifier: 
+  enumKey: 300
+  stringKey: BDPP_M_Cube11_0
+  prefab: {fileID: 2737304189685697167, guid: 1f123703d7c31d94db166e27d71338a4, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 0
+    occupancyFacings: 0
+    requiredSurface: 0
+    requiredFacing: 0
+  surfaceZones: []
+  canRotate: 1
+  canMove: 1
+  iconSprite: {fileID: 0}
+  displayName: 

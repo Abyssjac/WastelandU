@@ -571,4 +571,10 @@ public enum Key_BuildablePP
     Build_Bar_Carpet_0 = 65,
     Build_Bar_Cocktailneonsign_0 = 66,
     Build_Bar_Openneonsign_0 = 67,
+
+
+
+
+
+    BuildM_Cube11_0 = 300,
 }
