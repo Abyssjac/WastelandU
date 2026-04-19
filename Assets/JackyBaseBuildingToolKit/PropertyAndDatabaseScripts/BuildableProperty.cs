@@ -575,7 +575,7 @@ public enum Key_BuildablePP
 
 
 
-
+    //Mihoyo Demo
     BuildM_Cube11_0 = 300,
     BuildM_Cube12_0 = 301,
     BuildM_Cube22_0 = 302,

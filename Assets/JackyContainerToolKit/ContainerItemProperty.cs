@@ -88,4 +88,10 @@ public enum Key_ContainerItemPP
     ContainerItem_Base_Wall_XNegPos_OLayer_0 = 205,
 
     ContainerItem_Fur_BookStore_BookShelf_113 = 300,
+
+
+    //Mihoyo Demo
+    ContainerItemM_Cube11_0 = 400,
+    ContainerItemM_Cube12_0 = 401,
+    ContainerItemM_Cube22_0 = 402,
 }

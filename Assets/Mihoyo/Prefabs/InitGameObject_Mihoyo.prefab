@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allDatabases:
   - {fileID: 11400000, guid: ee4459277eea3a54687e4e8085bf3955, type: 2}
+  - {fileID: 11400000, guid: cee6b63968e35b847a55ffa3939e4cc2, type: 2}
 --- !u!114 &4077453675153051439
 MonoBehaviour:
   m_ObjectHideFlags: 0

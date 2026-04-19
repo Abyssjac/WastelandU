@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 6409790949480377137}
   - component: {fileID: 6184494623227590941}
   - component: {fileID: 3887034231741985702}
+  - component: {fileID: 6796222536879307278}
   m_Layer: 5
   m_Name: ChosenBuildablePanel
   m_TagString: Untagged
@@ -76,6 +77,23 @@ MonoBehaviour:
   m_FillOrigin: 0
   m_UseSpriteMesh: 0
   m_PixelsPerUnitMultiplier: 1
+--- !u!114 &6796222536879307278
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4898887869604095791}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fd830dfcc7d9d42459274610bab3a357, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  itemIcon: {fileID: 4673449267630486986}
+  itemCountText: {fileID: 0}
+  emptyOverlay: {fileID: 0}
+  button: {fileID: 0}
+  highlightOverlay: {fileID: 0}
 --- !u!1 &5417592274375773754
 GameObject:
   m_ObjectHideFlags: 0
