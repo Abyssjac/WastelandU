@@ -342,6 +342,9 @@ MonoBehaviour:
   enemyHitMask:
     serializedVersion: 2
     m_Bits: 256
+  buildSelectableMask:
+    serializedVersion: 2
+    m_Bits: 16384
   maxRayDistance: 1000
   enableDebug: 1
   debugSphereRadius: 0.15
@@ -361,6 +364,7 @@ MonoBehaviour:
   previewController: {fileID: 298884244}
   switchKey: 9
   shootMouseButton: 0
+  recycleMouseButton: 1
   rotateKey: 114
   containerSlotCount: 6
   enableDebug: 1

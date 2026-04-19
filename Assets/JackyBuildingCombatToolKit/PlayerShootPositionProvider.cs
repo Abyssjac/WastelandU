@@ -24,6 +24,9 @@ public struct WeaponHitResult
 
     /// <summary>World-space normal of the surface that was hit.</summary>
     public Vector3 HitNormal;
+
+    /// <summary>The placed buildable that was hit (via buildSelectableMask). Null if no buildable was hit.</summary>
+    public BuildableBehaviour HitBuildable;
 }
 
 /// <summary>
@@ -37,8 +40,11 @@ public class PlayerShootPositionProvider : MonoBehaviour, IDebuggable
     [SerializeField] private Camera targetCamera;
 
     [Header("Raycast")]
-    [Tooltip("Layer mask for enemy surfaces that can be hit.")]
+    [Tooltip("Layer mask for enemy surfaces that can be hit (for placement).")]
     [SerializeField] private LayerMask enemyHitMask;
+
+    [Tooltip("Layer mask for selectable placed buildable objects (for recycling).")]
+    [SerializeField] private LayerMask buildSelectableMask;
 
     [SerializeField] private float maxRayDistance = 1000f;
 
@@ -130,30 +136,70 @@ public class PlayerShootPositionProvider : MonoBehaviour, IDebuggable
         Vector3 screenCenter = new Vector3(Screen.width * 0.5f, Screen.height * 0.5f, 0f);
         Ray ray = targetCamera.ScreenPointToRay(screenCenter);
 
-        if (Physics.Raycast(ray, out RaycastHit hit, maxRayDistance, enemyHitMask))
+        // --- Raycast 1: Enemy grid surface (for placement) ---
+        EnemyGridBehaviour enemyGrid = null;
+        Vector3Int localCell = Vector3Int.zero;
+        Vector3 hitPoint = Vector3.zero;
+        Vector3 hitNormal = Vector3.zero;
+        Vector3 snappedWorld = Vector3.zero;
+        Vector3 snappedCenter = Vector3.zero;
+        bool gridHit = false;
+
+        if (Physics.Raycast(ray, out RaycastHit gridRayHit, maxRayDistance, enemyHitMask))
         {
-            EnemyGridBehaviour enemyGrid = hit.collider.GetComponentInParent<EnemyGridBehaviour>();
+            enemyGrid = gridRayHit.collider.GetComponentInParent<EnemyGridBehaviour>();
             if (enemyGrid != null)
             {
-                Vector3Int localCell = enemyGrid.WorldToLocalCell(hit.point);
-                Vector3 snappedWorld = enemyGrid.LocalCellToWorld(localCell);
-                Vector3 snappedCenter = enemyGrid.LocalCellToWorldCenter(localCell);
-
-                HasValidHit = true;
-                CurrentHitResult = new WeaponHitResult
-                {
-                    HitCell = localCell,
-                    HitWorldPosition = hit.point,
-                    HitSnappedWorldPosition = snappedWorld,
-                    HitSnappedWorldPositionCenter = snappedCenter,
-                    HitEnemyGridBehaviour = enemyGrid,
-                    HitNormal = hit.normal,
-                };
-                return;
+                localCell = enemyGrid.WorldToLocalCell(gridRayHit.point);
+                hitPoint = gridRayHit.point;
+                hitNormal = gridRayHit.normal;
+                snappedWorld = enemyGrid.LocalCellToWorld(localCell);
+                snappedCenter = enemyGrid.LocalCellToWorldCenter(localCell);
+                gridHit = true;
             }
         }
 
-        HasValidHit = false;
+        // --- Raycast 2: Selectable buildable (for recycling) ---
+        BuildableBehaviour hitBuildable = null;
+
+        if (Physics.Raycast(ray, out RaycastHit selectableHit, maxRayDistance, buildSelectableMask))
+        {
+            hitBuildable = selectableHit.collider.GetComponentInParent<BuildableBehaviour>();
+
+            // If we didn't hit a grid surface but did hit a buildable on an enemy, fill grid info from it
+            if (!gridHit && hitBuildable != null)
+            {
+                enemyGrid = selectableHit.collider.GetComponentInParent<EnemyGridBehaviour>();
+                if (enemyGrid != null)
+                {
+                    localCell = enemyGrid.WorldToLocalCell(selectableHit.point);
+                    hitPoint = selectableHit.point;
+                    hitNormal = selectableHit.normal;
+                    snappedWorld = enemyGrid.LocalCellToWorld(localCell);
+                    snappedCenter = enemyGrid.LocalCellToWorldCenter(localCell);
+                    gridHit = true;
+                }
+            }
+        }
+
+        if (gridHit)
+        {
+            HasValidHit = true;
+            CurrentHitResult = new WeaponHitResult
+            {
+                HitCell = localCell,
+                HitWorldPosition = hitPoint,
+                HitSnappedWorldPosition = snappedWorld,
+                HitSnappedWorldPositionCenter = snappedCenter,
+                HitEnemyGridBehaviour = enemyGrid,
+                HitNormal = hitNormal,
+                HitBuildable = hitBuildable,
+            };
+        }
+        else
+        {
+            HasValidHit = false;
+        }
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -194,7 +240,8 @@ public class PlayerShootPositionProvider : MonoBehaviour, IDebuggable
             $"HitWorld: {r.HitWorldPosition:F2}\n" +
             $"SnappedCenter: {r.HitSnappedWorldPositionCenter:F2}\n" +
             $"Normal: {r.HitNormal:F2}\n" +
-            $"Enemy: {(r.HitEnemyGridBehaviour != null ? r.HitEnemyGridBehaviour.gameObject.name : "null")}");
+            $"Enemy: {(r.HitEnemyGridBehaviour != null ? r.HitEnemyGridBehaviour.gameObject.name : "null")}\n" +
+            $"Buildable: {(r.HitBuildable != null ? r.HitBuildable.gameObject.name : "null")}");
     }
 #endif
 }

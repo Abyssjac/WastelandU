@@ -20,6 +20,9 @@ public class WeaponBehaviour : MonoBehaviour
     [Tooltip("Mouse button index for shooting (0 = left, 1 = right, 2 = middle).")]
     [SerializeField] private int shootMouseButton = 0;
 
+    [Tooltip("Mouse button index for recycling a placed buildable (0 = left, 1 = right, 2 = middle).")]
+    [SerializeField] private int recycleMouseButton = 1;
+
     [Tooltip("Key to rotate the buildable before shooting.")]
     [SerializeField] private KeyCode rotateKey = KeyCode.R;
 
@@ -90,6 +93,12 @@ public class WeaponBehaviour : MonoBehaviour
         if (Input.GetMouseButtonDown(shootMouseButton))
         {
             TryShoot();
+        }
+
+        // Recycle
+        if (Input.GetMouseButtonDown(recycleMouseButton))
+        {
+            TryRecycle();
         }
     }
 
@@ -181,6 +190,58 @@ public class WeaponBehaviour : MonoBehaviour
         // If this ammo type is now depleted, auto-switch to next
         if (container.GetItemCountByEnum(curBuildableEnum) <= 0)
             SwitchToNextAmmo();
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Recycling ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private void TryRecycle()
+    {
+        if (shootProvider == null || !shootProvider.HasValidHit) return;
+
+        WeaponHitResult hit = shootProvider.CurrentHitResult;
+        BuildableBehaviour buildable = hit.HitBuildable;
+        if (buildable == null || buildable.Data == null) return;
+
+        PlacedBuildableData data = buildable.Data;
+        BuildableProperty prop = data.Property;
+
+        // Check canMove flag
+        if (!prop.canMove)
+        {
+            if (enableDebug)
+                Debug.Log($"[WeaponBehaviour] Cannot recycle '{prop.EnumKey}': canMove is false.");
+            return;
+        }
+
+        // Find the enemy grid this buildable belongs to
+        EnemyGridBehaviour enemy = buildable.GetComponentInParent<EnemyGridBehaviour>();
+        if (enemy == null)
+        {
+            if (enableDebug)
+                Debug.Log($"[WeaponBehaviour] Cannot recycle '{prop.EnumKey}': no EnemyGridBehaviour found in parents.");
+            return;
+        }
+
+        // Check container capacity before removing
+        Key_BuildablePP recycleEnum = prop.EnumKey;
+        if (!container.TryAddItem(recycleEnum, 1, out string addReason))
+        {
+            if (enableDebug)
+                Debug.Log($"[WeaponBehaviour] Cannot recycle '{recycleEnum}': container full. {addReason}");
+            return;
+        }
+
+        // Remove from enemy grid (also destroys the GameObject)
+        if (!enemy.TryRemove(data.InstanceId))
+        {
+            // Rollback container add
+            container.TryRemoveItem(recycleEnum, 1, out _);
+            Debug.LogError($"[WeaponBehaviour] TryRemove failed for '{data.InstanceId}' after container add succeeded.");
+            return;
+        }
+
+        if (enableDebug)
+            Debug.Log($"[WeaponBehaviour] Recycled '{recycleEnum}' from '{enemy.gameObject.name}'. Returned to container.");
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Preview ©¤©¤©¤©¤©¤©¤©¤©¤©¤
