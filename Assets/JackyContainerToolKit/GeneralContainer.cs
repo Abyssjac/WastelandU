@@ -430,6 +430,50 @@ public class Container<TEnum> where TEnum : struct
         return removed;
     }
 
+    /// <summary>
+    /// Clears every slot in the container, making it completely empty.
+    /// Fires <see cref="OnContainerChanged"/> once if anything was cleared.
+    /// </summary>
+    public bool ClearAll()
+    {
+        bool hadContent = false;
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (!slots[i].IsEmpty)
+            {
+                slots[i] = ContainerSlot<TEnum>.Empty;
+                hadContent = true;
+            }
+        }
+        if (hadContent)
+        {
+            RebuildEnumCountMap();
+            OnContainerChanged?.Invoke();
+        }
+        return hadContent;
+    }
+
+    /// <summary>
+    /// Replaces the contents of this container with a slot-for-slot copy of <paramref name="source"/>.
+    /// Slots beyond the source length are cleared. MaxSlots is not changed.
+    /// Fires <see cref="OnContainerChanged"/> once after the copy.
+    /// </summary>
+    public void CopyFrom(Container<TEnum> source)
+    {
+        if (source == null) return;
+
+        for (int i = 0; i < slots.Count; i++)
+        {
+            if (i < source.Slots.Count)
+                slots[i] = source.Slots[i];
+            else
+                slots[i] = ContainerSlot<TEnum>.Empty;
+        }
+
+        RebuildEnumCountMap();
+        OnContainerChanged?.Invoke();
+    }
+
     // ©¤©¤©¤ Internal Helpers ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     private int FindSlotIndexByEnum(TEnum itemEnum)

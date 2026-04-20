@@ -1,0 +1,100 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &3634257328672139825
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7002550391267353927}
+  - component: {fileID: 1777777911739716561}
+  - component: {fileID: 7423232548150949462}
+  - component: {fileID: 7689671113585451838}
+  m_Layer: 0
+  m_Name: PlayerWeaponLogic
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7002550391267353927
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3634257328672139825}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1777777911739716561
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3634257328672139825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfcea6846a0a4754dac9125fb376dc1a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shootProvider: {fileID: 7423232548150949462}
+  previewController: {fileID: 7689671113585451838}
+  switchKey: 9
+  modeToggleKey: 113
+  primaryMouseButton: 0
+  rotateKey: 114
+  containerSlotCount: 6
+  enableDebug: 1
+  container:
+    maxSlots: 0
+    slots: []
+--- !u!114 &7423232548150949462
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3634257328672139825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa3d0530057eac84ab0afedc98cb77fc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  targetCamera: {fileID: 0}
+  enemyHitMask:
+    serializedVersion: 2
+    m_Bits: 256
+  buildSelectableMask:
+    serializedVersion: 2
+    m_Bits: 16384
+  maxRayDistance: 1000
+  enableDebug: 1
+  debugSphereRadius: 0.15
+--- !u!114 &7689671113585451838
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3634257328672139825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e46d07d41a9a2c542984aea21819fae8, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  validPreviewMaterial: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
+  invalidPreviewMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  conflictPreviewMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  recyclePreviewMaterial: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
+  recycleDisabledMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  previewUnitPrefab: {fileID: 8382963424789111466, guid: 282f8d74be17cd54392557f0fe044160, type: 3}
+  unitScaleFactor: 0.95

@@ -8,6 +8,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private InputActionReference move;
     [SerializeField] private InputActionReference interact;
     [SerializeField] private InputActionReference dash;
+    [SerializeField] private InputActionReference jump;
 
     [Header("Optional: Other actions to manage")]
     [Tooltip("额外想调试/校验/开关的 actions（比如 Look, Jump, Inventory, etc.）")]
@@ -29,6 +30,7 @@ public class PlayerControl : MonoBehaviour
 
     public bool InteractTriggered() => WasTriggered(interact);
     public bool DashTriggered() => WasTriggered(dash);
+    public bool JumpTriggered() => WasTriggered(jump);
 
     /// <summary>Enable/Disable 任意 action（可给外部系统用）</summary>
     public void SetEnabled(InputActionReference actionRef, bool enabled)
@@ -83,6 +85,7 @@ public class PlayerControl : MonoBehaviour
         TryEnable(move);
         TryEnable(interact);
         TryEnable(dash);
+        TryEnable(jump);
 
         // 额外 actions 也可启用（看你需求）
         if (extraActions != null)
@@ -96,6 +99,7 @@ public class PlayerControl : MonoBehaviour
         TryDisable(move);
         TryDisable(interact);
         TryDisable(dash);
+        TryDisable(jump);
 
         if (extraActions != null)
         {

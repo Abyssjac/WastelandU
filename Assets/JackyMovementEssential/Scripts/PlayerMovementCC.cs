@@ -46,6 +46,17 @@ public class PlayerMovementCC : MonoBehaviour
     [SerializeField] private float groundRayExtra = 0.15f;    // Extra ray length for ground check
 
     // ----------------------------
+    // Jump Settings
+    // ----------------------------
+    [Header("Jump")]
+    [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private bool allowAirJump = false;
+    [Tooltip("Coyote time: grace period after leaving ground where jump is still allowed")]
+    [SerializeField] private float coyoteTime = 0.1f;
+    [Tooltip("Jump buffer: if jump is pressed slightly before landing, it will trigger on land")]
+    [SerializeField] private float jumpBufferTime = 0.1f;
+
+    // ----------------------------
     // Dash Settings
     // ----------------------------
     [Header("Dash")]
@@ -71,6 +82,11 @@ public class PlayerMovementCC : MonoBehaviour
     private Vector3 planarVelocity;      // Horizontal velocity (x,z)
     private float verticalVelocity;      // Vertical velocity (y)
     private bool isGrounded;
+
+    // Jump runtime
+    private float lastGroundedTime = -99f;
+    private float lastJumpPressedTime = -99f;
+    private bool hasJumped;
 
     // Dash runtime
     private bool isDashing;
@@ -173,6 +189,14 @@ public class PlayerMovementCC : MonoBehaviour
 
         // Ground/Gravity in Update: keep consistent within the same tick (recommended for CharacterController)
         isGrounded = CheckGrounded();
+
+        if (isGrounded)
+        {
+            lastGroundedTime = Time.time;
+            hasJumped = false;
+        }
+
+        HandleJump();
         ApplyGravity(Time.deltaTime);
 
         // Calculate horizontal velocity
@@ -376,16 +400,40 @@ public class PlayerMovementCC : MonoBehaviour
 
     private void ApplyGravity(float dt)
     {
-        if (isGrounded)
+        if (isGrounded && verticalVelocity >= 0f)
         {
-            // Grounded: apply small downward speed to prevent isGrounded jitter
+            // Grounded and not jumping upward: apply small downward speed to prevent isGrounded jitter
             verticalVelocity = groundStickVelocity;
             return;
         }
 
-        // Airborne: accelerate downward (verticalVelocity positive = downward speed)
+        // Airborne (or jumping upward): accelerate downward (verticalVelocity positive = downward speed)
         verticalVelocity += gravity * dt;
         if (verticalVelocity > fallSpeedMax) verticalVelocity = fallSpeedMax;
+    }
+
+    // ----------------------------
+    // Jump
+    // ----------------------------
+    private void HandleJump()
+    {
+        if (controls.JumpTriggered()) {
+            Debug.Log("Jump Pressed");
+            lastJumpPressedTime = Time.time;
+        }
+            //lastJumpPressedTime = Time.time;
+
+        bool withinCoyote = (Time.time - lastGroundedTime) <= coyoteTime;
+        bool withinBuffer = (Time.time - lastJumpPressedTime) <= jumpBufferTime;
+        bool canJump = (withinCoyote || allowAirJump) && !hasJumped;
+
+        if (withinBuffer && canJump)
+        {
+            verticalVelocity = -jumpForce; // negative = upward (verticalVelocity positive = downward)
+            hasJumped = true;
+            lastJumpPressedTime = -99f; // consume the buffer
+            lastGroundedTime = -99f;    // consume coyote time
+        }
     }
 
     // ----------------------------
