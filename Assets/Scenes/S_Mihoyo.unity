@@ -2149,6 +2149,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: PlayerRootCC_ThirdPerson
       objectReference: {fileID: 0}
+    - target: {fileID: 5808633933740627628, guid: 2f965bc784638c142949981886e89f6f, type: 3}
+      propertyPath: m_TagString
+      value: Player
+      objectReference: {fileID: 0}
     - target: {fileID: 8876022246423458292, guid: 2f965bc784638c142949981886e89f6f, type: 3}
       propertyPath: playerCameraInstance
       value: 
