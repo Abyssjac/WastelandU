@@ -70,7 +70,6 @@ public class WeaponBehaviour : MonoBehaviour
     private void Awake()
     {
         container = new Container<Key_BuildablePP>(containerSlotCount);
-        //container.TryAddItem(Key_BuildablePP.BuildM_Cube11_0, 10, out _);
 
         var dbManager = PropertyDatabaseManager.Instance;
         if (dbManager != null)
@@ -78,8 +77,51 @@ public class WeaponBehaviour : MonoBehaviour
 
         if (buildableDB == null)
             Debug.LogWarning("[WeaponBehaviour] BuildableDatabase not found.");
+
+        container.OnContainerChanged += OnContainerChangedRefreshSelection;
     }
 
+    private void OnDestroy()
+    {
+        if (container != null)
+            container.OnContainerChanged -= OnContainerChangedRefreshSelection;
+    }
+
+    /// <summary>
+    /// Called whenever the container changes. Keeps curBuildableEnum in sync:
+    /// - Container empty ¡ú select None
+    /// - Current enum no longer in container ¡ú select first available
+    /// - Container was empty and now has items ¡ú select first available
+    /// </summary>
+    private void OnContainerChangedRefreshSelection()
+    {
+        if (container == null) return;
+
+        if (container.IsEmpty)
+        {
+            SelectAmmo(Key_BuildablePP.None);
+            return;
+        }
+
+        bool currentStillValid = !EqualityComparer<Key_BuildablePP>.Default.Equals(curBuildableEnum, Key_BuildablePP.None)
+                                 && container.GetItemCountByEnum(curBuildableEnum) > 0;
+        if (!currentStillValid)
+        {
+            Key_BuildablePP first = container.FindNextEnum(Key_BuildablePP.None);
+            SelectAmmo(first);
+        }
+    }
+
+    private void Start()
+    {
+        SetMode(WeaponMode.Recycle);
+        OnContainerChangedRefreshSelection();
+    }
+
+    public void RefreshSelectionFromContainer()
+    {
+        OnContainerChangedRefreshSelection();
+    }
     private void Update()
     {
         HandleInput();
@@ -191,6 +233,12 @@ public class WeaponBehaviour : MonoBehaviour
         if (curBuildableProperty == null) return;
         if (shootProvider == null || !shootProvider.HasValidHit) return;
 
+        // Snapshot current selection because container callbacks may change current fields
+        // during ammo consumption (e.g. last item removed -> auto-select None/other).
+        Key_BuildablePP selectedEnum = curBuildableEnum;
+        BuildableProperty selectedProperty = curBuildableProperty;
+        int selectedRotationStep = currentRotationStep;
+
         WeaponHitResult hit = shootProvider.CurrentHitResult;
         EnemyGridBehaviour enemy = hit.HitEnemyGridBehaviour;
         if (enemy == null) return;
@@ -198,37 +246,33 @@ public class WeaponBehaviour : MonoBehaviour
         Vector3Int anchorCell = hit.HitCell;
 
         // Check placement
-        if (!enemy.Grid.CanPlace(curBuildableProperty, anchorCell, currentRotationStep))
+        if (!enemy.Grid.CanPlace(selectedProperty, anchorCell, selectedRotationStep))
         {
             if (enableDebug)
-                Debug.Log($"[WeaponBehaviour] Cannot place '{curBuildableEnum}' at cell {anchorCell}.");
+                Debug.Log($"[WeaponBehaviour] Cannot place '{selectedEnum}' at cell {anchorCell}.");
             return;
         }
 
         // Consume ammo from container
-        if (!container.TryRemoveItem(curBuildableEnum, 1, out string removeReason))
+        if (!container.TryRemoveItem(selectedEnum, 1, out string removeReason))
         {
             if (enableDebug)
-                Debug.Log($"[WeaponBehaviour] No ammo left for '{curBuildableEnum}': {removeReason}");
+                Debug.Log($"[WeaponBehaviour] No ammo left for '{selectedEnum}': {removeReason}");
             return;
         }
 
         // Place on enemy grid
-        bool placed = enemy.TryPlace(curBuildableProperty, anchorCell, currentRotationStep, out GameObject spawnedObj);
+        bool placed = enemy.TryPlace(selectedProperty, anchorCell, selectedRotationStep, out GameObject spawnedObj);
         if (!placed)
         {
             // Rollback ammo consumption on unexpected failure
-            container.TryAddItem(curBuildableEnum, 1, out _);
+            container.TryAddItem(selectedEnum, 1, out _);
             Debug.LogError($"[WeaponBehaviour] TryPlace failed unexpectedly at cell {anchorCell} after CanPlace succeeded.");
             return;
         }
 
         if (enableDebug)
-            Debug.Log($"[WeaponBehaviour] Placed '{curBuildableEnum}' on '{enemy.gameObject.name}' at cell {anchorCell}.");
-
-        // If this ammo type is now depleted, auto-switch to next
-        if (container.GetItemCountByEnum(curBuildableEnum) <= 0)
-            SwitchToNextAmmo();
+            Debug.Log($"[WeaponBehaviour] Placed '{selectedEnum}' on '{enemy.gameObject.name}' at cell {anchorCell}.");
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Recycling ©¤©¤©¤©¤©¤©¤©¤©¤©¤

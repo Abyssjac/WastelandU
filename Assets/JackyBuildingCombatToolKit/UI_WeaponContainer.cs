@@ -46,6 +46,7 @@ public class UI_WeaponContainer : MonoBehaviour
     // Runtime
     private Dictionary<Key_BuildablePP, Key_ContainerItemPP> buildableToContainerMap;
     private ContainerItemDatabase containerItemDB;
+    private Container<Key_BuildablePP> boundContainer;
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -69,28 +70,61 @@ public class UI_WeaponContainer : MonoBehaviour
 
     private void OnEnable()
     {
-        if (weaponBehaviour != null)
-        {
-            weaponBehaviour.OnWeaponChanged += OnWeaponChanged;
-            weaponBehaviour.Container.OnContainerChanged += OnContainerChanged;
-            weaponBehaviour.OnWeaponModeChanged += RefreshDisplayByMode;
-        }
+        BindEvents();
+        RefreshDisplay();
     }
 
     private void OnDisable()
     {
-        if (weaponBehaviour != null)
-        {
-            weaponBehaviour.OnWeaponChanged -= OnWeaponChanged;
-            if (weaponBehaviour.Container != null)
-                weaponBehaviour.Container.OnContainerChanged -= OnContainerChanged;
-            weaponBehaviour.OnWeaponModeChanged -= RefreshDisplayByMode;
-        }
+        UnbindEvents();
     }
 
     private void Start()
     {
+        BindEvents();
         RefreshDisplay();
+    }
+
+    private void BindEvents()
+    {
+        if (weaponBehaviour == null) return;
+
+        weaponBehaviour.OnWeaponChanged -= OnWeaponChanged;
+        weaponBehaviour.OnWeaponChanged += OnWeaponChanged;
+
+        weaponBehaviour.OnWeaponModeChanged -= RefreshDisplayByMode;
+        weaponBehaviour.OnWeaponModeChanged += RefreshDisplayByMode;
+
+        RebindContainerIfNeeded();
+    }
+
+    private void UnbindEvents()
+    {
+        if (weaponBehaviour == null) return;
+
+        weaponBehaviour.OnWeaponChanged -= OnWeaponChanged;
+        weaponBehaviour.OnWeaponModeChanged -= RefreshDisplayByMode;
+
+        if (boundContainer != null)
+            boundContainer.OnContainerChanged -= OnContainerChanged;
+        boundContainer = null;
+    }
+
+    private void RebindContainerIfNeeded()
+    {
+        if (weaponBehaviour == null) return;
+
+        var currentContainer = weaponBehaviour.Container;
+        if (ReferenceEquals(boundContainer, currentContainer))
+            return;
+
+        if (boundContainer != null)
+            boundContainer.OnContainerChanged -= OnContainerChanged;
+
+        boundContainer = currentContainer;
+
+        if (boundContainer != null)
+            boundContainer.OnContainerChanged += OnContainerChanged;
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Event Handlers ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -102,6 +136,7 @@ public class UI_WeaponContainer : MonoBehaviour
 
     private void OnContainerChanged()
     {
+        Debug.Log($"[UI_WeaponContainer] Container Changed (bound={boundContainer != null})");
         RefreshDisplay();
     }
 
@@ -112,6 +147,8 @@ public class UI_WeaponContainer : MonoBehaviour
     /// </summary>
     public void RefreshDisplay()
     {
+        RebindContainerIfNeeded();
+
         if (weaponBehaviour == null) return;
 
         var container = weaponBehaviour.Container;
@@ -129,6 +166,8 @@ public class UI_WeaponContainer : MonoBehaviour
         // Resolve display data and update slots
         SlotDisplayData mainData = ResolveDisplayData(currentEnum, currentCount);
         SlotDisplayData subData = ResolveDisplayData(nextEnum, nextCount);
+
+        Debug.Log($"[UI_WeaponContainer] RefreshDisplay - Current: {mainData} Next: {subData}");
 
         if (mainSlot != null)
         {
@@ -150,7 +189,7 @@ public class UI_WeaponContainer : MonoBehaviour
     public void RefreshDisplayByMode(WeaponMode mode)
     {
         // Implementation for refreshing display based on weapon mode
-        weaponBuildPanel.SetActive(mode == WeaponMode.Build);
+        //weaponBuildPanel.SetActive(mode == WeaponMode.Build);
         weaponRecyclePanel.SetActive(mode == WeaponMode.Recycle);
     }
 

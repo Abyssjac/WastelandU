@@ -171,6 +171,8 @@ public class Container<TEnum> where TEnum : struct
         }
 
         RebuildEnumCountMap();
+
+        Debug.Log("WDF U MUST BE CHANGED THE CONTAINER");
         OnContainerChanged?.Invoke();
         return true;
     }

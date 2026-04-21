@@ -21,6 +21,7 @@ public class WeaponReceiver : TwoSignalReceiver
         if (!ValidateRefs()) return;
 
         weaponBehaviour.container.CopyFrom(maxContainer);
+        weaponBehaviour.RefreshSelectionFromContainer();
         OnWeaponContainerRestored?.Invoke();
     }
 
@@ -29,6 +30,7 @@ public class WeaponReceiver : TwoSignalReceiver
         if (!ValidateRefs()) return;
 
         weaponBehaviour.container.ClearAll();
+        weaponBehaviour.RefreshSelectionFromContainer();
         OnWeaponContainerCleared?.Invoke();
     }
 

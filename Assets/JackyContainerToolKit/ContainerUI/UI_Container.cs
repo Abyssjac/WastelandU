@@ -24,6 +24,11 @@ public struct SlotDisplayData
     }
 
     public static SlotDisplayData Empty => new SlotDisplayData(null, Color.clear, 0);
+
+    public override string ToString()
+    {
+        return IsEmpty ? "Empty" : $"Icon={icon.name}, Color={iconColor}, Count={count}";
+    }
 }
 
 /// <summary>
