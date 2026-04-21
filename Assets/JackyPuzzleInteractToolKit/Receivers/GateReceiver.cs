@@ -5,12 +5,14 @@ public class GateReceiver : TwoSignalReceiver
 {
     //[SerializeField] private Animator animator;
     [Header("Move Settings")]
-    [SerializeField] private float moveDistance = 2f;   // 向上移动距离
+    [SerializeField] private Transform targetTransform; // 可选移动目标，不指定时默认自身
+    [SerializeField] private Vector3 moveOffset = new Vector3(0f, 2f, 0f);   // 移动偏移（可多方向）
     [SerializeField] private float moveDuration = 0.5f; // 移动耗时
     [SerializeField] private Ease ease = Ease.OutQuad;  // 缓动方式
     [SerializeField] private bool useLocalPosition = false; // 是否使用 localPosition
 
     private Tween currentTween;
+    private Transform moveTransform;
     private Vector3 startPos;
 
 
@@ -21,7 +23,8 @@ public class GateReceiver : TwoSignalReceiver
     //}
     private void Start()
     {
-        startPos = useLocalPosition ? transform.localPosition : transform.position;
+        moveTransform = targetTransform != null ? targetTransform : transform;
+        startPos = useLocalPosition ? moveTransform.localPosition : moveTransform.position;
     }
     
     protected override void OnActivated(GameObject sender)
@@ -37,22 +40,23 @@ public class GateReceiver : TwoSignalReceiver
     }
 
     /// <summary>
-    /// 开始向上移动
+    /// 开始移动
     /// </summary>
     public void StartMoveUp()
     {
         StopMove(); // 先终止旧动画，避免叠加
+        if (moveTransform == null)
+            moveTransform = targetTransform != null ? targetTransform : transform;
 
-        //Vector3 currentPos = useLocalPosition ? transform.localPosition : transform.position;
-        Vector3 targetPos = startPos + Vector3.up * moveDistance;
+        Vector3 targetPos = startPos + moveOffset;
 
         if (useLocalPosition)
         {
-            currentTween = transform.DOLocalMove(targetPos, moveDuration).SetEase(ease);
+            currentTween = moveTransform.DOLocalMove(targetPos, moveDuration).SetEase(ease);
         }
         else
         {
-            currentTween = transform.DOMove(targetPos, moveDuration).SetEase(ease);
+            currentTween = moveTransform.DOMove(targetPos, moveDuration).SetEase(ease);
         }
     }
 
@@ -75,13 +79,16 @@ public class GateReceiver : TwoSignalReceiver
     {
         StopMove();
 
+        if (moveTransform == null)
+            moveTransform = targetTransform != null ? targetTransform : transform;
+
         if (useLocalPosition)
         {
-            currentTween = transform.DOLocalMove(startPos, moveDuration).SetEase(ease);
+            currentTween = moveTransform.DOLocalMove(startPos, moveDuration).SetEase(ease);
         }
         else
         {
-            currentTween = transform.DOMove(startPos, moveDuration).SetEase(ease);
+            currentTween = moveTransform.DOMove(startPos, moveDuration).SetEase(ease);
         }
     }
 }

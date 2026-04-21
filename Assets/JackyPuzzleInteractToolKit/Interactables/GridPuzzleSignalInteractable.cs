@@ -22,26 +22,36 @@ public class GridPuzzleSignalInteractable : BaseInteractable
 
     private void Awake()
     {
-        ResolveGridIfNeeded();
+        //ResolveGridIfNeeded();
+    }
+
+
+    private void Start()
+    {
+        //SendSignal(targetGrid.IsGridFulfilled ? fulfilledSignal : unfulfilledSignal);
     }
 
     private void OnEnable()
     {
-        ResolveGridIfNeeded();
+        //ResolveGridIfNeeded();
         if (targetGrid == null) return;
 
-        targetGrid.OnGridStateChanged += OnGridStateChanged;
+        //targetGrid.OnGridStateChanged += OnGridStateChanged;
+        targetGrid.OnGridChanged += OnGridChanged;
 
-        bool initialState = targetGrid.IsGridFulfilled;
-        lastState = initialState;
-        hasLastState = true;
-        SendSignal(initialState ? fulfilledSignal : unfulfilledSignal);
+        //bool initialState = targetGrid.IsGridFulfilled;
+        //lastState = initialState;
+        //hasLastState = true;
+        //SendSignal(initialState ? fulfilledSignal : unfulfilledSignal);
+        OnGridChanged();
     }
 
     private void OnDisable()
     {
-        if (targetGrid != null)
-            targetGrid.OnGridStateChanged -= OnGridStateChanged;
+        if (targetGrid != null) {
+            //targetGrid.OnGridStateChanged -= OnGridStateChanged;
+            targetGrid.OnGridChanged -= OnGridChanged;
+        }
     }
 
     private void OnGridStateChanged(bool isFulfilled)
@@ -55,11 +65,19 @@ public class GridPuzzleSignalInteractable : BaseInteractable
         }
     }
 
-    private void ResolveGridIfNeeded()
+    private void OnGridChanged()
     {
-        if (targetGrid != null) return;
-        targetGrid = GetComponentInParent<EnemyGridBehaviour>();
+        if (targetGrid == null) return;
+        bool isFulfilled = targetGrid.IsGridFulfilled;
+        SendSignal(isFulfilled ? fulfilledSignal : unfulfilledSignal);
+        UpdateGridPuzzleBaseMaterial(isFulfilled);
     }
+
+    //private void ResolveGridIfNeeded()
+    //{
+    //    if (targetGrid != null) return;
+    //    targetGrid = GetComponentInParent<EnemyGridBehaviour>();
+    //}
 
     private void UpdateGridPuzzleBaseMaterial(bool isFulfilled)
     {
