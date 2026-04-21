@@ -94,4 +94,5 @@ public enum Key_ContainerItemPP
     ContainerItemM_Cube11_0 = 400,
     ContainerItemM_Cube12_0 = 401,
     ContainerItemM_Cube22_0 = 402,
+    ContainerItemM_CubeL_0 = 403,
 }

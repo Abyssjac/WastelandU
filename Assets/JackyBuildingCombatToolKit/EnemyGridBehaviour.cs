@@ -65,8 +65,18 @@ public class EnemyGridBehaviour : MonoBehaviour
     /// <summary>Fired after any grid mutation (place / remove).</summary>
     public event Action OnGridChanged;
 
+    /// <summary>
+    /// Fired when grid fulfilled state changes.
+    /// true = fulfilled, false = unfulfilled.
+    /// </summary>
+    public event Action<bool> OnGridStateChanged;
+
     /// <summary>Fired when all cells inside the grid bounds become occupied.</summary>
     public event Action OnGridFulfilled;
+
+    public bool IsGridFulfilled => grid != null && grid.AreAllCellsFilled();
+
+    private bool? lastGridFulfilledState;
 
     // ───────── Lifecycle ─────────
 
@@ -104,6 +114,7 @@ public class EnemyGridBehaviour : MonoBehaviour
         grid = new EnemyGrid3D();
         grid.Initialize(cellSet);
         instanceCounter = 0;
+        lastGridFulfilledState = null;
     }
 
     // ───────── Coordinate Conversion ─────────
@@ -196,9 +207,7 @@ public class EnemyGridBehaviour : MonoBehaviour
         placed = data.SpawnedObject;
 
         OnGridChanged?.Invoke();
-
-        if (grid.AreAllCellsFilled())
-            OnGridFulfilled?.Invoke();
+        EvaluateAndNotifyGridState();
 
         return true;
     }
@@ -218,9 +227,7 @@ public class EnemyGridBehaviour : MonoBehaviour
             return false;
 
         OnGridChanged?.Invoke();
-
-        if (grid.AreAllCellsFilled())
-            OnGridFulfilled?.Invoke();
+        EvaluateAndNotifyGridState();
 
         return true;
     }
@@ -241,6 +248,7 @@ public class EnemyGridBehaviour : MonoBehaviour
 
         grid.Initialize(cachedAllCells);
         OnGridChanged?.Invoke();
+        EvaluateAndNotifyGridState();
     }
 
     /// <summary>
@@ -319,8 +327,20 @@ public class EnemyGridBehaviour : MonoBehaviour
         Debug.Log($"[EnemyGridBehaviour] Preset loaded: {startPreset.name} ({totalPlaced} placed)");
 
         OnGridChanged?.Invoke();
+        EvaluateAndNotifyGridState(forceEmit: true);
+    }
 
-        if (grid.AreAllCellsFilled())
+    private void EvaluateAndNotifyGridState(bool forceEmit = false)
+    {
+        bool isFulfilled = IsGridFulfilled;
+
+        if (forceEmit || !lastGridFulfilledState.HasValue || lastGridFulfilledState.Value != isFulfilled)
+        {
+            lastGridFulfilledState = isFulfilled;
+            OnGridStateChanged?.Invoke(isFulfilled);
+        }
+
+        if (isFulfilled)
             OnGridFulfilled?.Invoke();
     }
 

@@ -580,4 +580,5 @@ public enum Key_BuildablePP
     BuildM_Cube12_0 = 301,
     BuildM_Cube22_0 = 302,
     BuildM_Cube11_Unremove_0 = 303,
+    BuildM_CubeL_0 = 304,
 }

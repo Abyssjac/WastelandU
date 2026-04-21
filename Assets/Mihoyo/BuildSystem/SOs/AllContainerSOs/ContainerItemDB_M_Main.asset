@@ -16,4 +16,5 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2adf2c356b7b1114ab485a8c3221fbc6, type: 2}
   - {fileID: 11400000, guid: 25ee54a800763e34c9b871c86e73d953, type: 2}
   - {fileID: 11400000, guid: 07b364bb6c0466f4ca17f84a16012b52, type: 2}
+  - {fileID: 11400000, guid: c38de236b7e250049a074dba7ea90a90, type: 2}
   scanFolder: Mihoyo/BuildSystem/SOs/AllContainerSOs
