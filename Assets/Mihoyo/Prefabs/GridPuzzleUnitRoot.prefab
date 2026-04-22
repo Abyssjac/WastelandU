@@ -33,6 +33,7 @@ Transform:
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 2133339312864145155}
+  - {fileID: 770959745874919097}
   m_Father: {fileID: 2418365497037964073}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &1016372708152033737
@@ -54,6 +55,11 @@ MonoBehaviour:
   gridOriginLocal: {x: 0, y: 0, z: 0}
   cellSize: {x: 1, y: 1, z: 1}
   startPreset: {fileID: 11400000, guid: 64b764fb2f60e9a40a67cf8a605c8f45, type: 2}
+  forcedOccupiedRegion:
+    boxes: []
+    cells: []
+    cellSize: {x: 0, y: 0, z: 0}
+    gridOriginLocal: {x: 0, y: 0, z: 0}
   enableDebug: 1
   grid:
     totalCellCount: 0
@@ -71,6 +77,11 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   gridBehaviour: {fileID: 1016372708152033737}
+  standaloneRegion:
+    boxes: []
+    cells: []
+    cellSize: {x: 0, y: 0, z: 0}
+    gridOriginLocal: {x: 0, y: 0, z: 0}
   lineRendererContainer: {fileID: 2133339312864145155}
   outlineMaterial: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
   lineWidth: 0.02
@@ -125,7 +136,6 @@ Transform:
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 770959745874919097}
   - {fileID: 6573828505662298572}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -172,7 +182,7 @@ GameObject:
   - component: {fileID: 6267728492638297618}
   - component: {fileID: 3250758083977427565}
   - component: {fileID: 237819800974661100}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: GridPuzzleUnitBaseVisual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -187,12 +197,12 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 7430273524938732786}
   serializedVersion: 2
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 1, y: -0.5, z: 1}
   m_LocalScale: {x: 2.5, y: 1, z: 2.5}
   m_ConstrainProportionsScale: 0
   m_Children: []
-  m_Father: {fileID: 2418365497037964073}
+  m_Father: {fileID: 6573828505662298572}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!33 &6267728492638297618
 MeshFilter:
@@ -266,5 +276,5 @@ BoxCollider:
   m_ProvidesContacts: 0
   m_Enabled: 1
   serializedVersion: 3
-  m_Size: {x: 1, y: 1, z: 1}
-  m_Center: {x: 0, y: 0, z: 0}
+  m_Size: {x: 0.79, y: 0.1, z: 0.79}
+  m_Center: {x: 0, y: 0.6, z: 0}

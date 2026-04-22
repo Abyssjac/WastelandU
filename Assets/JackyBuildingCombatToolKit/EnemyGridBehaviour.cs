@@ -472,6 +472,18 @@ public class EnemyGridBehaviour : MonoBehaviour
         Gizmos.color = Color.yellow;
         Gizmos.DrawWireCube(overallCenter, overallSize);
 
+        // Forced occupied cells
+        Vector3Int[] forcedCells = forcedOccupiedRegion.GatherAllCells();
+        if (forcedCells != null && forcedCells.Length > 0)
+        {
+            Gizmos.color = Color.red;
+            for (int i = 0; i < forcedCells.Length; i++)
+            {
+                Vector3 center = LocalCellToWorldCenter(forcedCells[i]);
+                Gizmos.DrawWireCube(center, Vector3.one * 0.5f);
+            }
+        }
+
         // Label
         UnityEditor.Handles.color = Color.white;
         UnityEditor.Handles.Label(overallCenter + Vector3.up * (overallSize.y * 0.5f + 0.3f),

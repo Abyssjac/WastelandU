@@ -258,9 +258,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 174604268177792318}
-  - component: {fileID: 5720132934108125579}
   m_Layer: 0
-  m_Name: GO_Puzzle_UnstableCubeUnit
+  m_Name: GO_Puzzle_UnstableCubeUnit_Visual
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -277,76 +276,13 @@ Transform:
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 6347357822051699079}
   - {fileID: 450935263347190377}
   - {fileID: 7519611576577043342}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5720132934108125579
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 5162732572625599085}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 8b5d76f8615c985428adc66a69ee0ef7, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  animatedTarget: {fileID: 174604268177792318}
-  enableFloatAnim: 1
-  enableGlitchAnim: 1
-  startWithFloatAnim: 1
-  minOffsetHeight: 0.15
-  maxOffsetHeight: 0.8
-  floatSegmentDuration: 2
-  glitchTotalDuration: 1.5
-  glitchGrowthCurve:
-    serializedVersion: 2
-    m_Curve:
-    - serializedVersion: 3
-      time: 0
-      value: 0
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    - serializedVersion: 3
-      time: 1
-      value: 1
-      inSlope: 0
-      outSlope: 0
-      tangentMode: 0
-      weightedMode: 0
-      inWeight: 0
-      outWeight: 0
-    m_PreInfinity: 2
-    m_PostInfinity: 2
-    m_RotationOrder: 4
-  glitchMinStepDuration: 0.03
-  glitchMaxStepDuration: 0.16
-  glitchMaxAmplitude: 0.5
-  teleportDelay: 0
-  teleportPoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  stableTargetTransform: {fileID: 0}
-  unstableTargetTransform: {fileID: 0}
-  stableAnimDuration: 0.8
-  unstableAnimDuration: 0.8
-  stableAnimEase: 6
-  unstableAnimEase: 6
-  useDefaultUpdateLoop: 1
-  glitchInterval: 4
-  debugLog: 0
-  debugGizmos: 1
-  debugPanel: 1
-  debugPanelPos: {x: 10, y: 180}
 --- !u!1 &5896561308854417875
 GameObject:
   m_ObjectHideFlags: 0
