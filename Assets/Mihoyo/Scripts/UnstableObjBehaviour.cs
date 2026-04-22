@@ -73,6 +73,9 @@ public class UnstableObjBehaviour : MonoBehaviour
     public UnstableAnimState CurrentAnimState { get; private set; } = UnstableAnimState.None;
     public float CurrentAnimElapsed => stateElapsed;
 
+    // Set to true by Initialize() so Start() skips the auto-float until the coordinator is ready.
+    private bool isRuntimeInitialized;
+
     private void Awake()
     {
         moveTarget = animatedTarget != null ? animatedTarget : transform;
@@ -80,9 +83,47 @@ public class UnstableObjBehaviour : MonoBehaviour
 
     private void Start()
     {
+        if (isRuntimeInitialized) return; // coordinator will call StartFloat() manually
+
         centerLocalPos = moveTarget.localPosition;
 
         if (startWithFloatAnim && enableFloatAnim)
+            StartFloat();
+    }
+
+    /// <summary>
+    /// Runtime injection entry point. Called by UnstableGridBehaviourReceiver after
+    /// BuildPreset has spawned this object, supplying all references that cannot be
+    /// pre-assigned in the Inspector.
+    /// </summary>
+    public void Initialize(Transform[] runtimeTeleportPoints,
+                           Transform runtimeStableTarget,
+                           Transform runtimeUnstableTarget,
+                           bool startUnstable = true)
+    {
+        isRuntimeInitialized = true;
+
+        moveTarget = animatedTarget != null ? animatedTarget : transform;
+        centerLocalPos = moveTarget.localPosition;
+
+        if (runtimeTeleportPoints != null)
+            teleportPoints = runtimeTeleportPoints;
+
+        if (runtimeStableTarget != null)
+            stableTargetTransform = runtimeStableTarget;
+
+        if (runtimeUnstableTarget != null)
+            unstableTargetTransform = runtimeUnstableTarget;
+
+        if (debugLog)
+            Debug.Log($"[{name}] UnstableObjBehaviour initialized at runtime. " +
+                      $"teleportPoints={teleportPoints.Length}, " +
+                      $"stableTarget={stableTargetTransform?.name}, " +
+                      $"unstableTarget={unstableTargetTransform?.name}", this);
+
+        if (startUnstable)
+            TriggerUnstableAnim();
+        else if (enableFloatAnim)
             StartFloat();
     }
 

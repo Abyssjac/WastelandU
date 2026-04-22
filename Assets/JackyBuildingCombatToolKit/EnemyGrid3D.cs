@@ -22,6 +22,9 @@ public class EnemyGrid3D
     // The set of all valid cells that define this grid's shape
     private HashSet<Vector3Int> validCells = new HashSet<Vector3Int>();
 
+    // Cells that are marked occupied without any associated PlacedBuildableData (e.g. floating objects)
+    private HashSet<Vector3Int> forcedOccupied = new HashSet<Vector3Int>();
+
     [SerializeField] private int totalCellCount;
     [SerializeField] private int occupiedCellCount;
 
@@ -51,6 +54,7 @@ public class EnemyGrid3D
         occupancyMap = new Dictionary<Vector3Int, PlacedBuildableData>();
         allPlaced = new Dictionary<string, PlacedBuildableData>();
         validCells = new HashSet<Vector3Int>(cells);
+        forcedOccupied = new HashSet<Vector3Int>();
         totalCellCount = validCells.Count;
         occupiedCellCount = 0;
     }
@@ -88,6 +92,7 @@ public class EnemyGrid3D
         {
             if (!IsInBounds(worldCells[i])) return false;
             if (occupancyMap.ContainsKey(worldCells[i])) return false;
+            if (forcedOccupied.Contains(worldCells[i])) return false;
         }
         return true;
     }
@@ -104,6 +109,7 @@ public class EnemyGrid3D
             Vector3Int cell = anchor + offsets[i];
             if (!IsInBounds(cell)) return false;
             if (occupancyMap.ContainsKey(cell)) return false;
+            if (forcedOccupied.Contains(cell)) return false;
         }
         return true;
     }
@@ -128,6 +134,11 @@ public class EnemyGrid3D
                 failReason = $"Cell {cell} already occupied by '{occupancyMap[cell].InstanceId}'";
                 return false;
             }
+            if (forcedOccupied.Contains(cell))
+            {
+                failReason = $"Cell {cell} is forced-occupied (no placed data).";
+                return false;
+            }
         }
         return true;
     }
@@ -150,7 +161,7 @@ public class EnemyGrid3D
 
             if (!IsInBounds(cell))
                 cellStatus[i] = 2; // invalid
-            else if (occupancyMap.ContainsKey(cell))
+            else if (occupancyMap.ContainsKey(cell) || forcedOccupied.Contains(cell))
                 cellStatus[i] = 1; // conflict
             else
                 cellStatus[i] = 0; // valid
@@ -204,6 +215,29 @@ public class EnemyGrid3D
     public void ForcePlace(PlacedBuildableData data)
     {
         WritePlacement(data);
+    }
+
+    /// <summary>
+    /// Mark cells as occupied without associating any PlacedBuildableData.
+    /// Useful for reserving grid slots for externally managed objects (e.g. UnstableObjBehaviour).
+    /// Only cells that are in bounds are registered; out-of-bounds cells are silently skipped.
+    /// </summary>
+    public void ForcedOccupyCells(IEnumerable<Vector3Int> cells)
+    {
+        foreach (Vector3Int cell in cells)
+        {
+            if (!IsInBounds(cell)) continue;
+            if (forcedOccupied.Add(cell))
+                occupiedCellCount++;
+        }
+    }
+
+    /// <summary>Clear all forced-occupied cells (does not affect normally placed buildables).</summary>
+    public void ClearForcedOccupancy()
+    {
+        occupiedCellCount -= forcedOccupied.Count;
+        occupiedCellCount = Mathf.Max(0, occupiedCellCount);
+        forcedOccupied.Clear();
     }
 
     // --------- Internal ---------

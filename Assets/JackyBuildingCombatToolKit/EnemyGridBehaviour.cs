@@ -39,6 +39,11 @@ public class EnemyGridBehaviour : MonoBehaviour
     [Tooltip("Optional preset to auto-place buildables into this enemy grid at initialization.")]
     [SerializeField] private BuildPreset startPreset;
 
+    [Header("Forced Occupancy")]
+    [Tooltip("Cells in this region are marked as occupied at initialization without spawning any object.\n" +
+             "Use this to reserve slots for externally managed objects (e.g. UnstableObjBehaviour).")]
+    [SerializeField] private BoxVisualizeRegion forcedOccupiedRegion;
+
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
 
@@ -115,6 +120,19 @@ public class EnemyGridBehaviour : MonoBehaviour
         grid.Initialize(cellSet);
         instanceCounter = 0;
         lastGridFulfilledState = null;
+
+        ApplyForcedOccupancy();
+    }
+
+    private void ApplyForcedOccupancy()
+    {
+        Vector3Int[] forcedCells = forcedOccupiedRegion.GatherAllCells();
+        if (forcedCells == null || forcedCells.Length == 0) return;
+
+        grid.ForcedOccupyCells(forcedCells);
+
+        if (enableDebug)
+            Debug.Log($"[EnemyGridBehaviour] '{name}': forced-occupied {forcedCells.Length} cell(s).", this);
     }
 
     // ───────── Coordinate Conversion ─────────
