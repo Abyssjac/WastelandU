@@ -17,7 +17,7 @@ public class GridPuzzleSignalInteractable : BaseInteractable
     [SerializeField] private PuzzleSignalType fulfilledSignal = PuzzleSignalType.Signal_Activate;
     [SerializeField] private PuzzleSignalType unfulfilledSignal = PuzzleSignalType.Signal_Deactivate;
 
-    private bool hasLastState;
+    private bool hasLastState = false;
     private bool lastState;
 
     private void Awake()
@@ -69,6 +69,12 @@ public class GridPuzzleSignalInteractable : BaseInteractable
     {
         if (targetGrid == null) return;
         bool isFulfilled = targetGrid.IsGridFulfilled;
+        if (hasLastState && lastState == isFulfilled)
+        {
+            return;
+        }
+        lastState = isFulfilled;
+        hasLastState = true;
         SendSignal(isFulfilled ? fulfilledSignal : unfulfilledSignal);
         UpdateGridPuzzleBaseMaterial(isFulfilled);
     }
