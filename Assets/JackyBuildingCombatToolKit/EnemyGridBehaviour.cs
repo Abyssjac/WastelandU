@@ -46,6 +46,7 @@ public class EnemyGridBehaviour : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
+    [SerializeField] private bool debugPermanent = false;
 
     // ───────── Runtime ─────────
 
@@ -426,7 +427,19 @@ public class EnemyGridBehaviour : MonoBehaviour
     // ───────── Debug ─────────
 
 #if UNITY_EDITOR
+    private void OnDrawGizmos()
+    {
+        if (debugPermanent)
+            DrawGizmos();
+    }
+
     private void OnDrawGizmosSelected()
+    {
+        if (!debugPermanent)
+            DrawGizmos();
+    }
+
+    private void DrawGizmos()
     {
         if (!enableDebug) return;
 
