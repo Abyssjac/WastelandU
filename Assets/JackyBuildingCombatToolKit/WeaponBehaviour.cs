@@ -17,6 +17,9 @@ public enum WeaponMode
 /// </summary>
 public class WeaponBehaviour : MonoBehaviour
 {
+
+    public static WeaponBehaviour Instance { get; private set; }
+
     [Header("References")]
     [SerializeField] private PlayerShootPositionProvider shootProvider;
     [SerializeField] private PlayerShootPreviewController previewController;
@@ -69,6 +72,14 @@ public class WeaponBehaviour : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning($"[WeaponBehaviour] Multiple instances detected. Destroying duplicate on '{gameObject.name}'.");
+            Destroy(this);
+            return;
+        }
+        Instance = this;
+
         container = new Container<Key_BuildablePP>(containerSlotCount);
 
         var dbManager = PropertyDatabaseManager.Instance;

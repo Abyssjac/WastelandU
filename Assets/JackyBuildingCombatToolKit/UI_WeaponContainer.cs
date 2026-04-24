@@ -66,6 +66,12 @@ public class UI_WeaponContainer : MonoBehaviour
 
         if (containerItemDB == null)
             Debug.LogWarning("[UI_WeaponContainer] ContainerItemDatabase not found.");
+
+        if (weaponBehaviour == null) { 
+            weaponBehaviour = WeaponBehaviour.Instance;
+        }
+        if (weaponBehaviour == null)
+            Debug.LogWarning("[UI_WeaponContainer] WeaponBehaviour reference not set and instance not found.");
     }
 
     private void OnEnable()

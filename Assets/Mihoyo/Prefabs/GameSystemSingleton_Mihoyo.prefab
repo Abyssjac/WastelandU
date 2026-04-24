@@ -47,6 +47,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   allSystemPrefabSingletons:
   - {fileID: 2889143557193481470, guid: 36539d34724afa041bc2700b8c21fc73, type: 3}
+  - {fileID: 3634257328672139825, guid: 7e60969f1bbeaf8458e83c045a76e585, type: 3}
 --- !u!114 &3239541546299406786
 MonoBehaviour:
   m_ObjectHideFlags: 0

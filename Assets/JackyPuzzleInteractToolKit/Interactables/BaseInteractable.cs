@@ -26,6 +26,7 @@ namespace JackyPuzzleInteract
                     linkedReceivers[i].ReceiveSignal(signalType, gameObject);
             }
             OnInteracted?.Invoke();
+            //Debug.Log($"[{name}] BaseInteractable: 发送信号 {signalType} 给 {linkedReceivers.Length} 个 Receiver。");
         }
 
 #if UNITY_EDITOR

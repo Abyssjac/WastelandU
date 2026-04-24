@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 1777777911739716561}
   - component: {fileID: 7423232548150949462}
   - component: {fileID: 7689671113585451838}
+  - component: {fileID: 7395528211689564672}
   m_Layer: 0
   m_Name: PlayerWeaponLogic
   m_TagString: Untagged
@@ -56,7 +57,9 @@ MonoBehaviour:
   enableDebug: 1
   container:
     maxSlots: 0
-    slots: []
+    slots:
+    - itemEnum: 304
+      itemCount: 99
 --- !u!114 &7423232548150949462
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -98,3 +101,32 @@ MonoBehaviour:
   recycleDisabledMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
   previewUnitPrefab: {fileID: 8382963424789111466, guid: 282f8d74be17cd54392557f0fe044160, type: 3}
   unitScaleFactor: 0.95
+--- !u!114 &7395528211689564672
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 3634257328672139825}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e424d8cd4f3f0a54b9485989ee8880d6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  logicKey: 7
+  maxContainer:
+    maxSlots: 6
+    slots:
+    - itemEnum: 300
+      itemCount: 99
+    - itemEnum: 301
+      itemCount: 99
+    - itemEnum: 302
+      itemCount: 99
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+  weaponBehaviour: {fileID: 1777777911739716561}
