@@ -10,6 +10,7 @@ using UnityEngine.SceneManagement;
 [DisallowMultipleComponent]
 public class PlayerMovementCC : MonoBehaviour
 {
+    public static PlayerMovementCC Instance { get; private set; }
     // ----------------------------
     // References
     // ----------------------------
@@ -119,6 +120,14 @@ public class PlayerMovementCC : MonoBehaviour
 
     private void Awake()
     {
+        if (Instance != null && Instance != this)
+        {
+            Debug.LogWarning("[PlayerMovementCC] Multiple instances detected. Destroying duplicate.", this);
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+
         controller = GetComponent<CharacterController>();
         controls = GetComponent<PlayerControl>();
         spawnedCamera = playerCameraInstance != null ? playerCameraInstance : null;
@@ -135,6 +144,8 @@ public class PlayerMovementCC : MonoBehaviour
 
     private void OnDestroy()
     {
+        if (Instance == this) Instance = null;
+
         SceneManager.sceneLoaded -= OnSceneLoadedEnsureCamera;
 
         if (AllCameraManager.Instance != null)

@@ -13,6 +13,31 @@ namespace JackyUtility
     {
         public static AllLevelManager Instance { get; private set; }
 
+        // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Respawn ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+        /// <summary>Current respawn point. Defaults to world origin on scene start.</summary>
+        public Vector3 RespawnPoint { get; private set; } = Vector3.zero;
+
+        /// <summary>Update the respawn point to a new world position.</summary>
+        public void SetRespawnPoint(Vector3 worldPosition)
+        {
+            RespawnPoint = worldPosition;
+            Debug.Log($"[AllLevelManager] RespawnPoint updated to {worldPosition}");
+        }
+
+        /// <summary>Teleport the player to the current respawn point.</summary>
+        public void RespawnPlayer()
+        {
+            if (PlayerMovementCC.Instance == null)
+            {
+                Debug.LogError("[AllLevelManager] RespawnPlayer: PlayerMovementCC.Instance is null.");
+                return;
+            }
+
+            PlayerMovementCC.Instance.TeleportToPosition(RespawnPoint);
+            Debug.Log($"[AllLevelManager] Player respawned at {RespawnPoint}");
+        }
+
         private void Awake()
         {
             if (Instance != null && Instance != this)
