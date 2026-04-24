@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1001 &1541671121638287491
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: -0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2418365497037964073, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2868948661768207333, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: m_Name
+      value: GridPuzzleUnitRoot_Environ
+      objectReference: {fileID: 0}
+    - target: {fileID: 3250758083977427565, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}
+      propertyPath: 'm_Materials.Array.data[0]'
+      value: 
+      objectReference: {fileID: 2100000, guid: 91f63a061260d944b81cfcceda309d42, type: 2}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 6e8cb018adbed4040bce8b3ca4183077, type: 3}

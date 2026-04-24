@@ -10,19 +10,25 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8525a629d4660f048b06da84834d0f24, type: 3}
-  m_Name: BuildPreset_LevelC_Reward
+  m_Name: BuildPreset_LevelC_New_Environ
   m_EditorClassIdentifier: 
   groups:
-  - groupName: FreeBlocksGroups
+  - groupName: 
     forced: 0
     entries:
-    - buildableEnumKey: 304
-      anchorCell: {x: 0, y: 0, z: 0}
+    - buildableEnumKey: 303
+      anchorCell: {x: 1, y: 0, z: 0}
       rotationStep: 0
-    - buildableEnumKey: 300
+    - buildableEnumKey: 303
       anchorCell: {x: 1, y: 0, z: 1}
       rotationStep: 0
-    - buildableEnumKey: 304
+    - buildableEnumKey: 303
       anchorCell: {x: 0, y: 0, z: 1}
+      rotationStep: 0
+    - buildableEnumKey: 303
+      anchorCell: {x: 1, y: 1, z: 1}
+      rotationStep: 0
+    - buildableEnumKey: 303
+      anchorCell: {x: 0, y: 1, z: 1}
       rotationStep: 0
     blueprints: []

@@ -199,8 +199,10 @@ public class UnstableObjBehaviour : MonoBehaviour
 
         if (!TrySelectNextTeleportPoint(out nextTeleportPoint))
         {
-            Debug.LogError($"[{name}] GlitchAnim aborted: no valid teleport point.", this);
-            StopAnim();
+            Debug.LogWarning($"[{name}] GlitchAnim aborted: no valid teleport point. Falling back to FloatAnim.", this);
+            floatSinceLastGlitch = 0f;
+            if (enableFloatAnim)
+                StartFloat();
             return;
         }
 
