@@ -43,6 +43,13 @@ public class BossController : MonoBehaviour
     [Header("Activate Grids (toggled by ActivateGridRegion)")]
     [SerializeField] private List<FacingEnemyGrid> activateGrids = new List<FacingEnemyGrid>();
 
+    [Header("Steal All Trigger")]
+    [Tooltip("When any combat grid whose facing matches one of these entries is fully filled, StealAllBlocks is called on the steal skill.")]
+    [SerializeField] private List<EnemyVisualFacing> stealAllTriggerFacings = new List<EnemyVisualFacing>();
+
+    [Tooltip("The steal skill that will have StealAllBlocks() called when a trigger grid is fulfilled.")]
+    [SerializeField] private BossBlockStealSkill stealSkill;
+
     // Runtime
     private EnemyVisualFacing currentFacing;
 
@@ -75,6 +82,9 @@ public class BossController : MonoBehaviour
 
             EnemyVisualFacing capturedFacing = entry.facing;
             entry.gridBehaviour.OnGridFulfilled += () => OnCombatGridFulfilled(capturedFacing);
+
+            if (stealSkill != null && stealAllTriggerFacings.Contains(capturedFacing))
+                entry.gridBehaviour.OnGridFulfilled += () => OnStealTriggerGridFulfilled(capturedFacing);
         }
     }
 
@@ -82,6 +92,17 @@ public class BossController : MonoBehaviour
     {
         // Lambdas can't be individually unsubscribed; rely on object destruction to clean up.
         // If longer lifetimes are needed, cache the delegates instead.
+    }
+
+    // ©¤©¤ Steal trigger ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private void OnStealTriggerGridFulfilled(EnemyVisualFacing triggerFacing)
+    {
+        if (stealSkill == null) return;
+
+        Debug.Log($"[BossController] Steal-all triggered by facing {triggerFacing}.", this);
+
+        stealSkill.StealAllBlocks();
     }
 
     // ©¤©¤ Encounter flow ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤

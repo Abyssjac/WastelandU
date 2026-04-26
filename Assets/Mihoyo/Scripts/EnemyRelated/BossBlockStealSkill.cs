@@ -62,6 +62,43 @@ public class BossBlockStealSkill : MonoBehaviour
         }
     }
 
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    /// <summary>
+    /// Immediately steals every stealable block from the target grid (no count cap).
+    /// Intended to be triggered externally, e.g. by BossController when a designated
+    /// combat grid is fully filled.
+    /// </summary>
+    public void StealAllBlocks()
+    {
+        if (targetGrid == null || targetGrid.Grid == null)
+        {
+            Debug.LogWarning("[BossBlockStealSkill] StealAllBlocks: targetGrid is not set or not initialized.", this);
+            return;
+        }
+
+        if (boundsMin == null || boundsMax == null)
+        {
+            Debug.LogWarning("[BossBlockStealSkill] StealAllBlocks: boundsMin or boundsMax is not set.", this);
+            return;
+        }
+
+        List<PlacedBuildableData> candidates = GatherStealCandidates();
+
+        if (candidates.Count == 0)
+        {
+            if (enableDebug)
+                Debug.Log("[BossBlockStealSkill] StealAllBlocks: no stealable blocks found.", this);
+            return;
+        }
+
+        if (enableDebug)
+            Debug.Log($"[BossBlockStealSkill] StealAllBlocks: stealing {candidates.Count} block(s).", this);
+
+        for (int i = 0; i < candidates.Count; i++)
+            StealBlock(candidates[i]);
+    }
+
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Core Steal Logic ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     private void ExecuteSteal()
