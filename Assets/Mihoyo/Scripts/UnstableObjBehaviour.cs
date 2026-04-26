@@ -51,7 +51,7 @@ public class UnstableObjBehaviour : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool debugLog = false;
     [SerializeField] private bool debugGizmos = true;
-    [SerializeField] private bool debugPanel = true;
+    [SerializeField] private bool debugPanel = false;
     [SerializeField] private Vector2 debugPanelPos = new Vector2(10f, 180f);
 
     // Runtime
@@ -349,6 +349,31 @@ public class UnstableObjBehaviour : MonoBehaviour
     public void SetTeleportOverride(Transform destination)
     {
         teleportOverride = destination;
+    }
+
+    /// <summary>Runtime override for Float anim parameters (used by BossBlockStealSkill).</summary>
+    public void SetFloatParams(float minOffset, float maxOffset, float segmentDuration)
+    {
+        minOffsetHeight = minOffset;
+        maxOffsetHeight = maxOffset;
+        floatSegmentDuration = segmentDuration;
+    }
+
+    /// <summary>Runtime override for Glitch anim parameters (used by BossBlockStealSkill).</summary>
+    public void SetGlitchParams(float totalDuration, AnimationCurve growthCurve,
+                                float minStep, float maxStep, float maxAmplitude)
+    {
+        glitchTotalDuration = totalDuration;
+        if (growthCurve != null) glitchGrowthCurve = growthCurve;
+        glitchMinStepDuration = minStep;
+        glitchMaxStepDuration = maxStep;
+        glitchMaxAmplitude = maxAmplitude;
+    }
+
+    /// <summary>Enable or disable the default update loop (Float¡úGlitch timer).</summary>
+    public void SetLoopEnabled(bool enabled)
+    {
+        useDefaultUpdateLoop = enabled;
     }
 
     private void PlayNextFloatSegment()

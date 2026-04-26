@@ -75,7 +75,7 @@ MonoBehaviour:
   targetCamera: {fileID: 0}
   enemyHitMask:
     serializedVersion: 2
-    m_Bits: 256
+    m_Bits: 8448
   buildSelectableMask:
     serializedVersion: 2
     m_Bits: 16384

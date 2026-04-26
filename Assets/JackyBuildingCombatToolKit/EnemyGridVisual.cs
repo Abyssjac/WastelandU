@@ -52,6 +52,14 @@ public struct BoxVisualizeRegion
     }
 }
 
+public enum GridVisualMode
+{
+    /// <summary>Spawn one LineRenderer cube wireframe per cell.</summary>
+    PerCell,
+    /// <summary>Spawn a single LineRenderer that outlines the AABB bounding box of all cells.</summary>
+    BoundsOnly,
+}
+
 /// <summary>
 /// Visualizes a grid region by spawning one LineRenderer per cell drawing a cube wireframe.
 /// Can source grid data from an EnemyGridBehaviour (runtime grid) or a standalone
@@ -67,6 +75,10 @@ public class EnemyGridVisual : MonoBehaviour
 
     [Tooltip("Parent transform for all spawned LineRenderer objects.")]
     [SerializeField] private Transform lineRendererContainer;
+
+    [Header("Visual Mode")]
+    [Tooltip("PerCell: one wireframe cube per grid cell.\nBoundsOnly: a single wireframe box around the entire grid AABB.")]
+    [SerializeField] private GridVisualMode visualMode = GridVisualMode.PerCell;
 
     [Header("Outline Settings")]
     [SerializeField] private Material outlineMaterial;
@@ -130,7 +142,12 @@ public class EnemyGridVisual : MonoBehaviour
     public void RebuildOutline()
     {
         ClearLineRenderers();
-        BuildCellWireframes();
+
+        switch (visualMode)
+        {
+            case GridVisualMode.PerCell:    BuildCellWireframes();  break;
+            case GridVisualMode.BoundsOnly: BuildBoundsWireframe(); break;
+        }
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -225,19 +242,7 @@ public class EnemyGridVisual : MonoBehaviour
             lrObj.transform.localScale = Vector3.one;
 
             LineRenderer lr = lrObj.AddComponent<LineRenderer>();
-            lr.useWorldSpace = false;
-            lr.loop = false;
-            lr.startWidth = lineWidth;
-            lr.endWidth = lineWidth;
-            lr.numCapVertices = 0;
-            lr.numCornerVertices = 0;
-            lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-            lr.receiveShadows = false;
-            lr.startColor = outlineColor;
-            lr.endColor = outlineColor;
-
-            if (outlineMaterial != null)
-                lr.material = outlineMaterial;
+            ConfigureLR(lr);
 
             lr.positionCount = s_cubeLoop.Length;
             Vector3[] positions = new Vector3[s_cubeLoop.Length];
@@ -247,6 +252,66 @@ public class EnemyGridVisual : MonoBehaviour
             lr.SetPositions(positions);
             cellLineRenderers.Add(lr);
         }
+    }
+
+    private void BuildBoundsWireframe()
+    {
+        if (resolvedCells == null || resolvedCells.Length == 0) return;
+
+        Transform parent = lineRendererContainer != null ? lineRendererContainer : transform;
+        Vector3 cs = resolvedCellSize;
+        Vector3 origin = resolvedOrigin;
+
+        // Compute AABB in local space (cell-corner coords, then expand by one cell)
+        Vector3 localMin = origin + new Vector3(resolvedCells[0].x * cs.x,
+                                                resolvedCells[0].y * cs.y,
+                                                resolvedCells[0].z * cs.z);
+        Vector3 localMax = localMin;
+
+        for (int i = 1; i < resolvedCells.Length; i++)
+        {
+            Vector3Int c = resolvedCells[i];
+            Vector3 corner = origin + new Vector3(c.x * cs.x, c.y * cs.y, c.z * cs.z);
+            localMin = Vector3.Min(localMin, corner);
+            localMax = Vector3.Max(localMax, corner);
+        }
+
+        // Expand max by one full cell so the box wraps the cells rather than just their corners
+        localMax += cs;
+
+        // Build cube wireframe positions from the AABB
+        Vector3 size = localMax - localMin;
+        Vector3[] positions = new Vector3[s_cubeLoop.Length];
+        for (int p = 0; p < s_cubeLoop.Length; p++)
+            positions[p] = localMin + Vector3.Scale(s_cubeLoop[p], size);
+
+        GameObject lrObj = new GameObject("[GridBounds]");
+        lrObj.transform.SetParent(parent, false);
+        lrObj.transform.localPosition = Vector3.zero;
+        lrObj.transform.localRotation = Quaternion.identity;
+        lrObj.transform.localScale = Vector3.one;
+
+        LineRenderer lr = lrObj.AddComponent<LineRenderer>();
+        ConfigureLR(lr);
+        lr.positionCount = positions.Length;
+        lr.SetPositions(positions);
+        cellLineRenderers.Add(lr);
+    }
+
+    private void ConfigureLR(LineRenderer lr)
+    {
+        lr.useWorldSpace = false;
+        lr.loop = false;
+        lr.startWidth = lineWidth;
+        lr.endWidth = lineWidth;
+        lr.numCapVertices = 0;
+        lr.numCornerVertices = 0;
+        lr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
+        lr.receiveShadows = false;
+        lr.startColor = outlineColor;
+        lr.endColor = outlineColor;
+        if (outlineMaterial != null)
+            lr.material = outlineMaterial;
     }
 
     private void ClearLineRenderers()

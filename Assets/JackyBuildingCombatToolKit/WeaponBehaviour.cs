@@ -307,7 +307,35 @@ public class WeaponBehaviour : MonoBehaviour
             return;
         }
 
-        // Find the enemy grid this buildable belongs to
+        // ©¤©¤ Detached floating block (stolen by boss skill) ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        if (buildable.IsDetached)
+        {
+            // Only allow pickup while the block is floating (not mid-glitch or in transit)
+            var unstable = buildable.GetComponent<UnstableObjBehaviour>();
+            if (unstable != null && unstable.CurrentAnimState != UnstableAnimState.Float)
+            {
+                if (enableDebug)
+                    Debug.Log($"[WeaponBehaviour] Cannot recycle detached '{prop.EnumKey}': not in Float state.");
+                return;
+            }
+
+            Key_BuildablePP recycleEnum = prop.EnumKey;
+            if (!container.TryAddItem(recycleEnum, 1, out string addReason))
+            {
+                if (enableDebug)
+                    Debug.Log($"[WeaponBehaviour] Cannot recycle detached '{recycleEnum}': container full. {addReason}");
+                return;
+            }
+
+            if (unstable != null) unstable.StopAnim();
+            Destroy(buildable.gameObject);
+
+            if (enableDebug)
+                Debug.Log($"[WeaponBehaviour] Picked up detached '{recycleEnum}'. Returned to container.");
+            return;
+        }
+
+        // ©¤©¤ Normal grid-bound block ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
         EnemyGridBehaviour enemy = buildable.GetComponentInParent<EnemyGridBehaviour>();
         if (enemy == null)
         {
@@ -317,11 +345,11 @@ public class WeaponBehaviour : MonoBehaviour
         }
 
         // Check container capacity before removing
-        Key_BuildablePP recycleEnum = prop.EnumKey;
-        if (!container.TryAddItem(recycleEnum, 1, out string addReason))
+        Key_BuildablePP gridRecycleEnum = prop.EnumKey;
+        if (!container.TryAddItem(gridRecycleEnum, 1, out string gridAddReason))
         {
             if (enableDebug)
-                Debug.Log($"[WeaponBehaviour] Cannot recycle '{recycleEnum}': container full. {addReason}");
+                Debug.Log($"[WeaponBehaviour] Cannot recycle '{gridRecycleEnum}': container full. {gridAddReason}");
             return;
         }
 
@@ -329,13 +357,13 @@ public class WeaponBehaviour : MonoBehaviour
         if (!enemy.TryRemove(data.InstanceId))
         {
             // Rollback container add
-            container.TryRemoveItem(recycleEnum, 1, out _);
+            container.TryRemoveItem(gridRecycleEnum, 1, out _);
             Debug.LogError($"[WeaponBehaviour] TryRemove failed for '{data.InstanceId}' after container add succeeded.");
             return;
         }
 
         if (enableDebug)
-            Debug.Log($"[WeaponBehaviour] Recycled '{recycleEnum}' from '{enemy.gameObject.name}'. Returned to container.");
+            Debug.Log($"[WeaponBehaviour] Recycled '{gridRecycleEnum}' from '{enemy.gameObject.name}'. Returned to container.");
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Preview ©¤©¤©¤©¤©¤©¤©¤©¤©¤

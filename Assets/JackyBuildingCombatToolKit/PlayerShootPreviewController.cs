@@ -183,7 +183,46 @@ public class PlayerShootPreviewController : MonoBehaviour
         if (data == null) return;
 
         EnemyGridBehaviour enemy = buildable.GetComponentInParent<EnemyGridBehaviour>();
-        if (enemy == null) return;
+
+        // ©¤©¤ Detached floating block: no grid parent, parent preview directly to the buildable ©¤©¤
+        if (enemy == null)
+        {
+            if (!buildable.IsDetached) return;
+
+            previewRoot = new GameObject("[RecyclePreview]");
+            previewRoot.transform.SetParent(buildable.transform, false);
+            previewRoot.transform.localPosition = Vector3.zero;
+            previewRoot.transform.localRotation = Quaternion.identity;
+            previewRoot.transform.localScale = Vector3.one;
+
+            if (previewUnitPrefab == null) return;
+
+            bool detachedCanRecycle = data.Property != null && data.Property.canMove;
+            Material detachedMat = detachedCanRecycle ? recyclePreviewMaterial : recycleDisabledMaterial;
+            if (detachedMat == null) detachedMat = detachedCanRecycle ? validPreviewMaterial : invalidPreviewMaterial;
+
+            // The buildable's localScale == cellSize, so 1 local unit == 1 cell in world space.
+            // The buildable's transform origin == center of the anchor cell.
+            // The buildable GO already carries the rotation (Euler(0, rotationStep*90, 0)),
+            // so we use the UNROTATED footprint as local offsets ¡ª the parent transform
+            // handles direction; applying GetRotatedFootprint here would double-rotate.
+            Vector3Int[] detachedFootprint = data.Property.GetFootprint();
+            for (int i = 0; i < detachedFootprint.Length; i++)
+            {
+                GameObject unit = Instantiate(previewUnitPrefab, previewRoot.transform);
+                unit.name = $"[RecycleUnit_Detached_{i}]";
+                unit.transform.localPosition = new Vector3(detachedFootprint[i].x, detachedFootprint[i].y, detachedFootprint[i].z);
+                unit.transform.localRotation = Quaternion.identity;
+                unit.transform.localScale = Vector3.one * unitScaleFactor;
+                DisableColliders(unit);
+
+                var visual = unit.GetComponent<BaseVisualController>();
+                if (visual == null) visual = unit.AddComponent<BaseVisualController>();
+                visual.SetMaterialAll(detachedMat);
+                previewUnitVisuals.Add(visual);
+            }
+            return;
+        }
 
         previewRoot = new GameObject("[RecyclePreview]");
         previewRoot.transform.SetParent(enemy.transform, false);

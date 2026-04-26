@@ -17,11 +17,27 @@ public class BuildableBehaviour : MonoBehaviour
     public BuildableProperty Property => Data?.Property;
 
     /// <summary>
+    /// When true, this buildable has been detached from its EnemyGridBehaviour by the boss steal
+    /// skill. The grid slot has already been freed; recycling should add to weapon container and
+    /// destroy this GameObject directly without touching the grid.
+    /// </summary>
+    public bool IsDetached { get; private set; }
+
+    /// <summary>
     /// Called by BuildManager immediately after Instantiate.
     /// </summary>
     public void Initialize(PlacedBuildableData data)
     {
         Data = data;
         InstanceId = data.InstanceId;
+        IsDetached = false;
+    }
+
+    /// <summary>
+    /// Mark this buildable as detached from the grid (called by DetachFromGrid).
+    /// </summary>
+    public void MarkDetached()
+    {
+        IsDetached = true;
     }
 }

@@ -161,8 +161,9 @@ public class PlayerShootPositionProvider : MonoBehaviour, IDebuggable
 
         // --- Raycast 2: Selectable buildable (for recycling) ---
         BuildableBehaviour hitBuildable = null;
+        RaycastHit selectableHit = default;
 
-        if (Physics.Raycast(ray, out RaycastHit selectableHit, maxRayDistance, buildSelectableMask))
+        if (Physics.Raycast(ray, out selectableHit, maxRayDistance, buildSelectableMask))
         {
             hitBuildable = selectableHit.collider.GetComponentInParent<BuildableBehaviour>();
 
@@ -193,6 +194,21 @@ public class PlayerShootPositionProvider : MonoBehaviour, IDebuggable
                 HitSnappedWorldPositionCenter = snappedCenter,
                 HitEnemyGridBehaviour = enemyGrid,
                 HitNormal = hitNormal,
+                HitBuildable = hitBuildable,
+            };
+        }
+        else if (hitBuildable != null && hitBuildable.IsDetached)
+        {
+            // Detached floating block: no grid context, but still a valid recycle target
+            HasValidHit = true;
+            CurrentHitResult = new WeaponHitResult
+            {
+                HitCell = Vector3Int.zero,
+                HitWorldPosition = selectableHit.point,
+                HitSnappedWorldPosition = selectableHit.point,
+                HitSnappedWorldPositionCenter = selectableHit.point,
+                HitEnemyGridBehaviour = null,
+                HitNormal = selectableHit.normal,
                 HitBuildable = hitBuildable,
             };
         }

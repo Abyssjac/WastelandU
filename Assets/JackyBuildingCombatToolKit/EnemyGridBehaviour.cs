@@ -252,6 +252,36 @@ public class EnemyGridBehaviour : MonoBehaviour
     }
 
     /// <summary>
+    /// Detach a placed buildable from the grid without destroying its GameObject.
+    /// Frees the grid slots, removes all tracking data, un-parents the GO to the scene root,
+    /// and marks its BuildableBehaviour as detached so the weapon system can handle it correctly.
+    /// Returns the detached GameObject, or null if the instanceId was not found.
+    /// </summary>
+    public GameObject DetachFromGrid(string instanceId)
+    {
+        PlacedBuildableData data = grid.GetPlacedById(instanceId);
+        if (data == null) return null;
+
+        GameObject go = data.SpawnedObject;
+
+        if (!grid.TryRemove(instanceId))
+            return null;
+
+        if (go != null)
+        {
+            go.transform.SetParent(null, worldPositionStays: true);
+
+            var bb = go.GetComponent<BuildableBehaviour>();
+            if (bb != null) bb.MarkDetached();
+        }
+
+        OnGridChanged?.Invoke();
+        EvaluateAndNotifyGridState();
+
+        return go;
+    }
+
+    /// <summary>
     /// Remove all placed buildables, destroying their GameObjects.
     /// </summary>
     public void ClearAll()
