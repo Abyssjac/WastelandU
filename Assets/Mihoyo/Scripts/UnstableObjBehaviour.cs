@@ -60,6 +60,7 @@ public class UnstableObjBehaviour : MonoBehaviour
     private Vector3 floatTargetLocalPos;
     private Transform nextTeleportPoint;
     private Transform lastTeleportPoint;
+    private Transform teleportOverride; // one-shot override set externally (e.g. BossVisual)
     private Vector3 glitchBaseLocalPos;
 
     private Tween activeTween;
@@ -197,13 +198,18 @@ public class UnstableObjBehaviour : MonoBehaviour
         if (CurrentAnimState == UnstableAnimState.Glitch)
             Debug.LogError($"[{name}] TriggerGlitch called while already glitching. Will reset and replay.", this);
 
-        if (!TrySelectNextTeleportPoint(out nextTeleportPoint))
+        // If a one-shot override has been set (e.g. from BossVisual.TeleportEnemyRoot),
+        // skip the normal selection entirely ¡ª the override will be consumed in ExecuteTeleport.
+        if (teleportOverride == null)
         {
-            Debug.LogWarning($"[{name}] GlitchAnim aborted: no valid teleport point. Falling back to FloatAnim.", this);
-            floatSinceLastGlitch = 0f;
-            if (enableFloatAnim)
-                StartFloat();
-            return;
+            if (!TrySelectNextTeleportPoint(out nextTeleportPoint))
+            {
+                Debug.LogWarning($"[{name}] GlitchAnim aborted: no valid teleport point. Falling back to FloatAnim.", this);
+                floatSinceLastGlitch = 0f;
+                if (enableFloatAnim)
+                    StartFloat();
+                return;
+            }
         }
 
         StopAnim();
@@ -336,6 +342,15 @@ public class UnstableObjBehaviour : MonoBehaviour
             : worldPos;
     }
 
+    /// <summary>
+    /// Set a one-shot teleport destination that overrides the normal teleport-point selection
+    /// for the next Glitch cycle only. Cleared automatically after use.
+    /// </summary>
+    public void SetTeleportOverride(Transform destination)
+    {
+        teleportOverride = destination;
+    }
+
     private void PlayNextFloatSegment()
     {
         if (CurrentAnimState != UnstableAnimState.Float) return;
@@ -410,6 +425,13 @@ public class UnstableObjBehaviour : MonoBehaviour
 
     private void ExecuteTeleport()
     {
+        // One-shot override takes priority over the normally-selected teleport point
+        if (teleportOverride != null)
+        {
+            nextTeleportPoint = teleportOverride;
+            teleportOverride = null;
+        }
+
         if (nextTeleportPoint == null)
         {
             Debug.LogError($"[{name}] ExecuteTeleport failed: nextTeleportPoint is null.", this);
