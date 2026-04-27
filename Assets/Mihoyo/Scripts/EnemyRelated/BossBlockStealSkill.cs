@@ -49,17 +49,53 @@ public class BossBlockStealSkill : MonoBehaviour
 
     // Runtime
     private float timer;
+    private bool isSkillActive = false;
+
+    /// <summary>Whether the periodic steal timer is currently running.</summary>
+    public bool IsSkillActive => isSkillActive;
+
+    /// <summary>Seconds elapsed since the last steal (or since activation).</summary>
+    public float Timer => timer;
+
+    /// <summary>Configured interval between periodic steals.</summary>
+    public float AttackInterval => attackInterval;
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     private void Update()
     {
+        if (!isSkillActive) return;
+
         timer += Time.deltaTime;
         if (timer >= attackInterval)
         {
             timer = 0f;
             ExecuteSteal();
         }
+    }
+
+    /// <summary>
+    /// Enable the periodic steal timer. Resets the interval so the first tick
+    /// fires a full <see cref="attackInterval"/> after activation.
+    /// </summary>
+    public void ActivateSkill()
+    {
+        isSkillActive = true;
+        timer = 0f;
+
+        if (enableDebug)
+            Debug.Log("[BossBlockStealSkill] Skill activated.", this);
+    }
+
+    /// <summary>
+    /// Disable the periodic steal timer. Any in-flight stolen blocks are unaffected.
+    /// </summary>
+    public void DeactivateSkill()
+    {
+        isSkillActive = false;
+
+        if (enableDebug)
+            Debug.Log("[BossBlockStealSkill] Skill deactivated.", this);
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤

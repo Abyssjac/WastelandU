@@ -149,7 +149,7 @@ MonoBehaviour:
   targetOffset: {x: 0.4, y: 2, z: 0}
   sensitivityX: 3
   sensitivityY: 2
-  pitchMin: -30
+  pitchMin: -65
   pitchMax: 55
   canZoom: 0
   defaultDistance: 5

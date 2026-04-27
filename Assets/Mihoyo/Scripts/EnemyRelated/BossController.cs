@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using JackyUtility;
 
 // ─────────────────────────────────────────────────────────
 //  Serializable pairing structs (shared with BossVisual)
@@ -10,6 +11,17 @@ public struct FacingEnemyGrid
 {
     public EnemyVisualFacing facing;
     public EnemyGridBehaviour gridBehaviour;
+}
+
+// ─────────────────────────────────────────────────────────
+//  BossState
+// ─────────────────────────────────────────────────────────
+
+public enum BossState
+{
+    InActive,
+    Active,
+    Defeated,
 }
 
 // ─────────────────────────────────────────────────────────
@@ -29,7 +41,7 @@ public struct FacingEnemyGrid
 ///   3. Stable-animate the blocks for that facing.
 ///   4. Activate the grid region for the new facing.
 /// </summary>
-public class BossController : MonoBehaviour
+public class BossController : MonoBehaviour, IDebuggable
 {
     [Header("References")]
     [SerializeField] private BossVisual bossVisual;
@@ -50,8 +62,21 @@ public class BossController : MonoBehaviour
     [Tooltip("The steal skill that will have StealAllBlocks() called when a trigger grid is fulfilled.")]
     [SerializeField] private BossBlockStealSkill stealSkill;
 
-    // Runtime
+    [Header("Debug")]
+    [SerializeField] private bool enableDebug = false;
+
+    // ── IDebuggable ────────────────────────────────────────
+    public string DebugId => "bosscontroller";
+    public bool DebugEnabled
+    {
+        get => enableDebug;
+        set => enableDebug = value;
+    }
     private EnemyVisualFacing currentFacing;
+    private BossState currentState = BossState.InActive;
+
+    /// <summary>Current state of the boss encounter.</summary>
+    public BossState CurrentState => currentState;
 
     // ── Lifecycle ──────────────────────────────────────────
 
@@ -63,13 +88,17 @@ public class BossController : MonoBehaviour
 
     private void Start()
     {
+        stealSkill?.DeactivateSkill();
         SubscribeAllCombatGrids();
         StartEncounter(initialFacing);
+        DebugConsoleManager.Instance.RegisterDebugTarget(this);
     }
 
     private void OnDestroy()
     {
         UnsubscribeAllCombatGrids();
+        if (DebugConsoleManager.Instance != null)
+            DebugConsoleManager.Instance.UnregisterDebugTarget(this);
     }
 
     // ── Subscriptions ──────────────────────────────────────
@@ -99,9 +128,12 @@ public class BossController : MonoBehaviour
     private void OnStealTriggerGridFulfilled(EnemyVisualFacing triggerFacing)
     {
         if (stealSkill == null) return;
+        if (currentState != BossState.InActive) return;
 
-        Debug.Log($"[BossController] Steal-all triggered by facing {triggerFacing}.", this);
+        currentState = BossState.Active;
+        Debug.Log($"[BossController] Boss activated by facing {triggerFacing}. State → Active.", this);
 
+        stealSkill.ActivateSkill();
         stealSkill.StealAllBlocks();
     }
 
@@ -175,6 +207,70 @@ public class BossController : MonoBehaviour
     /// <summary>Called when every facing has been fulfilled. Override or extend for win logic.</summary>
     protected virtual void OnAllFacingsCleared()
     {
-        // Default: nothing. Hook in your win sequence here.
+        currentState = BossState.Defeated;
+        stealSkill?.DeactivateSkill();
+        Debug.Log("[BossController] All facings cleared. State → Defeated.", this);
+    }
+
+    // ── Debug GUI ──────────────────────────────────────────
+
+    private void OnGUI()
+    {
+        if (!enableDebug) return;
+
+        // 固定行数 = 基础行 + 每个 combat grid 一行
+        int combatLineCount = combatGrids != null ? combatGrids.Count : 0;
+        int totalLines = 10 + combatLineCount;
+
+        var panel = DebugGUIPanel.Begin(new Vector2(10f, 10f), 340f, totalLines);
+
+        // ── Header ──
+        panel.DrawLine("<b>── BossController ──</b>");
+        panel.DrawLine($"State:           <b>{currentState}</b>");
+        panel.DrawLine($"Current Facing:  <b>{currentFacing}</b>");
+        panel.Space();
+
+        // ── Combat Grids ──
+        panel.DrawLine("<b>Combat Grids</b>");
+        if (combatGrids != null)
+        {
+            foreach (FacingEnemyGrid entry in combatGrids)
+            {
+                bool fulfilled  = entry.gridBehaviour != null && entry.gridBehaviour.IsGridFulfilled;
+                bool isTrigger  = stealAllTriggerFacings != null && stealAllTriggerFacings.Contains(entry.facing);
+                string trigger  = isTrigger ? " <color=yellow>[trigger]</color>" : "";
+                string status   = fulfilled  ? "<color=green>?</color>" : "<color=grey>○</color>";
+                panel.DrawLine($"  {status} {entry.facing}{trigger}");
+            }
+        }
+        panel.Space();
+
+        // ── Steal Skill ──
+        panel.DrawLine("<b>Steal Skill</b>");
+        if (stealSkill != null)
+        {
+            string activeStr = stealSkill.IsSkillActive
+                ? "<color=green>Active</color>"
+                : "<color=grey>Inactive</color>";
+            panel.DrawLine($"  Status: {activeStr}");
+            panel.DrawLine($"  Timer:  {stealSkill.Timer:F1}s / {stealSkill.AttackInterval:F1}s");
+        }
+        else
+        {
+            panel.DrawLine("  <color=red>stealSkill not assigned</color>");
+        }
+        panel.Space();
+
+        // ── Remaining Facings ──
+        panel.DrawLine("<b>Remaining Facings</b>");
+        List<EnemyVisualFacing> remaining = bossVisual != null
+            ? bossVisual.GetAvailableFacings()
+            : new List<EnemyVisualFacing>();
+        string remainingStr = remaining.Count > 0
+            ? string.Join(", ", remaining)
+            : "<color=green>None (all cleared)</color>";
+        panel.DrawLine($"  {remainingStr}");
+
+        panel.End();
     }
 }
