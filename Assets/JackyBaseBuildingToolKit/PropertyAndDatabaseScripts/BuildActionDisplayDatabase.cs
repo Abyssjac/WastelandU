@@ -8,9 +8,11 @@ using JackyUtility;
 [CreateAssetMenu(fileName = "BuildActionDisplayDB_", menuName = "AllPropertyDatabases/ BuildActionDisplayDatabase")]
 public class BuildActionDisplayDatabase : EnumStringKeyedDatabase<BuildActionDisplayInfo, Key_BuildActionDisplayPP>
 {
+#if UNITY_EDITOR
     [ContextMenu("Collect Entries From Folder")]
     private void CollectEntriesFromFolder()
     {
-        base.EditorCollectFromFolder();
+        EditorCollectFromFolder();
     }
+#endif
 }

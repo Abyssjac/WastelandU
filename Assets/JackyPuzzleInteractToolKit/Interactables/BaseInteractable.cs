@@ -32,8 +32,9 @@ namespace JackyPuzzleInteract
 #if UNITY_EDITOR
         private void OnValidate()
         {
-            if (linkedReceivers == null || linkedReceivers.Length == 0)
-                Debug.LogWarning($"[{name}] BaseInteractable: 没有配置任何 Receiver！", this);
+            if (linkedReceivers == null || linkedReceivers.Length == 0) {
+                //Debug.LogWarning($"[{name}] BaseInteractable: 没有配置任何 Receiver！", this);
+            }
         }
 #endif
     }
