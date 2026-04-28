@@ -27,6 +27,13 @@ public class BossDefeatSequencer : MonoBehaviour
     [Tooltip("Subscribes to OnBossDefeated to auto-start the sequence when the boss is defeated.")]
     [SerializeField] private BossController bossController;
 
+    [Header("Cut-scene Camera")]
+    [Tooltip("CameraCutScene to activate at the start of the sequence. Leave empty to skip.")]
+    [SerializeField] private CameraCutScene cutSceneCamera;
+
+    [Tooltip("Animator trigger name to set on the cut-scene camera.")]
+    [SerializeField] private string cutSceneStateName = "todefeat";
+
     [Header("Step 1 ¡ª Clear Grid Objects")]
     [Tooltip("All placed buildables on this grid will be destroyed at the start of the sequence.")]
     [SerializeField] private EnemyGridBehaviour clearGrid;
@@ -97,6 +104,13 @@ public class BossDefeatSequencer : MonoBehaviour
     private IEnumerator RunSequence()
     {
         Log("Defeat sequence started.");
+
+        // ©¤©¤ Cut-scene camera (fire-and-forget, runs in parallel with the sequence) ©¤©¤
+        if (cutSceneCamera != null && !string.IsNullOrEmpty(cutSceneStateName))
+        {
+            Log($"Playing cut-scene state '{cutSceneStateName}'.");
+            cutSceneCamera.Play(cutSceneStateName);
+        }
 
         // ©¤©¤ Step 1: Clear all placed objects from the target grid ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
         if (clearGrid != null && clearGrid.Grid != null)

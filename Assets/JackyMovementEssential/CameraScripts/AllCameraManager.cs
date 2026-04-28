@@ -9,6 +9,7 @@ public class AllCameraManager : MonoBehaviour
     [SerializeField] private CameraMode defaultCameraMode = CameraMode.Empty;
     private List<CameraBase> currentCameras = new List<CameraBase>();
     private CameraMode currentCameraMode;
+    private CameraMode previousCameraMode = CameraMode.Empty;
 
     private List<CameraBase> allRegisteredCameras = new List<CameraBase>();
 
@@ -99,7 +100,7 @@ public class AllCameraManager : MonoBehaviour
             return;
         }
         List<CameraBase> targetCameras = FindCamerasByMode(tarMode);
-        if (targetCameras == null)
+        if (targetCameras == null || targetCameras.Count == 0)
         {
             Debug.LogError($"[{nameof(AllCameraManager)}] No registered camera found for mode '{tarMode}'.", this);
             return;
@@ -117,9 +118,27 @@ public class AllCameraManager : MonoBehaviour
             }
         }
         currentCameras = targetCameras;
+        previousCameraMode = currentCameraMode;
         currentCameraMode = tarMode;
 
         OnCameraModeSwitched?.Invoke(currentCameraMode);
+
+        Debug.Log($"Switched to camera mode '{tarMode}'. Active cameras: {string.Join(", ", currentCameras.ConvertAll(c => c.name))}");
+    }
+
+    /// <summary>
+    /// Switch back to the camera mode that was active immediately before the last
+    /// <see cref="SwitchToCameraMode"/> call. No-op if there is no recorded previous mode.
+    /// </summary>
+    public void SwitchToPreviousMode()
+    {
+        if (previousCameraMode == CameraMode.Empty)
+        {
+            Debug.LogWarning("[AllCameraManager] SwitchToPreviousMode: no previous mode recorded.", this);
+            return;
+        }
+
+        SwitchToCameraMode(previousCameraMode);
     }
 
     public List<CameraBase> FindCamerasActivated()

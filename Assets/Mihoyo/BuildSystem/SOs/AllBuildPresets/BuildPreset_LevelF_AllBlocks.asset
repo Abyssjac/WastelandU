@@ -252,3 +252,19 @@ MonoBehaviour:
       anchorCell: {x: 1, y: 0, z: 1}
       rotationStep: 0
     blueprints: []
+  - groupName: Session Route
+    forced: 0
+    entries:
+    - buildableEnumKey: 306
+      anchorCell: {x: -1, y: 0, z: -14}
+      rotationStep: 0
+    - buildableEnumKey: 306
+      anchorCell: {x: 1, y: 0, z: -11}
+      rotationStep: 0
+    - buildableEnumKey: 306
+      anchorCell: {x: 1, y: 0, z: -7}
+      rotationStep: 0
+    - buildableEnumKey: 306
+      anchorCell: {x: 1, y: 0, z: -3}
+      rotationStep: 0
+    blueprints: []

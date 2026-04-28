@@ -15,5 +15,5 @@ MonoBehaviour:
   enumKey: 403
   stringKey: CIPP_M_CubeL_0
   maxStackCount: 99
-  icon: {fileID: 21300000, guid: 23add5d3efd8ecd49af5c748108f341b, type: 3}
+  icon: {fileID: 21300000, guid: 4abfbce48be651146867cac3d28bb451, type: 3}
   actions: []

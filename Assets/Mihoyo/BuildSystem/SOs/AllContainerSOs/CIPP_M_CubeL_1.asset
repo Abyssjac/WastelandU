@@ -12,8 +12,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 93597e7a97795f8409024a639e564106, type: 3}
   m_Name: CIPP_M_CubeL_1
   m_EditorClassIdentifier: 
-  enumKey: 403
-  stringKey: CIPP_M_CubeL_0
+  enumKey: 404
+  stringKey: CIPP_M_CubeL_1
   maxStackCount: 99
-  icon: {fileID: 21300000, guid: 23add5d3efd8ecd49af5c748108f341b, type: 3}
+  icon: {fileID: 21300000, guid: 5251dbea134deb44bb5c0299b515a253, type: 3}
   actions: []

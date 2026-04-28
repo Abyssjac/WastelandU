@@ -79,6 +79,7 @@ public class WeaponBehaviour : MonoBehaviour
             return;
         }
         Instance = this;
+        DontDestroyOnLoad(gameObject);
 
         container = new Container<Key_BuildablePP>(containerSlotCount);
 
