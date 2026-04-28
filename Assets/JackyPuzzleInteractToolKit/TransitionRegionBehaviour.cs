@@ -49,6 +49,26 @@ public class SendSignalAction
     public SingleSignalInteractable target;
 }
 
+/// <summary>Deal a fixed amount of damage to the player via <see cref="PlayerHealthManager"/>.</summary>
+[System.Serializable]
+public class DealDamageAction
+{
+    public bool enabled = false;
+    public TriggerTiming timing = TriggerTiming.OnEnter;
+    [Tooltip("Amount of HP to subtract from the player.")]
+    public int damageAmount = 1;
+}
+
+/// <summary>Load a new scene by name via <see cref="AllLevelManager"/>.</summary>
+[System.Serializable]
+public class LoadSceneAction
+{
+    public bool enabled = false;
+    public TriggerTiming timing = TriggerTiming.OnEnter;
+    [Tooltip("Exact name of the scene to load (must be added to Build Settings).")]
+    public string sceneName;
+}
+
 // ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤ Main Component ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
 /// <summary>
@@ -71,6 +91,8 @@ public class TransitionRegionBehaviour : MonoBehaviour
     [SerializeField] private ClearWeaponContainerAction clearWeapon = new ClearWeaponContainerAction();
     [SerializeField] private TeleportPlayerAction teleportPlayer = new TeleportPlayerAction();
     [SerializeField] private SendSignalAction sendSignal = new SendSignalAction();
+    [SerializeField] private DealDamageAction dealDamage = new DealDamageAction();
+    [SerializeField] private LoadSceneAction loadScene = new LoadSceneAction();
 
     [Header("Debug")]
     [SerializeField] private bool enableDebug = false;
@@ -121,6 +143,18 @@ public class TransitionRegionBehaviour : MonoBehaviour
         if (sendSignal.enabled && sendSignal.timing == timing)
         {
             ExecuteSendSignal();
+            anyExecuted = true;
+        }
+
+        if (dealDamage.enabled && dealDamage.timing == timing)
+        {
+            ExecuteDealDamage();
+            anyExecuted = true;
+        }
+
+        if (loadScene.enabled && loadScene.timing == timing)
+        {
+            ExecuteLoadScene();
             anyExecuted = true;
         }
 
@@ -203,6 +237,40 @@ public class TransitionRegionBehaviour : MonoBehaviour
 
         if (enableDebug)
             Debug.Log($"[TransitionRegion] '{name}' Signal sent via '{sendSignal.target.name}'.", this);
+    }
+
+    private void ExecuteDealDamage()
+    {
+        if (PlayerHealthManager.Instance == null)
+        {
+            Debug.LogError($"[TransitionRegion] '{name}' DealDamageAction: PlayerHealthManager.Instance is null.", this);
+            return;
+        }
+
+        PlayerHealthManager.Instance.TakeDamage(dealDamage.damageAmount);
+
+        if (enableDebug)
+            Debug.Log($"[TransitionRegion] '{name}' Dealt {dealDamage.damageAmount} damage to player.", this);
+    }
+
+    private void ExecuteLoadScene()
+    {
+        if (string.IsNullOrWhiteSpace(loadScene.sceneName))
+        {
+            Debug.LogWarning($"[TransitionRegion] '{name}' LoadSceneAction: sceneName is empty.", this);
+            return;
+        }
+
+        if (AllLevelManager.Instance == null)
+        {
+            Debug.LogError($"[TransitionRegion] '{name}' LoadSceneAction: AllLevelManager.Instance is null.", this);
+            return;
+        }
+
+        if (enableDebug)
+            Debug.Log($"[TransitionRegion] '{name}' Loading scene '{loadScene.sceneName}'.", this);
+
+        AllLevelManager.Instance.LoadScene(loadScene.sceneName);
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Utility ©¤©¤©¤©¤©¤©¤©¤©¤©¤

@@ -173,4 +173,5 @@ public enum CameraMode
     FirstPerson = 4,
     FreeCamera = 5,
     ThirdPerson = 6,
+    CutScene = 7,
 }

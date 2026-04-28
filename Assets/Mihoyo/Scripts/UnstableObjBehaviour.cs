@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using DG.Tweening;
 using JackyUtility;
@@ -73,6 +74,15 @@ public class UnstableObjBehaviour : MonoBehaviour
 
     public UnstableAnimState CurrentAnimState { get; private set; } = UnstableAnimState.None;
     public float CurrentAnimElapsed => stateElapsed;
+
+    /// <summary>Fired when a StableAnim sequence finishes and the object has settled.</summary>
+    public event Action OnStableAnimCompleted;
+
+    /// <summary>Fired when the glitch shake sequence ends, immediately before the teleport delay begins.</summary>
+    public event Action OnGlitchAnimCompleted;
+
+    /// <summary>Fired after the object has been teleported to its new position.</summary>
+    public event Action OnTeleportCompleted;
 
     // Set to true by Initialize() so Start() skips the auto-float until the coordinator is ready.
     private bool isRuntimeInitialized;
@@ -312,6 +322,7 @@ public class UnstableObjBehaviour : MonoBehaviour
     private void OnStableAnimComplete()
     {
         CurrentAnimState = UnstableAnimState.None;
+        OnStableAnimCompleted?.Invoke();
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Stop ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -389,7 +400,7 @@ public class UnstableObjBehaviour : MonoBehaviour
         else
             moveUp = curY < centerY;
 
-        float randomOffset = Random.Range(Mathf.Min(minOffsetHeight, maxOffsetHeight), Mathf.Max(minOffsetHeight, maxOffsetHeight));
+        float randomOffset = UnityEngine.Random.Range(Mathf.Min(minOffsetHeight, maxOffsetHeight), Mathf.Max(minOffsetHeight, maxOffsetHeight));
         float targetY = centerY + (moveUp ? randomOffset : -randomOffset);
 
         floatTargetLocalPos = new Vector3(centerLocalPos.x, targetY, centerLocalPos.z);
@@ -420,9 +431,9 @@ public class UnstableObjBehaviour : MonoBehaviour
 
             float amp = glitchMaxAmplitude * growth;
             Vector3 jitterOffset = new Vector3(
-                Random.Range(-amp, amp),
-                Random.Range(-amp, amp),
-                Random.Range(-amp, amp));
+                UnityEngine.Random.Range(-amp, amp),
+                UnityEngine.Random.Range(-amp, amp),
+                UnityEngine.Random.Range(-amp, amp));
 
             glitchSequence.Append(
                 moveTarget.DOLocalMove(glitchBaseLocalPos + jitterOffset, Mathf.Max(0.005f, stepDuration)).SetEase(Ease.Linear)
@@ -438,6 +449,8 @@ public class UnstableObjBehaviour : MonoBehaviour
     {
         if (CurrentAnimState != UnstableAnimState.Glitch)
             return;
+
+        OnGlitchAnimCompleted?.Invoke();
 
         if (teleportDelay <= 0f)
         {
@@ -467,6 +480,8 @@ public class UnstableObjBehaviour : MonoBehaviour
         moveTarget.position = nextTeleportPoint.position;
         SetCenter(nextTeleportPoint.position);
         lastTeleportPoint = nextTeleportPoint;
+
+        OnTeleportCompleted?.Invoke();
 
         if (debugLog)
             Debug.Log($"[{name}] Teleported to '{nextTeleportPoint.name}'.", this);
@@ -504,7 +519,7 @@ public class UnstableObjBehaviour : MonoBehaviour
         if (candidates.Count == 0)
             return false;
 
-        result = candidates[Random.Range(0, candidates.Count)];
+        result = candidates[UnityEngine.Random.Range(0, candidates.Count)];
         return true;
     }
 

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using JackyUtility;
@@ -77,6 +78,12 @@ public class BossController : MonoBehaviour, IDebuggable
 
     /// <summary>Current state of the boss encounter.</summary>
     public BossState CurrentState => currentState;
+
+    /// <summary>
+    /// Fired once when all combat grids are fulfilled and the boss transitions to Defeated.
+    /// Subscribe here to start defeat cinematics or other post-boss logic.
+    /// </summary>
+    public event Action OnBossDefeated;
 
     // ©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -170,7 +177,7 @@ public class BossController : MonoBehaviour, IDebuggable
         }
 
         // Pick randomly from remaining available facings
-        EnemyVisualFacing nextFacing = remaining[Random.Range(0, remaining.Count)];
+        EnemyVisualFacing nextFacing = remaining[UnityEngine.Random.Range(0, remaining.Count)];
         currentFacing = nextFacing;
 
         // 3. Teleport boss root to the next queued point for the new facing
@@ -210,6 +217,7 @@ public class BossController : MonoBehaviour, IDebuggable
         currentState = BossState.Defeated;
         stealSkill?.DeactivateSkill();
         Debug.Log("[BossController] All facings cleared. State ¡ú Defeated.", this);
+        OnBossDefeated?.Invoke();
     }
 
     // ©¤©¤ Debug GUI ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
