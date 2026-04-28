@@ -1,7 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 using JackyPuzzleInteract;
-using UnityEngine;
 
 /// <summary>
 /// Scene-level coordinator + TwoSignalReceiver.

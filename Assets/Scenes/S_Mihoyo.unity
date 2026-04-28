@@ -7953,7 +7953,10 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   bossController: {fileID: 1458010168}
+  cutSceneCamera: {fileID: 0}
+  cutSceneStateName: todefeat
   clearGrid: {fileID: 447677696}
+  playerTeleportTarget: {fileID: 0}
   gridPuzzleAnimator: {fileID: 6673749327096915067}
   gridPuzzleAnimTrigger: ToDefeat
   gridPuzzleAnimDuration: 4
@@ -10848,6 +10851,10 @@ PrefabInstance:
       propertyPath: m_IsActive
       value: 1
       objectReference: {fileID: 0}
+    - target: {fileID: 6273136336227897249, guid: 0014747273eee5947b757e38ff06ac66, type: 3}
+      propertyPath: m_LocalScale.x
+      value: 3
+      objectReference: {fileID: 0}
     - target: {fileID: 6475175858794060423, guid: 0014747273eee5947b757e38ff06ac66, type: 3}
       propertyPath: m_LocalPosition.x
       value: 3.3333333
@@ -10966,15 +10973,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5680561797040384708, guid: 2f965bc784638c142949981886e89f6f, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -0.07
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5680561797040384708, guid: 2f965bc784638c142949981886e89f6f, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 10.62
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 5680561797040384708, guid: 2f965bc784638c142949981886e89f6f, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 50.87
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 5680561797040384708, guid: 2f965bc784638c142949981886e89f6f, type: 3}
       propertyPath: m_LocalRotation.w

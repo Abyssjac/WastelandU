@@ -1,5 +1,4 @@
 using System;
-using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -37,6 +36,10 @@ public class BossDefeatSequencer : MonoBehaviour
     [Header("Step 1 ¡ª Clear Grid Objects")]
     [Tooltip("All placed buildables on this grid will be destroyed at the start of the sequence.")]
     [SerializeField] private EnemyGridBehaviour clearGrid;
+
+    [Header("Player Teleport")]
+    [Tooltip("Teleport the player to this position at the very start of the sequence. Leave empty to skip.")]
+    [SerializeField] private Transform playerTeleportTarget;
 
     [Header("Step 2 ¡ª Grid Puzzle Animation")]
     [Tooltip("Animator that plays the grid-puzzle move clip.")]
@@ -110,6 +113,20 @@ public class BossDefeatSequencer : MonoBehaviour
         {
             Log($"Playing cut-scene state '{cutSceneStateName}'.");
             cutSceneCamera.Play(cutSceneStateName);
+        }
+
+        // ©¤©¤ Player teleport ©¤©¤
+        if (playerTeleportTarget != null)
+        {
+            if (PlayerMovementCC.Instance != null)
+            {
+                PlayerMovementCC.Instance.TeleportToPosition(playerTeleportTarget.position, playerTeleportTarget.rotation);
+                Log($"Player teleported to '{playerTeleportTarget.name}'.");
+            }
+            else
+            {
+                Log("PlayerMovementCC.Instance is null ¡ª skipping player teleport.");
+            }
         }
 
         // ©¤©¤ Step 1: Clear all placed objects from the target grid ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
