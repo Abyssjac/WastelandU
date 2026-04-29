@@ -17,21 +17,24 @@ MonoBehaviour:
   prefab: {fileID: 7902146682362818841, guid: 12fbd2905ba12f94e97bcd82994cea05, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
     occupancyFacings: 33
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 1, z: 0}
     buildLayer: 0
     occupancyFacings: 97
     requiredSurface: 0
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 2, z: 0}
     buildLayer: 0
@@ -43,3 +46,4 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 0}
   displayName: 
+  furnitureTags: 4

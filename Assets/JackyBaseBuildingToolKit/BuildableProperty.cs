@@ -75,6 +75,21 @@ public enum FacingMask
 }
 
 /// <summary>
+/// Functional tags for furniture/buildables, used by the NPC affinity system
+/// to evaluate the quality of a room's living environment.
+/// Multiple tags can be selected (bit-mask).
+/// </summary>
+[System.Flags]
+public enum FurnitureTag
+{
+    None      = 0,
+    Art       = 1 << 0,
+    Sport     = 1 << 1,
+    Knowledge = 1 << 2,
+    Nature    = 1 << 3,
+}
+
+/// <summary>
 /// Defines a rectangular box region of cells via two diagonal corners.
 /// </summary>
 [System.Serializable]
@@ -230,6 +245,10 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     [Header("UI Display")]
     public Sprite iconSprite;
     public string displayName;
+
+    [Header("Furniture Tags")]
+    [Tooltip("Functional tags used by the NPC affinity system.\nSupports multi-select (bit-mask).")]
+    public FurnitureTag furnitureTags = FurnitureTag.None;
 
     // ©¤©¤©¤ Cache ©¤©¤©¤
     private ResolvedOccupancyCell[] cachedOccupancy;

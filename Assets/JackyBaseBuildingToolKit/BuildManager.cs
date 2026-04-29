@@ -49,6 +49,18 @@ public class BuildManager : MonoBehaviour, IDebuggable
         set => enableDebug = value;
     }
 
+    /// <summary>Exposes the position provider for editor tooling.</summary>
+    public BuildPositionProvider PositionProvider => positionProvider;
+
+#if UNITY_EDITOR
+    public BuildableProperty        Editor_SelectedProperty  => selectedProperty;
+    public BuildBlueprintProperty   Editor_SelectedBlueprint => selectedBlueprint;
+    public PlacedBuildableData      Editor_MovingData        => movingData;
+    public int                      Editor_RotationStep      => currentRotationStep;
+    public bool                     Editor_CanPlace          => debugCanPlace;
+    public string                   Editor_CanPlaceReason    => debugCanPlaceReason;
+#endif
+
     [SerializeField] private BuildGrid3D grid;
     public BuildGrid3D Grid => grid;
     public BuildState CurrentState { get; private set; } = BuildState.Inactive;

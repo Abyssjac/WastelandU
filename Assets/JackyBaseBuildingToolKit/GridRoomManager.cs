@@ -316,6 +316,13 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     /// <summary>All currently detected rooms.</summary>
     public IReadOnlyList<RoomData> ActiveRooms => activeRooms;
 
+#if UNITY_EDITOR
+    /// <summary>Forces an immediate room recalculation. Editor tooling only.</summary>
+    public void Editor_ForceRecalculate() => RecalculateAllRooms();
+    /// <summary>The active policy type. Editor tooling only.</summary>
+    public RoomPolicyType Editor_PolicyType => policyType;
+#endif
+
     // ©¤©¤ Direction table for 6-way flood-fill ©¤©¤
     private static readonly SurfaceFacing[] s_allDirections =
     {

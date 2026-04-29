@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 2749302547728926164, guid: 16839feb1133a164ba034eb7602efd70, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
@@ -29,3 +30,4 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 0}
   displayName: 
+  furnitureTags: 8
