@@ -82,6 +82,51 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
     }
 }
 
+/// <summary>
+/// Flat-room policy (Two Point Hospital style).
+/// A room is enclosed by a floor (YNeg face) and four horizontal walls (¡ÀX, ¡ÀZ).
+/// The ceiling is provided by a transparent placeholder buildable injected via preset.
+/// Interior cells must have a floor piece placed (BL_World + YNeg) to be considered valid.
+/// </summary>
+public class FlatRoomPolicy : IRoomDetectionPolicy
+{
+    /// <summary>
+    /// Same barrier logic as <see cref="FullEnclosurePolicy"/>: blocked when either
+    /// the source or the destination cell has a BL_World wall face in the relevant direction.
+    /// </summary>
+    public bool IsBarrier(Vector3Int from, Vector3Int to, SurfaceFacing facing,
+        IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap)
+    {
+        if (occupancyMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_World, facing)))
+            return true;
+
+        SurfaceFacing opposite = FullEnclosurePolicy.GetOppositeFacing(facing);
+        if (occupancyMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_World, opposite)))
+            return true;
+
+        return false;
+    }
+
+    /// <summary>
+    /// A cell is a valid interior candidate when:
+    /// 1. It is within grid bounds.
+    /// 2. It is NOT a solid block (BL_World, SurfaceFacing.None).
+    /// 3. It HAS a floor piece (BL_World, SurfaceFacing.YNeg).
+    /// </summary>
+    public bool IsValidInteriorCell(Vector3Int cell, BuildGrid3D grid)
+    {
+        if (!grid.IsInBounds(cell)) return false;
+
+        if (grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.None))
+            return false;
+
+        if (!grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.YNeg))
+            return false;
+
+        return true;
+    }
+}
+
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
 // Room Data
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
@@ -130,6 +175,15 @@ public struct RoomBreakResult
 // GridRoomManager
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
 
+/// <summary>Selects which room detection policy is used by <see cref="GridRoomManager"/>.</summary>
+public enum RoomPolicyType
+{
+    /// <summary>All 6 faces (floor + 4 walls + ceiling) required. Original behaviour.</summary>
+    FullEnclosure,
+    /// <summary>Floor + 4 horizontal walls required. Ceiling supplied by a transparent preset buildable.</summary>
+    FlatRoom,
+}
+
 /// <summary>
 /// Detects enclosed rooms in the <see cref="BuildGrid3D"/> via face-aware flood-fill.
 /// Fully independent from <see cref="BuildManager"/> ¡ª reads the grid as a data source.
@@ -141,6 +195,10 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
 
     [Header("References")]
     [SerializeField] private BuildPositionProvider positionProvider;
+
+    [Header("Policy")]
+    [Tooltip("FullEnclosure: requires all 6 faces (original).\nFlatRoom: floor + 4 walls only; ceiling is a transparent preset buildable.")]
+    [SerializeField] private RoomPolicyType policyType = RoomPolicyType.FlatRoom;
 
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
@@ -210,7 +268,9 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         if (Instance != null && Instance != this) { Destroy(gameObject); return; }
         Instance = this;
 
-        policy = new FullEnclosurePolicy();
+        policy = policyType == RoomPolicyType.FlatRoom
+            ? (IRoomDetectionPolicy)new FlatRoomPolicy()
+            : new FullEnclosurePolicy();
     }
 
     private void Start()
@@ -283,10 +343,10 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         List<CellLayerKey> wallKeys = new List<CellLayerKey>();
         for (int i = 0; i < occ.Length; i++)
         {
-            if (occ[i].Layer == BuildLayer.BL_Wall)
+            if (occ[i].Layer == BuildLayer.BL_World)
             {
                 Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
-                wallKeys.Add(new CellLayerKey(worldCell, BuildLayer.BL_Wall, occ[i].OccupancyFacing));
+                wallKeys.Add(new CellLayerKey(worldCell, BuildLayer.BL_World, occ[i].OccupancyFacing));
             }
         }
 
@@ -485,11 +545,11 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         SimulatedOccupancyMap simulatedMap)
     {
         // Re-implement the same logic as FullEnclosurePolicy but against the simulated map
-        if (simulatedMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_Wall, facing)))
+        if (simulatedMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_World, facing)))
             return true;
 
         SurfaceFacing opposite = FullEnclosurePolicy.GetOppositeFacing(facing);
-        if (simulatedMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_Wall, opposite)))
+        if (simulatedMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_World, opposite)))
             return true;
 
         return false;

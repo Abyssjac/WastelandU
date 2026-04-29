@@ -533,6 +533,7 @@ public enum Key_BuildablePP
     Build_Base_Platform_Normal_0 = 2,
     Build_Base_Platform_Elevated_0 = 3,
     Build_Base_Platform_Elevated_1 = 4,
+    Build_Base_Platform_Trans_Free_0 = 5,
 
     // ---- Rooms (5x5) ----
     Build_Room_5x5 = 10,

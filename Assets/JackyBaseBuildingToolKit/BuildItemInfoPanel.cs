@@ -4,8 +4,10 @@ using TMPro;
 
 /// <summary>
 /// UI panel that displays item detail information when the player selects a container slot
-/// in build mode. This is purely informational ¡ª placement starts immediately.
-/// The panel auto-hides when no item is selected.
+/// in build mode.
+/// Open/Close are driven by EnterBuildMode/ExitBuildMode.
+/// Show fills the panel with concrete item data when a slot is selected.
+/// ShowEmpty resets the panel to its placeholder state.
 /// </summary>
 public class BuildItemInfoPanel : MonoBehaviour
 {
@@ -16,6 +18,14 @@ public class BuildItemInfoPanel : MonoBehaviour
     [SerializeField] private Image itemIconImage;
     [SerializeField] private Image categoryIconImage;
     [SerializeField] private TextMeshProUGUI costText;
+
+    [Header("Empty State")]
+    [Tooltip("Text shown in itemNameText when no item is selected.")]
+    [SerializeField] private string emptyNameHint = "---";
+    [Tooltip("Text shown in descriptionText when no item is selected.")]
+    [SerializeField] private string emptyDescriptionHint = "Select an item to build.";
+    [Tooltip("Text shown in costText when no item is selected.")]
+    [SerializeField] private string emptyCostHint = "";
 
     /// <summary>True while the info panel is visible.</summary>
     public bool IsOpen { get; private set; }
@@ -38,13 +48,50 @@ public class BuildItemInfoPanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Open the panel and reset it to the empty placeholder state.
+    /// Called when entering build mode.
+    /// </summary>
+    public void Open()
+    {
+        if (panelRoot != null)
+            panelRoot.SetActive(true);
+
+        IsOpen = true;
+        ShowEmpty();
+    }
+
+    /// <summary>
+    /// Reset panel contents to the placeholder / no-selection state.
+    /// Called internally by Open and Close, and externally when a slot is deselected.
+    /// </summary>
+    internal void ShowEmpty()
+    {
+        if (itemNameText != null)
+            itemNameText.text = emptyNameHint;
+
+        if (descriptionText != null)
+            descriptionText.text = emptyDescriptionHint;
+
+        if (costText != null)
+            costText.text = emptyCostHint;
+
+        if (itemIconImage != null)
+            itemIconImage.sprite = null;
+
+        if (categoryIconImage != null)
+            categoryIconImage.sprite = null;
+    }
+
+    /// <summary>
     /// Show the panel with information about the selected container item.
     /// </summary>
     public void Show(int slotIndex, ContainerItemProperty itemProp,
                      ContainerItemBuildAction buildAction, BuildActionDisplayInfo displayInfo)
     {
         if (itemNameText != null)
-            itemNameText.text = itemProp != null ? itemProp.StringKey : "Unknown";
+            itemNameText.text = displayInfo != null && !string.IsNullOrEmpty(displayInfo.displayName)
+                ? displayInfo.displayName
+                : (itemProp != null ? itemProp.StringKey : "Unknown");
 
         if (descriptionText != null)
             descriptionText.text = displayInfo != null ? displayInfo.description : "";
@@ -65,10 +112,13 @@ public class BuildItemInfoPanel : MonoBehaviour
     }
 
     /// <summary>
-    /// Close / hide the panel.
+    /// Close / hide the panel and reset contents to the empty state.
+    /// Called when exiting build mode.
     /// </summary>
     public void Close()
     {
+        ShowEmpty();
+
         if (panelRoot != null)
             panelRoot.SetActive(false);
 

@@ -1483,6 +1483,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   positionProvider: {fileID: 1613540112}
+  policyType: 1
   enableDebug: 0
   debugDrawRooms: 1
 --- !u!114 &1613540118 stripped
@@ -1761,6 +1762,10 @@ PrefabInstance:
       propertyPath: buildItemInfoPanel
       value: 
       objectReference: {fileID: 33107574}
+    - target: {fileID: 5690045053215457573, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
+      propertyPath: buildContainerPanel
+      value: 
+      objectReference: {fileID: 1015660064}
     - target: {fileID: 6407987559157291023, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: m_Name
       value: BuildMgr

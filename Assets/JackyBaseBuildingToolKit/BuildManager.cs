@@ -28,6 +28,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     [Header("Build Info Panel")]
     [SerializeField] private BuildItemInfoPanel buildItemInfoPanel;
+    [SerializeField] private UI_Container buildContainerPanel;
 
     [Header("Remove")]
     [Tooltip("Key to remove the hovered buildable (and its children).")]
@@ -283,12 +284,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (slotIndex < 0)
         {
-            // Deselected ¡ª cancel if we were placing from container, hide panel
+            // Deselected ¡ª cancel placement if it was triggered from container
             if (CurrentState == BuildState.Placing && pendingSlotIndex >= 0)
                 CancelCurrentAction();
 
-            if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
-                buildItemInfoPanel.Close();
+            // Keep the panel open but show the empty/placeholder state
+            if (buildItemInfoPanel != null)
+                buildItemInfoPanel.ShowEmpty();
             return;
         }
 
@@ -323,6 +325,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (IsBuildModeActive) return;
         CurrentState = BuildState.Idle;
+
+        if (uiContainer != null)
+            uiContainer.Open();
+
+        if (buildItemInfoPanel != null)
+            buildItemInfoPanel.Open();
+
         OnBuildModeChanged?.Invoke(true);
     }
 
@@ -334,12 +343,16 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (!IsBuildModeActive) return;
 
-        // Clean up any active operation first
         if (CurrentState != BuildState.Idle)
             CancelCurrentAction();
 
-        // Hide hover preview if visible
         previewController.HideHoverPreview();
+
+        if (uiContainer != null)
+            uiContainer.Close();
+
+        if (buildItemInfoPanel != null)
+            buildItemInfoPanel.Close();
 
         CurrentState = BuildState.Inactive;
         OnBuildModeChanged?.Invoke(false);

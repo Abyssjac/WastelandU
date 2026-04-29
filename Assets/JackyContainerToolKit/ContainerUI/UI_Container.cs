@@ -42,6 +42,10 @@ public interface ISlotDisplayableProperty
 /// </summary>
 public class UI_Container : MonoBehaviour
 {
+    [Header("Panel")]
+    [Tooltip("Root GameObject of the entire container panel. Shown/hidden by Open and Close.")]
+    [SerializeField] private GameObject containerPanelRoot;
+
     [Header("References")]
     [SerializeField] private Transform slotParent;
     [SerializeField] private UI_ContainerSlot slotPrefab;
@@ -49,6 +53,8 @@ public class UI_Container : MonoBehaviour
     [Header("Selection")]
     [Tooltip("When true, clicking a slot selects it (highlight + event). When false, clicks are ignored.")]
     [SerializeField] private bool selectable = false;
+    [Header("Settings")]
+    [SerializeField] private bool hideWhenAwake = true;
 
     private readonly List<UI_ContainerSlot> slotUIs = new List<UI_ContainerSlot>();
     private int selectedSlotIndex = -1;
@@ -64,6 +70,12 @@ public class UI_Container : MonoBehaviour
     /// Parameter: new selected index (-1 = deselected).
     /// </summary>
     public event Action<int> OnSelectionChanged;
+
+    private void Awake()
+    {
+        if (hideWhenAwake && containerPanelRoot != null)
+            Close();
+    }
 
     // ©¤©¤©¤ Init ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -138,6 +150,28 @@ public class UI_Container : MonoBehaviour
     public void ClearSelection()
     {
         SetSelection(-1);
+    }
+
+    /// <summary>
+    /// Show the container panel.
+    /// Called when entering build mode.
+    /// </summary>
+    public void Open()
+    {
+        if (containerPanelRoot != null)
+            containerPanelRoot.SetActive(true);
+    }
+
+    /// <summary>
+    /// Hide the container panel and clear any active selection.
+    /// Called when exiting build mode.
+    /// </summary>
+    public void Close()
+    {
+        ClearSelection();
+
+        if (containerPanelRoot != null)
+            containerPanelRoot.SetActive(false);
     }
 
     // ©¤©¤©¤ Refresh ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤

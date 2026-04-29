@@ -17,6 +17,6 @@ MonoBehaviour:
     forced: 1
     entries: []
     blueprints:
-    - blueprintEnumKey: 32
-      anchorCell: {x: 0, y: 0, z: 0}
+    - blueprintEnumKey: 51
+      anchorCell: {x: 0, y: -1, z: 0}
       rotationStep: 0
