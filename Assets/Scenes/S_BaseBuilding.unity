@@ -1401,9 +1401,13 @@ PrefabInstance:
       propertyPath: m_SlopeLimit
       value: 50
       objectReference: {fileID: 0}
+    - target: {fileID: 2169599672943957850, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
+      propertyPath: m_ExcludeLayers.m_Bits
+      value: 768
+      objectReference: {fileID: 0}
     - target: {fileID: 3823866642122798896, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 3823866642122798896, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
       propertyPath: m_LocalPosition.y
@@ -1483,7 +1487,8 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   positionProvider: {fileID: 1613540112}
-  policyType: 1
+  policyType: 0
+  doorKeys: 19000000
   enableDebug: 0
   debugDrawRooms: 1
 --- !u!114 &1613540118 stripped
@@ -1753,7 +1758,7 @@ PrefabInstance:
     - target: {fileID: 5690045053215457573, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: startPreset
       value: 
-      objectReference: {fileID: 11400000, guid: 7588c8d186b08a04d96a1757d164e88b, type: 2}
+      objectReference: {fileID: 11400000, guid: 74ba90bae5f484849a991aa27390e9be, type: 2}
     - target: {fileID: 5690045053215457573, guid: 24d8e930b1a5a9a4bbb7c4e8e13d6994, type: 3}
       propertyPath: uiContainer
       value: 

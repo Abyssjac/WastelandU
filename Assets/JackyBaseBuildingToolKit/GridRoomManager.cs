@@ -24,6 +24,15 @@ public interface IRoomDetectionPolicy
     /// the interior of a room (seed cells for flood-fill).
     /// </summary>
     bool IsValidInteriorCell(Vector3Int cell, BuildGrid3D grid);
+
+    /// <summary>
+    /// Called after flood-fill confirms a region is enclosed.
+    /// Returns true when the region satisfies any additional criteria required
+    /// to be recognised as a room (e.g. has a door on its boundary).
+    /// </summary>
+    bool ValidateRegion(HashSet<Vector3Int> region,
+        IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap,
+        BuildGrid3D grid);
 }
 
 /// <summary>
@@ -32,6 +41,19 @@ public interface IRoomDetectionPolicy
 /// </summary>
 public class FullEnclosurePolicy : IRoomDetectionPolicy
 {
+    private readonly HashSet<Key_BuildablePP> doorKeySet;
+
+    /// <param name="doorKeys">
+    /// Keys of all buildables that count as a door.
+    /// At least one must be present on the boundary for the region to become a room.
+    /// Pass null or empty array to require no door (any enclosure becomes a room).
+    /// </param>
+    public FullEnclosurePolicy(Key_BuildablePP[] doorKeys = null)
+    {
+        doorKeySet = doorKeys != null && doorKeys.Length > 0
+            ? new HashSet<Key_BuildablePP>(doorKeys)
+            : null;
+    }
     /// <summary>
     /// Blocked when EITHER the source cell has a wall face in <paramref name="facing"/>
     /// direction OR the destination cell has a wall face in the opposite direction.
@@ -66,6 +88,62 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
 
         return true;
     }
+
+    /// <summary>
+    /// If door keys were provided, scans every face of every interior cell.
+    /// A door counts only when it sits on the TRUE boundary of the region ¡ª
+    /// i.e. the cell on the OTHER side of the door face is NOT part of the
+    /// room interior. This rejects doors placed in the middle of the room
+    /// whose both sides are interior cells.
+    /// If no door keys were configured, any enclosed region is accepted.
+    /// </summary>
+    public bool ValidateRegion(HashSet<Vector3Int> region,
+        IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap,
+        BuildGrid3D grid)
+    {
+        // No door requirement configured ¡ú accept any enclosure
+        if (doorKeySet == null) return true;
+
+        foreach (Vector3Int cell in region)
+        {
+            for (int d = 0; d < 6; d++)
+            {
+                SurfaceFacing facing = s_facings[d];
+                if (!occupancyMap.TryGetValue(new CellLayerKey(cell, BuildLayer.BL_World, facing), out PlacedBuildableData data))
+                    continue;
+
+                if (!doorKeySet.Contains(data.Property.EnumKey))
+                    continue;
+
+                // A boundary door: the neighbor on the far side must NOT be in the room interior.
+                // If it IS in the region, both sides are interior ¡ú this door is placed in the
+                // middle of the room and does not qualify.
+                Vector3Int neighbor = cell + s_offsets[d];
+                if (!region.Contains(neighbor))
+                    return true;
+            }
+        }
+
+        return false;
+    }
+
+    // Direction arrays reused by ValidateRegion (avoids per-call allocation)
+    private static readonly SurfaceFacing[] s_facings =
+    {
+        SurfaceFacing.XPos, SurfaceFacing.XNeg,
+        SurfaceFacing.ZPos, SurfaceFacing.ZNeg,
+        SurfaceFacing.YPos, SurfaceFacing.YNeg,
+    };
+
+    private static readonly Vector3Int[] s_offsets =
+    {
+        Vector3Int.right,           // XPos
+        Vector3Int.left,            // XNeg
+        new Vector3Int(0, 0,  1),   // ZPos
+        new Vector3Int(0, 0, -1),   // ZNeg
+        Vector3Int.up,              // YPos
+        Vector3Int.down,            // YNeg
+    };
 
     public static SurfaceFacing GetOppositeFacing(SurfaceFacing facing)
     {
@@ -123,6 +201,17 @@ public class FlatRoomPolicy : IRoomDetectionPolicy
         if (!grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.YNeg))
             return false;
 
+        return true;
+    }
+
+    /// <summary>
+    /// No additional validation for flat rooms ¡ª any enclosed region with a floor qualifies.
+    /// Door requirement can be added here in the future.
+    /// </summary>
+    public bool ValidateRegion(HashSet<Vector3Int> region,
+        IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap,
+        BuildGrid3D grid)
+    {
         return true;
     }
 }
@@ -200,6 +289,11 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     [Tooltip("FullEnclosure: requires all 6 faces (original).\nFlatRoom: floor + 4 walls only; ceiling is a transparent preset buildable.")]
     [SerializeField] private RoomPolicyType policyType = RoomPolicyType.FlatRoom;
 
+    [Tooltip("(FullEnclosure only) Buildable keys that count as a door.\n" +
+             "At least one must be present on the room boundary for the region to be recognised as a room.\n" +
+             "Leave empty to accept any enclosed region without requiring a door.")]
+    [SerializeField] private Key_BuildablePP[] doorKeys = new Key_BuildablePP[0];
+
     [Header("Debug")]
     [SerializeField] private bool enableDebug = true;
     [SerializeField] private bool debugDrawRooms = false;
@@ -270,7 +364,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
 
         policy = policyType == RoomPolicyType.FlatRoom
             ? (IRoomDetectionPolicy)new FlatRoomPolicy()
-            : new FullEnclosurePolicy();
+            : new FullEnclosurePolicy(doorKeys);
     }
 
     private void Start()
@@ -509,6 +603,14 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
                     // Only register as a room if the region never escaped
                     if (!escaped && region.Count > 0)
                     {
+                        // Additional policy validation (e.g. door-on-boundary check)
+                        if (!policy.ValidateRegion(region, occupancyMap, grid))
+                        {
+                            if (enableDebug)
+                                Debug.Log($"[GridRoomManager] Enclosed region of {region.Count} cell(s) rejected by ValidateRegion (e.g. no door on boundary).");
+                            continue;
+                        }
+
                         int id = nextRoomId++;
                         Color color = s_roomColors[id % s_roomColors.Length];
                         RoomData room = new RoomData(id, region, color);

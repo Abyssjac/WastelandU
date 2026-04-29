@@ -544,6 +544,8 @@ public enum Key_BuildablePP
 
     Build_Base_Slope_2Level_0 = 20,
 
+    Build_Base_Door_XNegPos_0 = 25,
+
     Build_Bookstore_Bookshelf_0 = 30,
     Build_Bookstore_Bookshelf_1 = 31,
     Build_Bookstore_Bookshelf_2 = 32,
