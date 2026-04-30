@@ -91,6 +91,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// </summary>
     public event Action<PlacedBuildableData> OnFurnitureRemoved;
 
+    /// <summary>
+    /// When set, all newly instantiated buildable GameObjects are placed under this Transform.
+    /// Assigned by <see cref="BuildHierarchyManager"/> at startup.
+    /// If null, objects are placed at the scene root (default behaviour).
+    /// </summary>
+    public Transform BuildablesParent { get; set; }
+
     // currently active context
     private BuildableProperty selectedProperty;
     private int currentRotationStep;
@@ -1027,7 +1034,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
             Vector3 worldPos = positionProvider.CellToWorldCenter(data.AnchorCell);
             float yaw = prop.GetRotationDegrees(data.RotationStep);
-            GameObject go = Instantiate(prop.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+            GameObject go = Instantiate(prop.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f), BuildablesParent);
             go.transform.localScale = positionProvider.CellSize;
             data.SpawnedObject = go;
 
@@ -1068,7 +1075,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // Spawn real object
         Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
         float yaw = property.GetRotationDegrees(rotationStep);
-        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f), BuildablesParent);
         go.transform.localScale = positionProvider.CellSize;
         data.SpawnedObject = go;
 
@@ -1102,7 +1109,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // Spawn real object
         Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
         float yaw = property.GetRotationDegrees(rotationStep);
-        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f));
+        GameObject go = Instantiate(property.prefab, worldPos, Quaternion.Euler(0f, yaw, 0f), BuildablesParent);
         go.transform.localScale = positionProvider.CellSize;
         data.SpawnedObject = go;
 

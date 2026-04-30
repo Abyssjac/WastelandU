@@ -238,14 +238,39 @@ public class RoomData
     /// <summary>Current count of each furniture tag present in this room.</summary>
     public IReadOnlyDictionary<FurnitureTag, int> TagCounts => _tagCounts;
 
+    /// <summary>
+    /// Deterministic stable identifier: the lexicographically smallest cell
+    /// (min X ¡ú min Z ¡ú min Y) in the room's cell set.
+    /// Remains identical across recalculations as long as the room shape is unchanged.
+    /// </summary>
+    public Vector3Int StableId { get; private set; }
+
     public RoomData(int roomId, HashSet<Vector3Int> cells, Color debugColor)
     {
         RoomId = roomId;
         Cells = cells;
         DebugColor = debugColor;
+        StableId = ComputeStableId(cells);
     }
 
     public bool Contains(Vector3Int cell) => Cells.Contains(cell);
+
+    /// <summary>
+    /// Returns the lexicographically smallest cell (min X ¡ú min Z ¡ú min Y)
+    /// from <paramref name="cells"/> as a deterministic room fingerprint.
+    /// </summary>
+    public static Vector3Int ComputeStableId(HashSet<Vector3Int> cells)
+    {
+        var min = new Vector3Int(int.MaxValue, int.MaxValue, int.MaxValue);
+        foreach (Vector3Int c in cells)
+        {
+            if (c.x < min.x
+             || (c.x == min.x && c.z < min.z)
+             || (c.x == min.x && c.z == min.z && c.y < min.y))
+                min = c;
+        }
+        return min;
+    }
 
     /// <summary>Returns the count for a single tag bit. Returns 0 if the tag is absent.</summary>
     public int GetTagCount(FurnitureTag tag)
@@ -305,6 +330,22 @@ public struct RoomBreakResult
     public List<RoomData> AffectedRooms;
 }
 
+/// <summary>
+/// Diff result broadcast by <see cref="GridRoomManager.OnRoomsRecalculated"/> after every
+/// full room recalculation. Consumers can react only to the rooms that actually changed.
+/// </summary>
+public struct RoomsRecalculatedArgs
+{
+    /// <summary>Rooms that did not exist in the previous recalculation.</summary>
+    public IReadOnlyList<RoomData> Added;
+
+    /// <summary>Rooms that existed before but are no longer detected.</summary>
+    public IReadOnlyList<RoomData> Removed;
+
+    /// <summary>Rooms whose StableId exists in both old and new results (shape unchanged).</summary>
+    public IReadOnlyList<RoomData> Unchanged;
+}
+
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
 // GridRoomManager
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
@@ -358,6 +399,9 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     private Dictionary<Vector3Int, RoomData> cellToRoom = new Dictionary<Vector3Int, RoomData>();
     private int nextRoomId;
 
+    // Tracks the previous recalculation's rooms by StableId for diff computation
+    private Dictionary<Vector3Int, RoomData> _prevRoomsByStableId = new Dictionary<Vector3Int, RoomData>();
+
     /// <summary>All currently detected rooms.</summary>
     public IReadOnlyList<RoomData> ActiveRooms => activeRooms;
 
@@ -367,6 +411,12 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     /// The <see cref="RoomData"/> argument is the affected room with updated tag counts.
     /// </summary>
     public event Action<RoomData> OnRoomFurnitureChanged;
+
+    /// <summary>
+    /// Fired after every full room recalculation with a diff of added, removed, and unchanged rooms.
+    /// Subscribe here to react to room structure changes (e.g. hierarchy management).
+    /// </summary>
+    public event Action<RoomsRecalculatedArgs> OnRoomsRecalculated;
 
 #if UNITY_EDITOR
     /// <summary>Forces an immediate room recalculation. Editor tooling only.</summary>
@@ -691,11 +741,42 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         // ©¤©¤ Rebuild furniture tag counts for all freshly detected rooms ©¤©¤
         ScanFurnitureTagsForAllRooms();
 
+        // ©¤©¤ Diff against previous recalculation and broadcast ©¤©¤
+        var newByStableId = new Dictionary<Vector3Int, RoomData>(activeRooms.Count);
+        foreach (var r in activeRooms)
+            newByStableId[r.StableId] = r;
+
+        var added     = new List<RoomData>();
+        var removed   = new List<RoomData>();
+        var unchanged = new List<RoomData>();
+
+        foreach (var kvp in newByStableId)
+        {
+            if (_prevRoomsByStableId.ContainsKey(kvp.Key))
+                unchanged.Add(kvp.Value);
+            else
+                added.Add(kvp.Value);
+        }
+        foreach (var kvp in _prevRoomsByStableId)
+        {
+            if (!newByStableId.ContainsKey(kvp.Key))
+                removed.Add(kvp.Value);
+        }
+
+        _prevRoomsByStableId = newByStableId;
+
+        OnRoomsRecalculated?.Invoke(new RoomsRecalculatedArgs
+        {
+            Added     = added,
+            Removed   = removed,
+            Unchanged = unchanged,
+        });
+
         if (enableDebug)
         {
-            Debug.Log($"[GridRoomManager] Recalculated: {activeRooms.Count} room(s) detected.");
+            Debug.Log($"[GridRoomManager] Recalculated: {activeRooms.Count} room(s) detected. +{added.Count} -{removed.Count} ={unchanged.Count}");
             for (int i = 0; i < activeRooms.Count; i++)
-                Debug.Log($"  Room {activeRooms[i].RoomId}: {activeRooms[i].CellCount} cells");
+                Debug.Log($"  Room {activeRooms[i].RoomId} (stable {activeRooms[i].StableId}): {activeRooms[i].CellCount} cells");
         }
     }
 
