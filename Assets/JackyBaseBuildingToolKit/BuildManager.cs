@@ -79,6 +79,18 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// </summary>
     public event Action OnGridChanged;
 
+    /// <summary>
+    /// Fired when a furniture buildable (furnitureTags != None) is confirmed placed.
+    /// Does NOT fire OnGridChanged ¡ª room structure is unaffected by furniture.
+    /// </summary>
+    public event Action<PlacedBuildableData> OnFurniturePlaced;
+
+    /// <summary>
+    /// Fired when a furniture buildable (furnitureTags != None) is removed or picked up.
+    /// Does NOT fire OnGridChanged ¡ª room structure is unaffected by furniture.
+    /// </summary>
+    public event Action<PlacedBuildableData> OnFurnitureRemoved;
+
     // currently active context
     private BuildableProperty selectedProperty;
     private int currentRotationStep;
@@ -177,7 +189,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     if (group.forced)
                         ok = ForcePlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
                     else
-                        ok = PlaceImmediate(prop, entry.anchorCell, entry.rotationStep);
+                        ok = PlaceImmediate(prop, entry.anchorCell, entry.rotationStep) != null;
 
                     if (!ok)
                         Debug.LogWarning($"[BuildManager] Preset {groupLabel} entry [{i}]: Failed to place '{entry.buildableEnumKey}' at {entry.anchorCell}.");
@@ -229,7 +241,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                         if (group.forced)
                             ok = ForcePlaceImmediate(prop, worldAnchor, worldRotation);
                         else
-                            ok = PlaceImmediate(prop, worldAnchor, worldRotation);
+                            ok = PlaceImmediate(prop, worldAnchor, worldRotation) != null;
 
                         if (!ok)
                             Debug.LogWarning($"[BuildManager] Preset {groupLabel} blueprint [{b}] entry [{e}]: Failed to place '{entry.buildableEnumKey}' at {worldAnchor}.");
@@ -458,6 +470,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
             Grid.ForcePlaceIntoGrid(movingData);
             if (movingData.SpawnedObject != null)
                 movingData.SpawnedObject.SetActive(true);
+
+            // Re-broadcast so GridRoomManager can restore the furniture tag count.
+            if (movingData.Property.furnitureTags != FurnitureTag.None)
+                OnFurniturePlaced?.Invoke(movingData);
+
             movingData = null;
         }
 
@@ -492,6 +509,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // Temporarily remove from grid so own cells don't block new position
         Grid.ForceRemoveFromGrid(data);
 
+        if (data.Property.furnitureTags != FurnitureTag.None)
+            OnFurnitureRemoved?.Invoke(data);
+
         if (data.SpawnedObject != null)
             data.SpawnedObject.SetActive(false);
 
@@ -516,7 +536,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         if (data.SpawnedObject != null) Destroy(data.SpawnedObject);
 
-        OnGridChanged?.Invoke();
+        if (data.Property.furnitureTags != FurnitureTag.None)
+            OnFurnitureRemoved?.Invoke(data);
+        else
+            OnGridChanged?.Invoke();
         return true;
     }
 
@@ -677,13 +700,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
             if (movingData.SpawnedObject != null)
                 Destroy(movingData.SpawnedObject);
 
+            // Furniture removal was already broadcast in BeginMoving via OnFurnitureRemoved.
+            // Only fire OnGridChanged for structural items that affect room boundaries.
+            bool wasStructural = movingData.Property.furnitureTags == FurnitureTag.None;
             movingData = null;
             CurrentState = BuildState.Idle;
             previewController.HidePreview();
             previewController.HideConflictHighlights();
             debugCanPlaceReason = "";
 
-            OnGridChanged?.Invoke();
+            if (wasStructural)
+                OnGridChanged?.Invoke();
             return;
         }
 
@@ -1025,7 +1052,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// Used by both ConfirmPlace (player action) and LoadPreset (initialization).
     /// Returns true on success.
     /// </summary>
-    private bool PlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    private PlacedBuildableData PlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
     {
         PlacedBuildableData data = new PlacedBuildableData
         {
@@ -1036,7 +1063,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         };
 
         if (!Grid.TryPlace(data))
-            return false;
+            return null;
 
         // Spawn real object
         Vector3 worldPos = positionProvider.CellToWorldCenter(anchor);
@@ -1053,11 +1080,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
         behaviour.Initialize(data);
 
-        return true;
+        return data;
     }
 
     /// <summary>
-    /// Force-place a buildable into the grid, skipping all validation (CanPlace check).
+    /// Force-place a buildable into the grid
     /// Used by preset loading when <see cref="BuildPresetGroup.forced"/> is true.
     /// </summary>
     private bool ForcePlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
@@ -1113,7 +1140,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
             }
         }
 
-        if (!PlaceImmediate(selectedProperty, anchor, currentRotationStep))
+        PlacedBuildableData placed = PlaceImmediate(selectedProperty, anchor, currentRotationStep);
+        if (placed == null)
         {
             Debug.LogError($"[BuildManager] PlaceImmediate failed at {anchor} ¡ª should not happen after CanPlace check.");
             return;
@@ -1130,7 +1158,10 @@ public class BuildManager : MonoBehaviour, IDebuggable
         if (uiContainer != null)
             uiContainer.ClearSelection();
 
-        OnGridChanged?.Invoke();
+        if (placed.Property.furnitureTags != FurnitureTag.None)
+            OnFurniturePlaced?.Invoke(placed);
+        else
+            OnGridChanged?.Invoke();
     }
 
     private void ConfirmMove(Vector3Int newAnchor)
@@ -1146,11 +1177,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         previewController.HidePreview();
         previewController.HideConflictHighlights();
+
+        bool isFurniture = movingData.Property.furnitureTags != FurnitureTag.None;
+        PlacedBuildableData confirmedData = movingData;
         movingData = null;
         CurrentState = BuildState.Idle;
         debugCanPlaceReason = "";
 
-        OnGridChanged?.Invoke();
+        if (isFurniture)
+            OnFurniturePlaced?.Invoke(confirmedData);
+        else
+            OnGridChanged?.Invoke();
     }
 
     private void SyncGameObjectTransform(PlacedBuildableData data)
@@ -1346,8 +1383,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
             switch (key.Layer)
             {
                 case BuildLayer.BL_World:   Gizmos.color = GizmoColorWorld;    break;
-                case BuildLayer.BL_Platform: Gizmos.color = GizmoColorPlatform; break;
-                case BuildLayer.BL_Room:     Gizmos.color = GizmoColorRoom;     break;
+                //case BuildLayer.BL_Platform: Gizmos.color = GizmoColorPlatform; break;
+                //case BuildLayer.BL_Room:     Gizmos.color = GizmoColorRoom;     break;
                 case BuildLayer.BL_Wall:     Gizmos.color = GizmoColorWall;     break;
                 default:                     Gizmos.color = Color.white;        break;
             }

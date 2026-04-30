@@ -17,47 +17,71 @@ MonoBehaviour:
   prefab: {fileID: 6638954220343408401, guid: a7a28f7784c753e419b47da1f5b6b46a, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
     occupancyFacings: 8
     requiredSurface: 6
     requiredFacing: 3
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 1}
     buildLayer: 0
     occupancyFacings: 16
     requiredSurface: 6
     requiredFacing: 4
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 3
+    occupancyFacings: 8
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 1}
+    buildLayer: 3
+    occupancyFacings: 16
+    requiredSurface: 0
+    requiredFacing: 0
   surfaceZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 1, z: 0}
     providedSurface: 6
     facing: 3
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 1, z: 1}
     providedSurface: 6
     facing: 4
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     providedSurface: 2
     facing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 1}
     providedSurface: 2
     facing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     providedSurface: 4
     facing: 3
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 1}
     providedSurface: 4
@@ -66,3 +90,4 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 0}
   displayName: 
+  furnitureTags: 0

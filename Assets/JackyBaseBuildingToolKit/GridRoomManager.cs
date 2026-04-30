@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System;
 using UnityEngine;
 using JackyUtility;
 
@@ -62,12 +63,12 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
         IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap)
     {
         // Wall on the exit face of 'from'
-        if (occupancyMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_World, facing)))
+        if (occupancyMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_Wall, facing)))
             return true;
 
         // Wall on the entry face of 'to'
         SurfaceFacing opposite = GetOppositeFacing(facing);
-        if (occupancyMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_World, opposite)))
+        if (occupancyMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_Wall, opposite)))
             return true;
 
         return false;
@@ -83,7 +84,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
         if (!grid.IsInBounds(cell)) return false;
 
         // If the cell itself (non-directional) is occupied as a wall, treat it as solid block ¡ú not interior
-        if (grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.None))
+        if (grid.IsCellOccupied(cell, BuildLayer.BL_Wall, SurfaceFacing.None))
             return false;
 
         return true;
@@ -109,7 +110,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
             for (int d = 0; d < 6; d++)
             {
                 SurfaceFacing facing = s_facings[d];
-                if (!occupancyMap.TryGetValue(new CellLayerKey(cell, BuildLayer.BL_World, facing), out PlacedBuildableData data))
+                if (!occupancyMap.TryGetValue(new CellLayerKey(cell, BuildLayer.BL_Wall, facing), out PlacedBuildableData data))
                     continue;
 
                 if (!doorKeySet.Contains(data.Property.EnumKey))
@@ -164,22 +165,22 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
 /// Flat-room policy (Two Point Hospital style).
 /// A room is enclosed by a floor (YNeg face) and four horizontal walls (¡ÀX, ¡ÀZ).
 /// The ceiling is provided by a transparent placeholder buildable injected via preset.
-/// Interior cells must have a floor piece placed (BL_World + YNeg) to be considered valid.
+/// Interior cells must have a floor piece placed (BL_Wall + YNeg) to be considered valid.
 /// </summary>
 public class FlatRoomPolicy : IRoomDetectionPolicy
 {
     /// <summary>
     /// Same barrier logic as <see cref="FullEnclosurePolicy"/>: blocked when either
-    /// the source or the destination cell has a BL_World wall face in the relevant direction.
+    /// the source or the destination cell has a BL_Wall wall face in the relevant direction.
     /// </summary>
     public bool IsBarrier(Vector3Int from, Vector3Int to, SurfaceFacing facing,
         IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap)
     {
-        if (occupancyMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_World, facing)))
+        if (occupancyMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_Wall, facing)))
             return true;
 
         SurfaceFacing opposite = FullEnclosurePolicy.GetOppositeFacing(facing);
-        if (occupancyMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_World, opposite)))
+        if (occupancyMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_Wall, opposite)))
             return true;
 
         return false;
@@ -188,17 +189,17 @@ public class FlatRoomPolicy : IRoomDetectionPolicy
     /// <summary>
     /// A cell is a valid interior candidate when:
     /// 1. It is within grid bounds.
-    /// 2. It is NOT a solid block (BL_World, SurfaceFacing.None).
-    /// 3. It HAS a floor piece (BL_World, SurfaceFacing.YNeg).
+    /// 2. It is NOT a solid block (BL_Wall, SurfaceFacing.None).
+    /// 3. It HAS a floor piece (BL_Wall, SurfaceFacing.YNeg).
     /// </summary>
     public bool IsValidInteriorCell(Vector3Int cell, BuildGrid3D grid)
     {
         if (!grid.IsInBounds(cell)) return false;
 
-        if (grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.None))
+        if (grid.IsCellOccupied(cell, BuildLayer.BL_Wall, SurfaceFacing.None))
             return false;
 
-        if (!grid.IsCellOccupied(cell, BuildLayer.BL_World, SurfaceFacing.YNeg))
+        if (!grid.IsCellOccupied(cell, BuildLayer.BL_Wall, SurfaceFacing.YNeg))
             return false;
 
         return true;
@@ -231,6 +232,12 @@ public class RoomData
 
     public int CellCount => Cells.Count;
 
+    // ©¤©¤ Furniture tag counts ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    private readonly Dictionary<FurnitureTag, int> _tagCounts = new Dictionary<FurnitureTag, int>();
+
+    /// <summary>Current count of each furniture tag present in this room.</summary>
+    public IReadOnlyDictionary<FurnitureTag, int> TagCounts => _tagCounts;
+
     public RoomData(int roomId, HashSet<Vector3Int> cells, Color debugColor)
     {
         RoomId = roomId;
@@ -238,10 +245,48 @@ public class RoomData
         DebugColor = debugColor;
     }
 
-    public bool Contains(Vector3Int cell)
+    public bool Contains(Vector3Int cell) => Cells.Contains(cell);
+
+    /// <summary>Returns the count for a single tag bit. Returns 0 if the tag is absent.</summary>
+    public int GetTagCount(FurnitureTag tag)
     {
-        return Cells.Contains(cell);
+        _tagCounts.TryGetValue(tag, out int count);
+        return count;
     }
+
+    /// <summary>Increments counts for every individual flag set in <paramref name="tags"/>.</summary>
+    public void AddFurnitureTags(FurnitureTag tags)
+    {
+        foreach (FurnitureTag tag in Enum.GetValues(typeof(FurnitureTag)))
+        {
+            if (tag == FurnitureTag.None) continue;
+            if ((tags & tag) != 0)
+            {
+                _tagCounts.TryGetValue(tag, out int current);
+                _tagCounts[tag] = current + 1;
+            }
+        }
+    }
+
+    /// <summary>Decrements counts for every individual flag set in <paramref name="tags"/>. Removes the entry when it reaches zero.</summary>
+    public void RemoveFurnitureTags(FurnitureTag tags)
+    {
+        foreach (FurnitureTag tag in Enum.GetValues(typeof(FurnitureTag)))
+        {
+            if (tag == FurnitureTag.None) continue;
+            if ((tags & tag) != 0 && _tagCounts.TryGetValue(tag, out int current))
+            {
+                int next = current - 1;
+                if (next <= 0)
+                    _tagCounts.Remove(tag);
+                else
+                    _tagCounts[tag] = next;
+            }
+        }
+    }
+
+    /// <summary>Resets all tag counts. Called before a full furniture rescan.</summary>
+    public void ClearTagCounts() => _tagCounts.Clear();
 }
 
 // ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
@@ -316,6 +361,13 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     /// <summary>All currently detected rooms.</summary>
     public IReadOnlyList<RoomData> ActiveRooms => activeRooms;
 
+    /// <summary>
+    /// Fired after furniture tag counts change in a room ¡ª either from an incremental
+    /// furniture place/remove or after a full room recalculation.
+    /// The <see cref="RoomData"/> argument is the affected room with updated tag counts.
+    /// </summary>
+    public event Action<RoomData> OnRoomFurnitureChanged;
+
 #if UNITY_EDITOR
     /// <summary>Forces an immediate room recalculation. Editor tooling only.</summary>
     public void Editor_ForceRecalculate() => RecalculateAllRooms();
@@ -380,6 +432,8 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         {
             grid = BuildManager.Instance.Grid;
             BuildManager.Instance.OnGridChanged += OnGridChanged;
+            BuildManager.Instance.OnFurniturePlaced  += HandleFurniturePlaced;
+            BuildManager.Instance.OnFurnitureRemoved += HandleFurnitureRemoved;
         }
 
         if (grid == null)
@@ -392,7 +446,11 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     private void OnDestroy()
     {
         if (BuildManager.Instance != null)
-            BuildManager.Instance.OnGridChanged -= OnGridChanged;
+        {
+            BuildManager.Instance.OnGridChanged      -= OnGridChanged;
+            BuildManager.Instance.OnFurniturePlaced  -= HandleFurniturePlaced;
+            BuildManager.Instance.OnFurnitureRemoved -= HandleFurnitureRemoved;
+        }
 
         if (DebugConsoleManager.Instance != null)
             DebugConsoleManager.Instance.UnregisterDebugTarget(this);
@@ -444,10 +502,10 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         List<CellLayerKey> wallKeys = new List<CellLayerKey>();
         for (int i = 0; i < occ.Length; i++)
         {
-            if (occ[i].Layer == BuildLayer.BL_World)
+            if (occ[i].Layer == BuildLayer.BL_Wall)
             {
                 Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
-                wallKeys.Add(new CellLayerKey(worldCell, BuildLayer.BL_World, occ[i].OccupancyFacing));
+                wallKeys.Add(new CellLayerKey(worldCell, BuildLayer.BL_Wall, occ[i].OccupancyFacing));
             }
         }
 
@@ -486,7 +544,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         //    using the simulated map. If the fill escapes ¡ú room is broken.
         foreach (int roomId in potentiallyAffectedIds)
         {
-            RoomData room = FindRoomById(roomId);
+            RoomData room = GetRoomById(roomId);
             if (room == null) continue;
 
             // Pick any cell from this room as seed
@@ -630,6 +688,9 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
             }
         }
 
+        // ©¤©¤ Rebuild furniture tag counts for all freshly detected rooms ©¤©¤
+        ScanFurnitureTagsForAllRooms();
+
         if (enableDebug)
         {
             Debug.Log($"[GridRoomManager] Recalculated: {activeRooms.Count} room(s) detected.");
@@ -654,17 +715,20 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         SimulatedOccupancyMap simulatedMap)
     {
         // Re-implement the same logic as FullEnclosurePolicy but against the simulated map
-        if (simulatedMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_World, facing)))
+        if (simulatedMap.ContainsKey(new CellLayerKey(from, BuildLayer.BL_Wall, facing)))
             return true;
 
         SurfaceFacing opposite = FullEnclosurePolicy.GetOppositeFacing(facing);
-        if (simulatedMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_World, opposite)))
+        if (simulatedMap.ContainsKey(new CellLayerKey(to, BuildLayer.BL_Wall, opposite)))
             return true;
 
         return false;
     }
 
-    private RoomData FindRoomById(int roomId)
+    /// <summary>
+    /// Returns the <see cref="RoomData"/> with the given ID, or null if not found.
+    /// </summary>
+    public RoomData GetRoomById(int roomId)
     {
         for (int i = 0; i < activeRooms.Count; i++)
         {
@@ -696,6 +760,84 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
             if (excluded.Contains(key)) return false;
             return real.ContainsKey(key);
         }
+    }
+
+    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Furniture Tag Tracking ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    /// <summary>
+    /// Full rescan: clears and rebuilds tag counts for every active room using
+    /// all furniture currently in <see cref="BuildGrid3D.AllPlaced"/>.
+    /// Called after every full room recalculation.
+    /// </summary>
+    private void ScanFurnitureTagsForAllRooms()
+    {
+        for (int i = 0; i < activeRooms.Count; i++)
+            activeRooms[i].ClearTagCounts();
+
+        if (grid == null) return;
+
+        foreach (var kvp in grid.AllPlaced)
+        {
+            PlacedBuildableData data = kvp.Value;
+            if (data.Property.furnitureTags == FurnitureTag.None) continue;
+
+            RoomData room = GetRoomIfAllCellsInSameRoom(data);
+            if (room != null)
+                room.AddFurnitureTags(data.Property.furnitureTags);
+        }
+
+        // Notify all rooms (NPC system may subscribe per-room)
+        for (int i = 0; i < activeRooms.Count; i++)
+            OnRoomFurnitureChanged?.Invoke(activeRooms[i]);
+    }
+
+    private void HandleFurniturePlaced(PlacedBuildableData data)
+    {
+        if (data == null || data.Property.furnitureTags == FurnitureTag.None) return;
+
+        RoomData room = GetRoomIfAllCellsInSameRoom(data);
+        if (room == null) return;
+
+        room.AddFurnitureTags(data.Property.furnitureTags);
+        OnRoomFurnitureChanged?.Invoke(room);
+    }
+
+    private void HandleFurnitureRemoved(PlacedBuildableData data)
+    {
+        if (data == null || data.Property.furnitureTags == FurnitureTag.None) return;
+
+        RoomData room = GetRoomIfAllCellsInSameRoom(data);
+        if (room == null) return;
+
+        room.RemoveFurnitureTags(data.Property.furnitureTags);
+        OnRoomFurnitureChanged?.Invoke(room);
+    }
+
+    /// <summary>
+    /// Returns the room that contains ALL occupancy cells of <paramref name="data"/>,
+    /// only when every cell maps to the exact same room. Returns null otherwise.
+    /// </summary>
+    private RoomData GetRoomIfAllCellsInSameRoom(PlacedBuildableData data)
+    {
+        ResolvedOccupancyCell[] occ = data.Property.GetRotatedOccupancyCells(data.RotationStep);
+        RoomData foundRoom = null;
+        HashSet<Vector3Int> checkedCells = new HashSet<Vector3Int>();
+
+        for (int i = 0; i < occ.Length; i++)
+        {
+            Vector3Int worldCell = data.AnchorCell + occ[i].Cell;
+            if (!checkedCells.Add(worldCell)) continue;  // skip duplicate cell positions
+
+            if (!cellToRoom.TryGetValue(worldCell, out RoomData room))
+                return null;  // cell not inside any room
+
+            if (foundRoom == null)
+                foundRoom = room;
+            else if (foundRoom != room)
+                return null;  // cells span two different rooms
+        }
+
+        return foundRoom;  // null when occ is empty
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Commands ©¤©¤©¤©¤©¤©¤©¤©¤©¤

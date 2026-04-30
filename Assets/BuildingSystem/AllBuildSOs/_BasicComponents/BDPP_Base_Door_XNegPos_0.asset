@@ -49,6 +49,38 @@ MonoBehaviour:
     occupancyFacings: 2
     requiredSurface: 0
     requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 3
+    occupancyFacings: 4
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    buildLayer: 3
+    occupancyFacings: 4
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: -1, y: 0, z: 0}
+    buildLayer: 3
+    occupancyFacings: 2
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: -1, y: 1, z: 0}
+    buildLayer: 3
+    occupancyFacings: 2
+    requiredSurface: 0
+    requiredFacing: 0
   surfaceZones:
   - zoneName: 
     boxes: []
@@ -78,3 +110,4 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 0}
   displayName: 
+  furnitureTags: 0

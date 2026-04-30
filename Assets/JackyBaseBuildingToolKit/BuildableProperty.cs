@@ -9,11 +9,11 @@ using UnityEngine;
 public enum BuildLayer
 {
     BL_World = 0,
-    BL_Platform = 1,
-    BL_Room = 2,
+    //BL_Platform = 1,
+    //BL_Room = 2,
     BL_Wall = 3,
-    BL_Ground = 4,
-    BL_EdgeAttacher = 5,
+    //BL_Ground = 4,
+    //BL_EdgeAttacher = 5,
 }
 
 /// <summary>

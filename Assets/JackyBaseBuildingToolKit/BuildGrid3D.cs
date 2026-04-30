@@ -239,17 +239,6 @@ public class BuildGrid3D
         return data;
     }
 
-    public PlacedBuildableData GetTopmostOccupant(Vector3Int cell)
-    {
-        for (int l = (int)BuildLayer.BL_Room; l >= (int)BuildLayer.BL_World; l--)
-        {
-            var key = new CellLayerKey(cell, (BuildLayer)l);
-            if (occupancyMap.TryGetValue(key, out PlacedBuildableData data))
-                return data;
-        }
-        return null;
-    }
-
     /// <summary>
     /// Find a parent buildable at the given cell that provides the required surface.
     /// </summary>

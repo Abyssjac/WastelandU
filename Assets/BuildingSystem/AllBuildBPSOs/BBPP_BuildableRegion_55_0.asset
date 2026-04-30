@@ -17,87 +17,87 @@ MonoBehaviour:
   groups:
   - groupName: RowA
     entries:
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -2, y: 0, z: 2}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -2, y: 0, z: 1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -2, y: 0, z: 0}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -2, y: 0, z: -1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -2, y: 0, z: -2}
       localRotationStep: 0
   - groupName: RowB
     entries:
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -1, y: 0, z: 2}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -1, y: 0, z: 1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -1, y: 0, z: 0}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -1, y: 0, z: -1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: -1, y: 0, z: -2}
       localRotationStep: 0
   - groupName: RowC
     entries:
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 0, y: 0, z: 2}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 0, y: 0, z: 1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 0, y: 0, z: 0}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 0, y: 0, z: -1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 0, y: 0, z: -2}
       localRotationStep: 0
   - groupName: RowD
     entries:
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 1, y: 0, z: 2}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 1, y: 0, z: 1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 1, y: 0, z: 0}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 1, y: 0, z: -1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 1, y: 0, z: -2}
       localRotationStep: 0
   - groupName: RowE
     entries:
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 2, y: 0, z: 2}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 2, y: 0, z: 1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 2, y: 0, z: 0}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 2, y: 0, z: -1}
       localRotationStep: 0
-    - buildableEnumKey: 2
+    - buildableEnumKey: 1
       localCell: {x: 2, y: 0, z: -2}
       localRotationStep: 0
   - groupName: RowA Ceiling
