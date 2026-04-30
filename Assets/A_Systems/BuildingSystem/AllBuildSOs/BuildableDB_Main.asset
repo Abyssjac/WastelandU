@@ -50,4 +50,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 59d562070edb8ac4fb9d6f74da5f8106, type: 2}
   - {fileID: 11400000, guid: 0a9221db3708c5146b3f70cb8ba6a5aa, type: 2}
   - {fileID: 11400000, guid: 670377dbd2c1f244ba770b1fbc4fdef4, type: 2}
-  scanFolder: BuildingSystem/AllBuildSOs
+  scanFolder: A_Systems/BuildingSystem/AllBuildSOs

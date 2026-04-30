@@ -16,4 +16,4 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f96a4e4ed21282f48a2466ddaaa3f0d2, type: 2}
   - {fileID: 11400000, guid: 5885f30f547dee4489849969753951e8, type: 2}
   - {fileID: 11400000, guid: 0ea75b7d4bcd0ef4bb5744ae238f8080, type: 2}
-  scanFolder: BuildingSystem/AllBuildActionDisplaySOs
+  scanFolder: A_Systems/BuildingSystem/AllBuildActionDisplaySOs

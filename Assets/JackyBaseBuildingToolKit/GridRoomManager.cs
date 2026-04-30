@@ -819,6 +819,20 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         return null;
     }
 
+    /// <summary>
+    /// Returns the <see cref="RoomData"/> whose <see cref="RoomData.StableId"/> matches,
+    /// or null if not found. Use this for persistent cross-recalculation room references.
+    /// </summary>
+    public RoomData GetRoomByStableId(Vector3Int stableId)
+    {
+        for (int i = 0; i < activeRooms.Count; i++)
+        {
+            if (activeRooms[i].StableId == stableId)
+                return activeRooms[i];
+        }
+        return null;
+    }
+
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Simulated Occupancy Map ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     /// <summary>
