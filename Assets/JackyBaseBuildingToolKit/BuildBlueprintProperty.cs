@@ -11,6 +11,9 @@ public enum Key_BuildBlueprintPP
 
     BuildBlueprint_Room_545_0 = 1,
     BuildBlueprint_Room_545_1 = 2,
+    BuildBlueprint_Room_545_Artstudio = 3,
+    BuildBlueprint_Room_545_Bar = 4,
+    BuildBlueprint_Room_545_Bookstore = 5,
     BuildBlueprint_Platform_33_0 = 31,
     BuildBlueprint_Platform_55_0 = 32,
     BuildBlueprint_BuildableRegion_55_0 = 51,

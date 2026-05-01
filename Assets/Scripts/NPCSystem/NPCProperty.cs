@@ -22,6 +22,10 @@ public struct TagAffinityWeight
 [CreateAssetMenu(fileName = "NPCPP_", menuName = "AllProperties/NPCProperty")]
 public class NPCProperty : EnumStringKeyedProperty<Key_NPC>
 {
+    [Header("Prefab")]
+    [Tooltip("The GameObject prefab instantiated by NPCManager.SpawnNPC().")]
+    public GameObject prefab;
+
     [Header("Display")]
     public string displayName;
     public Sprite portrait;

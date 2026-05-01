@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 1
   stringKey: NPCPP_Artist
+  prefab: {fileID: 2630481644761170012, guid: d48876a4278f0d54ab531400564ddca1, type: 3}
   displayName: Artist
   portrait: {fileID: 21300000, guid: 705f0467455c3f0479897da07daeb0be, type: 3}
   maxEnvAffinity: 100

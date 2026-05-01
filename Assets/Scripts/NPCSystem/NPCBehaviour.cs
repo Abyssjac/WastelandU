@@ -29,10 +29,24 @@ public class NPCBehaviour : MonoBehaviour
     private NPCProperty    _property;
     private NPCRuntimeData _runtimeData;
 
+    public Key_NPC        NpcKey      => npcKey;
     public NPCProperty    Property    => _property;
     public NPCRuntimeData RuntimeData => _runtimeData;
     public bool           HasRoom     => hasRoom;
     public Vector3Int     AssignedRoomStableId => assignedRoomStableId;
+
+    // ©¤©¤ Spawn injection guard ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // Set by NPCManager.SpawnNPC() immediately before Instantiate.
+    // Prevents NPCs from being placed in the scene without going through the manager.
+    //private static Key_NPC _pendingSpawnKey  = Key_NPC.None;
+    //private static bool    _spawnAuthorized  = false;
+
+    ///// <summary>Called exclusively by <see cref="NPCManager"/> before Instantiate.</summary>
+    //internal static void AllowNextSpawn(Key_NPC key)
+    //{
+    //    _pendingSpawnKey = key;
+    //    _spawnAuthorized = true;
+    //}
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     // Lifecycle
@@ -40,7 +54,22 @@ public class NPCBehaviour : MonoBehaviour
 
     private void Awake()
     {
+        // Always initialise runtime data first so Start() never sees a null reference,
+        // even in the brief window between Destroy(gameObject) and the deferred destroy.
         _runtimeData = new NPCRuntimeData();
+
+        //// Injection guard: only NPCManager is allowed to spawn NPCs.
+        //// TODO: tighten to hard-fail once all spawning is code-driven.
+        //if (!_spawnAuthorized || _pendingSpawnKey != npcKey)
+        //{
+        //    Debug.LogError($"[NPCBehaviour] Unauthorized instantiation of '{npcKey}' on '{gameObject.name}'. " +
+        //                   "Use NPCManager.SpawnNPC() instead of placing NPCs directly in the scene.");
+        //    Destroy(gameObject);
+        //    return;
+        //}
+
+        //_spawnAuthorized = false;
+        //_pendingSpawnKey = Key_NPC.None;
     }
 
     private void Start()
