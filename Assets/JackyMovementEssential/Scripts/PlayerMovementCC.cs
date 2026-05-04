@@ -135,7 +135,7 @@ public class PlayerMovementCC : MonoBehaviour
         isFirstPersonMode = (newMode == CameraMode.FirstPerson);
 
         // Freeze player input when using free camera
-        InputEnabled = (newMode != CameraMode.FreeCamera);
+        //InputEnabled = (newMode != CameraMode.FreeCamera);
 
         if (debugLogStateChanges)
             Debug.Log($"[PlayerMovementCC] Camera mode switched to {newMode}, isFirstPersonMode={isFirstPersonMode}, InputEnabled={InputEnabled}", this);

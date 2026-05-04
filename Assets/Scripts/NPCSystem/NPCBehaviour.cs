@@ -2,6 +2,17 @@ using JackyUtility;
 using UnityEngine;
 
 /// <summary>
+/// Key identifying an NPC type. Should correspond to entries in <see cref="NPCDatabase"/>.
+/// </summary>
+public enum Key_NPC
+{
+    None = 0,
+    Artist = 1,   // 艺术家
+    Botanist = 2,   // 植物学家
+    Athlete = 3,   // 运动员
+}
+
+/// <summary>
 /// Attach to an NPC GameObject.
 /// Resolves its <see cref="NPCProperty"/> at startup via <see cref="NPCDatabase"/>,
 /// then subscribes to room furniture change events to keep living-environment affinity current.

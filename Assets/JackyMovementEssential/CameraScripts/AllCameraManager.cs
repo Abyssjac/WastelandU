@@ -171,5 +171,4 @@ public enum CameraMode
     FollowTarget = 2,
     FreePerspective = 3,
     FirstPerson = 4,
-    FreeCamera = 5,
 }
