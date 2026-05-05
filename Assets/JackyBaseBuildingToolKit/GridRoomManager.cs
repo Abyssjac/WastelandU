@@ -1,11 +1,11 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System;
 using UnityEngine;
 using JackyUtility;
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Room Detection Policy
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 /// <summary>
 /// Defines the rules for how flood-fill determines room boundaries.
@@ -38,7 +38,7 @@ public interface IRoomDetectionPolicy
 
 /// <summary>
 /// Default policy: a room is fully enclosed by BL_Wall faces on all 6 directions
-/// (¡ÀX, ¡ÀZ walls + YNeg floor + YPos ceiling).
+/// (Â±X, Â±Z walls + YNeg floor + YPos ceiling).
 /// </summary>
 public class FullEnclosurePolicy : IRoomDetectionPolicy
 {
@@ -83,7 +83,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
     {
         if (!grid.IsInBounds(cell)) return false;
 
-        // If the cell itself (non-directional) is occupied as a wall, treat it as solid block ¡ú not interior
+        // If the cell itself (non-directional) is occupied as a wall, treat it as solid block â†’ not interior
         if (grid.IsCellOccupied(cell, BuildLayer.BL_Wall, SurfaceFacing.None))
             return false;
 
@@ -92,7 +92,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
 
     /// <summary>
     /// If door keys were provided, scans every face of every interior cell.
-    /// A door counts only when it sits on the TRUE boundary of the region ¡ª
+    /// A door counts only when it sits on the TRUE boundary of the region â€”
     /// i.e. the cell on the OTHER side of the door face is NOT part of the
     /// room interior. This rejects doors placed in the middle of the room
     /// whose both sides are interior cells.
@@ -102,7 +102,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
         IReadOnlyDictionary<CellLayerKey, PlacedBuildableData> occupancyMap,
         BuildGrid3D grid)
     {
-        // No door requirement configured ¡ú accept any enclosure
+        // No door requirement configured â†’ accept any enclosure
         if (doorKeySet == null) return true;
 
         foreach (Vector3Int cell in region)
@@ -117,7 +117,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
                     continue;
 
                 // A boundary door: the neighbor on the far side must NOT be in the room interior.
-                // If it IS in the region, both sides are interior ¡ú this door is placed in the
+                // If it IS in the region, both sides are interior â†’ this door is placed in the
                 // middle of the room and does not qualify.
                 Vector3Int neighbor = cell + s_offsets[d];
                 if (!region.Contains(neighbor))
@@ -163,7 +163,7 @@ public class FullEnclosurePolicy : IRoomDetectionPolicy
 
 /// <summary>
 /// Flat-room policy (Two Point Hospital style).
-/// A room is enclosed by a floor (YNeg face) and four horizontal walls (¡ÀX, ¡ÀZ).
+/// A room is enclosed by a floor (YNeg face) and four horizontal walls (Â±X, Â±Z).
 /// The ceiling is provided by a transparent placeholder buildable injected via preset.
 /// Interior cells must have a floor piece placed (BL_Wall + YNeg) to be considered valid.
 /// </summary>
@@ -206,7 +206,7 @@ public class FlatRoomPolicy : IRoomDetectionPolicy
     }
 
     /// <summary>
-    /// No additional validation for flat rooms ¡ª any enclosed region with a floor qualifies.
+    /// No additional validation for flat rooms â€” any enclosed region with a floor qualifies.
     /// Door requirement can be added here in the future.
     /// </summary>
     public bool ValidateRegion(HashSet<Vector3Int> region,
@@ -217,9 +217,9 @@ public class FlatRoomPolicy : IRoomDetectionPolicy
     }
 }
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Room Data
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 /// <summary>
 /// Runtime data for a single detected room.
@@ -232,7 +232,7 @@ public class RoomData
 
     public int CellCount => Cells.Count;
 
-    // ©¤©¤ Furniture tag counts ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Furniture tag counts â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private readonly Dictionary<FurnitureTag, int> _tagCounts = new Dictionary<FurnitureTag, int>();
 
     /// <summary>Current count of each furniture tag present in this room.</summary>
@@ -240,7 +240,7 @@ public class RoomData
 
     /// <summary>
     /// Deterministic stable identifier: the lexicographically smallest cell
-    /// (min X ¡ú min Z ¡ú min Y) in the room's cell set.
+    /// (min X â†’ min Z â†’ min Y) in the room's cell set.
     /// Remains identical across recalculations as long as the room shape is unchanged.
     /// </summary>
     public Vector3Int StableId { get; private set; }
@@ -256,7 +256,7 @@ public class RoomData
     public bool Contains(Vector3Int cell) => Cells.Contains(cell);
 
     /// <summary>
-    /// Returns the lexicographically smallest cell (min X ¡ú min Z ¡ú min Y)
+    /// Returns the lexicographically smallest cell (min X â†’ min Z â†’ min Y)
     /// from <paramref name="cells"/> as a deterministic room fingerprint.
     /// </summary>
     public static Vector3Int ComputeStableId(HashSet<Vector3Int> cells)
@@ -276,6 +276,7 @@ public class RoomData
     public int GetTagCount(FurnitureTag tag)
     {
         _tagCounts.TryGetValue(tag, out int count);
+        Debug.Log($"[RoomData] GetTagCount for tag {tag}: {count}");
         return count;
     }
 
@@ -314,9 +315,9 @@ public class RoomData
     public void ClearTagCounts() => _tagCounts.Clear();
 }
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // Room removal preview result
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 /// <summary>
 /// Result of a "would this removal break a room?" query.
@@ -346,9 +347,9 @@ public struct RoomsRecalculatedArgs
     public IReadOnlyList<RoomData> Unchanged;
 }
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // GridRoomManager
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 /// <summary>Selects which room detection policy is used by <see cref="GridRoomManager"/>.</summary>
 public enum RoomPolicyType
@@ -361,7 +362,7 @@ public enum RoomPolicyType
 
 /// <summary>
 /// Detects enclosed rooms in the <see cref="BuildGrid3D"/> via face-aware flood-fill.
-/// Fully independent from <see cref="BuildManager"/> ¡ª reads the grid as a data source.
+/// Fully independent from <see cref="BuildManager"/> â€” reads the grid as a data source.
 /// Subscribes to <see cref="BuildManager.OnGridChanged"/> to recalculate when the grid mutates.
 /// </summary>
 public class GridRoomManager : MonoBehaviour, IDebuggable
@@ -384,7 +385,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     [SerializeField] private bool enableDebug = true;
     [SerializeField] private bool debugDrawRooms = false;
 
-    // ©¤©¤ IDebuggable ©¤©¤
+    // â”€â”€ IDebuggable â”€â”€
     public string DebugId => "gridroom";
     public bool DebugEnabled
     {
@@ -392,7 +393,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         set => enableDebug = value;
     }
 
-    // ©¤©¤ State ©¤©¤
+    // â”€â”€ State â”€â”€
     private BuildGrid3D grid;
     private IRoomDetectionPolicy policy;
     private List<RoomData> activeRooms = new List<RoomData>();
@@ -406,7 +407,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     public IReadOnlyList<RoomData> ActiveRooms => activeRooms;
 
     /// <summary>
-    /// Fired after furniture tag counts change in a room ¡ª either from an incremental
+    /// Fired after furniture tag counts change in a room â€” either from an incremental
     /// furniture place/remove or after a full room recalculation.
     /// The <see cref="RoomData"/> argument is the affected room with updated tag counts.
     /// </summary>
@@ -425,7 +426,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
     public RoomPolicyType Editor_PolicyType => policyType;
 #endif
 
-    // ©¤©¤ Direction table for 6-way flood-fill ©¤©¤
+    // â”€â”€ Direction table for 6-way flood-fill â”€â”€
     private static readonly SurfaceFacing[] s_allDirections =
     {
         SurfaceFacing.XPos, SurfaceFacing.XNeg,
@@ -464,7 +465,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         new Color(0.6f, 0.6f, 0.9f, 0.35f),  // periwinkle
     };
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void Awake()
     {
@@ -516,7 +517,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
             RecalculateAllRooms();
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Replace the active room detection policy at runtime.
@@ -539,7 +540,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
 
     /// <summary>
     /// Predicts whether removing the given buildable would break (un-enclose) any existing room.
-    /// Does NOT modify any state ¡ª this is a pure read-only simulation.
+    /// Does NOT modify any state â€” this is a pure read-only simulation.
     /// </summary>
     public RoomBreakResult WouldRemoveBreakRoom(PlacedBuildableData data)
     {
@@ -591,7 +592,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         var simulatedOccupancy = new SimulatedOccupancyMap(grid.OccupancyMap, removedKeys);
 
         // 4. For each potentially affected room, re-flood-fill from one of its cells
-        //    using the simulated map. If the fill escapes ¡ú room is broken.
+        //    using the simulated map. If the fill escapes â†’ room is broken.
         foreach (int roomId in potentiallyAffectedIds)
         {
             RoomData room = GetRoomById(roomId);
@@ -645,7 +646,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         return result;
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Core Algorithm ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Core Algorithm â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Full recalculation: flood-fill all potential interior cells, classify enclosed regions as rooms.
@@ -693,7 +694,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
                             SurfaceFacing facing = s_allDirections[d];
                             Vector3Int neighbor = current + s_directionOffsets[d];
 
-                            // If we can reach outside grid bounds ¡ú this region is "outdoors"
+                            // If we can reach outside grid bounds â†’ this region is "outdoors"
                             if (!grid.IsInBounds(neighbor))
                             {
                                 escaped = true;
@@ -738,10 +739,10 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
             }
         }
 
-        // ©¤©¤ Rebuild furniture tag counts for all freshly detected rooms ©¤©¤
+        // â”€â”€ Rebuild furniture tag counts for all freshly detected rooms â”€â”€
         ScanFurnitureTagsForAllRooms();
 
-        // ©¤©¤ Diff against previous recalculation and broadcast ©¤©¤
+        // â”€â”€ Diff against previous recalculation and broadcast â”€â”€
         var newByStableId = new Dictionary<Vector3Int, RoomData>(activeRooms.Count);
         foreach (var r in activeRooms)
             newByStableId[r.StableId] = r;
@@ -833,7 +834,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         return null;
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Simulated Occupancy Map ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Simulated Occupancy Map â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Thin read-only wrapper over the real occupancy map that pretends
@@ -857,7 +858,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         }
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Furniture Tag Tracking ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Furniture Tag Tracking â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Full rescan: clears and rebuilds tag counts for every active room using
@@ -935,7 +936,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         return foundRoom;  // null when occ is empty
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Commands ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Debug Commands â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void RegisterDebugCommands()
     {
@@ -1015,7 +1016,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         ));
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Gizmos ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Debug Gizmos â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnDrawGizmos()
     {
@@ -1055,7 +1056,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         }
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug GUI ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€â”€â”€â”€â”€â”€â”€â”€ Debug GUI â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void OnGUI()
     {
@@ -1064,7 +1065,7 @@ public class GridRoomManager : MonoBehaviour, IDebuggable
         float yOffset = 300f; // below BuildManager's debug panel
         var panel = DebugGUIPanel.Begin(new Vector2(10f, yOffset), 360f, 16);
 
-        panel.DrawLine("<b>©¤©¤ GridRoomManager ©¤©¤</b>");
+        panel.DrawLine("<b>â”€â”€ GridRoomManager â”€â”€</b>");
         panel.DrawLine($"Rooms: <color=cyan><b>{activeRooms.Count}</b></color>");
         panel.DrawLine($"Gizmo: {(debugDrawRooms ? "<color=lime>ON</color>" : "<color=red>OFF</color>")}");
 

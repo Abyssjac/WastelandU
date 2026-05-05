@@ -1,4 +1,4 @@
-using JackyUtility;
+я╗┐using JackyUtility;
 using UnityEngine;
 
 /// <summary>
@@ -7,9 +7,9 @@ using UnityEngine;
 public enum Key_NPC
 {
     None = 0,
-    Artist = 1,   // ╥╒╩ї╝╥
-    Botanist = 2,   // ╓▓╬я╤з╝╥
-    Athlete = 3,   // ╘╦╢п╘▒
+    Artist = 1,   // шЙ║цЬпхо╢
+    Botanist = 2,   // цдНчЙйхнжхо╢
+    Athlete = 3,   // ш┐РхКихСШ
 }
 
 /// <summary>
@@ -19,7 +19,7 @@ public enum Key_NPC
 /// </summary>
 public class NPCBehaviour : MonoBehaviour
 {
-    // йдйд Inspector йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФА Inspector тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     [Header("Identity")]
     [SerializeField] private Key_NPC npcKey;
 
@@ -31,12 +31,12 @@ public class NPCBehaviour : MonoBehaviour
              "Use the ContextMenu 'List All Rooms' in Play Mode to find valid StableIds.")]
     [SerializeField] private Vector3Int assignedRoomStableId;
 
-    // йдйд Debug display (Inspector read-only during Play Mode) йдйдйдйдйдйд
-    [Header("Debug бк Affinity (read-only)")]
+    // тФАтФА Debug display (Inspector read-only during Play Mode) тФАтФАтФАтФАтФАтФА
+    [Header("Debug тАФ Affinity (read-only)")]
     [SerializeField] private float dbg_envAffinity;
     [SerializeField] private float dbg_totalAffinity;
 
-    // йдйд Runtime йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФА Runtime тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     private NPCProperty    _property;
     private NPCRuntimeData _runtimeData;
 
@@ -46,7 +46,7 @@ public class NPCBehaviour : MonoBehaviour
     public bool           HasRoom     => hasRoom;
     public Vector3Int     AssignedRoomStableId => assignedRoomStableId;
 
-    // йдйд Spawn injection guard йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФА Spawn injection guard тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     // Set by NPCManager.SpawnNPC() immediately before Instantiate.
     // Prevents NPCs from being placed in the scene without going through the manager.
     //private static Key_NPC _pendingSpawnKey  = Key_NPC.None;
@@ -59,9 +59,9 @@ public class NPCBehaviour : MonoBehaviour
     //    _spawnAuthorized = true;
     //}
 
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     // Lifecycle
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
 
     private void Awake()
     {
@@ -115,9 +115,9 @@ public class NPCBehaviour : MonoBehaviour
             GridRoomManager.Instance.OnRoomFurnitureChanged -= HandleRoomFurnitureChanged;
     }
 
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     // Event handler
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
 
     private void HandleRoomFurnitureChanged(RoomData room)
     {
@@ -126,9 +126,9 @@ public class NPCBehaviour : MonoBehaviour
         RecalculateEnvironmentAffinity();
     }
 
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     // Affinity calculation
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
 
     private void RecalculateEnvironmentAffinity()
     {
@@ -168,9 +168,24 @@ public class NPCBehaviour : MonoBehaviour
         dbg_totalAffinity = _runtimeData.TotalAffinity;
     }
 
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
+    // Room Assignment (written by NPCRoomAssignmentManager)
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
+
+    /// <summary>
+    /// Called exclusively by <see cref="NPCRoomAssignmentManager"/> to apply a room assignment.
+    /// Triggers an immediate affinity recalculation.
+    /// </summary>
+    public void SetRoomAssignment(bool hasRoom, Vector3Int stableId)
+    {
+        this.hasRoom             = hasRoom;
+        this.assignedRoomStableId = stableId;
+        RecalculateEnvironmentAffinity();
+    }
+
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
     // Editor helpers
-    // йдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйдйд
+    // тФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФАтФА
 
 #if UNITY_EDITOR
     /// <summary>
