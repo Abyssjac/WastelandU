@@ -11,10 +11,18 @@ public class NPCRoomSlotUI : MonoBehaviour
 {
     // ©¤©¤ Inspector ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     [Header("UI References")]
-    [SerializeField] private TextMeshProUGUI   npcNameText;
-    [SerializeField] private Image  portraitImage;
-    [SerializeField] private TextMeshProUGUI   roomStatusText;
-    [SerializeField] private Button assignRoomButton;
+    [SerializeField] private TextMeshProUGUI npcNameText;
+    [SerializeField] private Image           portraitImage;
+    [SerializeField] private TextMeshProUGUI roomStatusText;
+    [SerializeField] private Button          assignRoomButton;
+
+    [Header("Affinity Sliders")]
+    [SerializeField] private Slider envAffinitySlider;
+    [SerializeField] private Slider dailyInteractionSlider;
+    [SerializeField] private Slider familiaritySlider;
+
+    [Tooltip("Max value used for Daily Interaction and Familiarity sliders.")]
+    [SerializeField] private float maxOtherAffinity = 100f;
 
     // ©¤©¤ State ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     public Key_NPC NpcKey { get; private set; }
@@ -61,6 +69,33 @@ public class NPCRoomSlotUI : MonoBehaviour
             else
                 roomStatusText.text = "Unassigned";
         }
+
+        RefreshAffinitySliders(prop);
+    }
+
+    private void RefreshAffinitySliders(NPCProperty prop)
+    {
+        NPCRuntimeData data = null;
+        if (NPCManager.Instance != null)
+        {
+            GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(NpcKey);
+            if (npcGo != null)
+                data = npcGo.GetComponent<NPCBehaviour>()?.RuntimeData;
+        }
+
+        float envMax = prop != null ? prop.maxEnvAffinity : maxOtherAffinity;
+
+        SetSlider(envAffinitySlider,         0f, envMax,          data?.LivingEnvironmentAffinity ?? 0f);
+        SetSlider(dailyInteractionSlider,    0f, maxOtherAffinity, data?.DailyInteractionAffinity  ?? 0f);
+        SetSlider(familiaritySlider,         0f, maxOtherAffinity, data?.FamiliarityAffinity        ?? 0f);
+    }
+
+    private static void SetSlider(Slider slider, float min, float max, float value)
+    {
+        if (slider == null) return;
+        slider.minValue = min;
+        slider.maxValue = max;
+        slider.value    = value;
     }
 
     /// <summary>Enable or disable the Assign Room button.</summary>
