@@ -65,6 +65,7 @@ namespace JackyUtility
 
             DrawSeparator();
             Row("Room ID",    room.RoomId.ToString());
+            Row("Stable ID",  room.StableId.ToString());
             Row("Cell Count", room.CellCount.ToString());
 
             // Furniture tags

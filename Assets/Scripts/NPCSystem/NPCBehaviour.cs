@@ -31,11 +31,6 @@ public class NPCBehaviour : MonoBehaviour
              "Use the ContextMenu 'List All Rooms' in Play Mode to find valid StableIds.")]
     [SerializeField] private Vector3Int assignedRoomStableId;
 
-    // ── Debug display (Inspector read-only during Play Mode) ──────
-    [Header("Debug — Affinity (read-only)")]
-    [SerializeField] private float dbg_envAffinity;
-    [SerializeField] private float dbg_totalAffinity;
-
     // ── Runtime ───────────────────────────────────────────────────
     private NPCProperty    _property;
     private NPCRuntimeData _runtimeData;
@@ -130,12 +125,14 @@ public class NPCBehaviour : MonoBehaviour
     // Affinity calculation
     // ─────────────────────────────────────────────────────────────
 
+    /// <summary>Triggers an affinity recalculation. Can be called externally (e.g. from editor debug tools).</summary>
+    public void ForceRecalculateAffinity() => RecalculateEnvironmentAffinity();
+
     private void RecalculateEnvironmentAffinity()
     {
         if (!hasRoom || _property == null)
         {
             _runtimeData.LivingEnvironmentAffinity = 0f;
-            RefreshDebugDisplay();
             return;
         }
 
@@ -143,7 +140,6 @@ public class NPCBehaviour : MonoBehaviour
         if (room == null)
         {
             _runtimeData.LivingEnvironmentAffinity = 0f;
-            RefreshDebugDisplay();
             return;
         }
 
@@ -158,14 +154,6 @@ public class NPCBehaviour : MonoBehaviour
 
         _runtimeData.LivingEnvironmentAffinity =
             Mathf.Min(_property.maxEnvAffinity, Mathf.Max(0f, total));
-
-        RefreshDebugDisplay();
-    }
-
-    private void RefreshDebugDisplay()
-    {
-        dbg_envAffinity   = _runtimeData.LivingEnvironmentAffinity;
-        dbg_totalAffinity = _runtimeData.TotalAffinity;
     }
 
     // ─────────────────────────────────────────────────────────────

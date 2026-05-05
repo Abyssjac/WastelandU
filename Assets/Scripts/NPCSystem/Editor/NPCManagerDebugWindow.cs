@@ -114,6 +114,27 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
             Row("GameObject", go != null ? go.name : "<destroyed>");
             if (go != null)
                 Row("Position", go.transform.position.ToString());
+
+            // ©¤©¤ Runtime affinity ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+            NPCBehaviour behaviour = go != null ? go.GetComponent<NPCBehaviour>() : null;
+            if (behaviour != null && behaviour.RuntimeData != null)
+            {
+                Header("Runtime Affinity");
+                NPCRuntimeData rd = behaviour.RuntimeData;
+                Row("Living Environment", rd.LivingEnvironmentAffinity.ToString("F2"));
+                Row("Daily Interaction",  rd.DailyInteractionAffinity.ToString("F2"));
+                Row("Familiarity",        rd.FamiliarityAffinity.ToString("F2"));
+                DrawSeparator();
+                ColoredRow("Total Affinity", rd.TotalAffinity.ToString("F2"), Color.cyan);
+
+                EditorGUILayout.Space(4);
+                if (GUILayout.Button("Force Recalculate Affinity", GUILayout.Height(22)))
+                    behaviour.ForceRecalculateAffinity();
+            }
+            else
+            {
+                EditorGUILayout.HelpBox("NPCBehaviour not found on this GameObject.", MessageType.Warning);
+            }
         }
     }
 }
