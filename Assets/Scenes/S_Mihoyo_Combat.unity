@@ -4916,7 +4916,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 698481465126504847, guid: 8ee953af1b554164497fc2ea8d9c65b5, type: 3}
       propertyPath: triggerOnce
-      value: 1
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 698481465126504847, guid: 8ee953af1b554164497fc2ea8d9c65b5, type: 3}
       propertyPath: dealDamage.enabled
