@@ -23,6 +23,10 @@ public class NPCBehaviour : MonoBehaviour
     [Header("Identity")]
     [SerializeField] private Key_NPC npcKey;
 
+    [Header("Economy")]
+    [Tooltip("Multiplier applied to TotalAffinity to calculate daily income. Income = TotalAffinity × coefficient.")]
+    [SerializeField] private float incomeCoefficient = 1f;
+
     [Header("Room Assignment")]
     [Tooltip("Enable once an NPC is assigned to a room.")]
     [SerializeField] private bool hasRoom;
@@ -41,19 +45,6 @@ public class NPCBehaviour : MonoBehaviour
     public bool           HasRoom     => hasRoom;
     public Vector3Int     AssignedRoomStableId => assignedRoomStableId;
 
-    // ── Spawn injection guard ─────────────────────────────────────────────
-    // Set by NPCManager.SpawnNPC() immediately before Instantiate.
-    // Prevents NPCs from being placed in the scene without going through the manager.
-    //private static Key_NPC _pendingSpawnKey  = Key_NPC.None;
-    //private static bool    _spawnAuthorized  = false;
-
-    ///// <summary>Called exclusively by <see cref="NPCManager"/> before Instantiate.</summary>
-    //internal static void AllowNextSpawn(Key_NPC key)
-    //{
-    //    _pendingSpawnKey = key;
-    //    _spawnAuthorized = true;
-    //}
-
     // ─────────────────────────────────────────────────────────────
     // Lifecycle
     // ─────────────────────────────────────────────────────────────
@@ -63,19 +54,6 @@ public class NPCBehaviour : MonoBehaviour
         // Always initialise runtime data first so Start() never sees a null reference,
         // even in the brief window between Destroy(gameObject) and the deferred destroy.
         _runtimeData = new NPCRuntimeData();
-
-        //// Injection guard: only NPCManager is allowed to spawn NPCs.
-        //// TODO: tighten to hard-fail once all spawning is code-driven.
-        //if (!_spawnAuthorized || _pendingSpawnKey != npcKey)
-        //{
-        //    Debug.LogError($"[NPCBehaviour] Unauthorized instantiation of '{npcKey}' on '{gameObject.name}'. " +
-        //                   "Use NPCManager.SpawnNPC() instead of placing NPCs directly in the scene.");
-        //    Destroy(gameObject);
-        //    return;
-        //}
-
-        //_spawnAuthorized = false;
-        //_pendingSpawnKey = Key_NPC.None;
     }
 
     private void Start()
@@ -156,6 +134,15 @@ public class NPCBehaviour : MonoBehaviour
             Mathf.Min(_property.maxEnvAffinity, Mathf.Max(0f, total));
     }
 
+    /// <summary>
+    /// Returns the currency this NPC generates at the start of each new day.
+    /// Formula: TotalAffinity × incomeCoefficient.
+    /// </summary>
+    public float CalculateDailyIncome()
+    {
+        return _runtimeData.TotalAffinity * incomeCoefficient;
+    }
+
     // ─────────────────────────────────────────────────────────────
     // Room Assignment (written by NPCRoomAssignmentManager)
     // ─────────────────────────────────────────────────────────────
@@ -176,37 +163,6 @@ public class NPCBehaviour : MonoBehaviour
     // ─────────────────────────────────────────────────────────────
 
 #if UNITY_EDITOR
-    /// <summary>
-    /// Lists all currently detected rooms and their StableIds in the Console.
-    /// Run this in Play Mode to find the correct value for assignedRoomStableId.
-    /// </summary>
-    [ContextMenu("Debug: List All Rooms And StableIds (Play Mode)")]
-    private void Editor_ListAllRooms()
-    {
-        if (!Application.isPlaying)
-        {
-            Debug.LogWarning("[NPCBehaviour] Only works in Play Mode.");
-            return;
-        }
-
-        if (GridRoomManager.Instance == null)
-        {
-            Debug.LogWarning("[NPCBehaviour] GridRoomManager not found.");
-            return;
-        }
-
-        var rooms = GridRoomManager.Instance.ActiveRooms;
-        if (rooms.Count == 0)
-        {
-            Debug.Log("[NPCBehaviour] No rooms detected.");
-            return;
-        }
-
-        Debug.Log($"[NPCBehaviour] {rooms.Count} room(s) found:");
-        for (int i = 0; i < rooms.Count; i++)
-            Debug.Log($"  Room {rooms[i].RoomId} | StableId: {rooms[i].StableId} | Cells: {rooms[i].CellCount}");
-    }
-
     /// <summary>
     /// Forces a manual recalculation of environment affinity. Play Mode only.
     /// </summary>

@@ -1,0 +1,68 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1320742856722632441
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 7030995507424837923}
+  - component: {fileID: 3949217203491111353}
+  - component: {fileID: 1400658634634333455}
+  m_Layer: 0
+  m_Name: NPCMgr
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &7030995507424837923
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320742856722632441}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 4, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &3949217203491111353
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320742856722632441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6958bfcfa3777174c9cb384afbf9d661, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  defaultSpawnPoint: {fileID: 7030995507424837923}
+  debugEnabled: 0
+--- !u!114 &1400658634634333455
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320742856722632441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e4bedf6ae051bb34eb0e5fb822feccf2, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  positionProvider: {fileID: 0}
+  materialA: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
+  materialB: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
+  materialC: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  materialD: {fileID: 2100000, guid: a89133495c5e0d14da0a146ee8325d4b, type: 2}
+  highlightCubePrefab: {fileID: 8382963424789111466, guid: 282f8d74be17cd54392557f0fe044160, type: 3}
+  cubeScaleMultiplier: 0.9

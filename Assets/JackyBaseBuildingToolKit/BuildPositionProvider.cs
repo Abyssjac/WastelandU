@@ -3,6 +3,7 @@ using UnityEngine;
 using JackyUtility;
 public class BuildPositionProvider : MonoBehaviour, IDebuggable
 {
+    public static BuildPositionProvider Instance { get; private set; }
     [Header("Reference")]
     [SerializeField] private Camera targetCamera;
 
@@ -45,6 +46,16 @@ public class BuildPositionProvider : MonoBehaviour, IDebuggable
     /// Uses GetComponentInParent so child-colliders are supported.
     /// </summary>
     public BuildableBehaviour CurrentHitBuildable { get; private set; }
+
+    private void Awake()
+    {
+        if (Instance != null && Instance != this)
+        {
+            Destroy(gameObject);
+            return;
+        }
+        Instance = this;
+    }
 
     private void Start()
     {

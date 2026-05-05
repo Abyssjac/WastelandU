@@ -1082,7 +1082,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         // Attach BuildableBehaviour so the GO knows its own data
         var behaviour = go.GetComponent<BuildableBehaviour>();
         if (behaviour == null) {
-            Debug.LogWarning($"GameObject {go.name} has No BuildableBehaivour Initially; Add Automatically; Should be add in inspector setting");
+            //Debug.LogWarning($"GameObject {go.name} has No BuildableBehaivour Initially; Add Automatically; Should be add in inspector setting");
             behaviour = go.AddComponent<BuildableBehaviour>();
         }
         behaviour.Initialize(data);
@@ -1116,7 +1116,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         var behaviour = go.GetComponent<BuildableBehaviour>();
         if (behaviour == null)
         {
-            Debug.LogWarning($"GameObject {go.name} has No BuildableBehaviour Initially; Add Automatically; Should be added in inspector setting");
+            //Debug.LogWarning($"GameObject {go.name} has No BuildableBehaviour Initially; Add Automatically; Should be added in inspector setting");
             behaviour = go.AddComponent<BuildableBehaviour>();
         }
         behaviour.Initialize(data);

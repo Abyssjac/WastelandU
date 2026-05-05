@@ -156,10 +156,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   npcKey: 0
+  incomeCoefficient: 10
   hasRoom: 0
   assignedRoomStableId: {x: 0, y: 0, z: 0}
-  dbg_envAffinity: 0
-  dbg_totalAffinity: 0
 --- !u!1 &6363576996670530449
 GameObject:
   m_ObjectHideFlags: 0

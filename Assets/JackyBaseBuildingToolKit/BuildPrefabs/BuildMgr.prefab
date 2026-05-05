@@ -58,7 +58,7 @@ MonoBehaviour:
   buildItemInfoPanel: {fileID: 0}
   buildContainerPanel: {fileID: 0}
   removeKey: 99
-  startPreset: {fileID: 11400000, guid: 74ba90bae5f484849a991aa27390e9be, type: 2}
+  startPreset: {fileID: 11400000, guid: 690ec870d9cc3a641b1106335700ba81, type: 2}
   enableDebug: 0
   grid:
     gridMin: {x: 0, y: 0, z: 0}

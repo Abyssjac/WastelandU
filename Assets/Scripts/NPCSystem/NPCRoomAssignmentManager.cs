@@ -88,6 +88,12 @@ public class NPCRoomAssignmentManager : MonoBehaviour
             return;
         }
         Instance = this;
+
+        if (positionProvider == null) { 
+            positionProvider = BuildPositionProvider.Instance;
+        }
+        if (positionProvider == null)
+            Debug.LogError("[NPCRoomAssignmentManager] positionProvider reference is not assigned.");
     }
 
     private void Update()

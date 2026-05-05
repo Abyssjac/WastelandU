@@ -47,6 +47,20 @@ public class NPCManager : MonoBehaviour, IDebuggable
         RegisterDebugCommands();
     }
 
+    private void Start()
+    {
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted += HandleNewDay;
+        else
+            Debug.LogWarning("[NPCManager] DayNightManager instance not found ¡ª daily income will not be collected.");
+    }
+
+    private void OnDestroy()
+    {
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted -= HandleNewDay;
+    }
+
     // ©¤©¤ Debug Commands ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
     private void RegisterDebugCommands()
@@ -208,5 +222,43 @@ public class NPCManager : MonoBehaviour, IDebuggable
             Debug.LogError("[NPCManager] NPCDatabase not registered in PropertyDatabaseManager.");
 
         return db;
+    }
+
+    // ©¤©¤ Daily Income ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private void HandleNewDay(int day)
+    {
+        float total = CollectDailyIncome();
+
+        if (EconomyManager.Instance != null)
+        {
+            EconomyManager.Instance.AddCurrency(CurrencyType.Credits, total);
+
+            if (debugEnabled)
+                Debug.Log($"[NPCManager] Day {day} income collected: {total:F1} Credits from {_spawnedNPCs.Count} NPC(s).");
+        }
+        else
+        {
+            Debug.LogWarning("[NPCManager] EconomyManager instance not found ¡ª income was not deposited.");
+        }
+    }
+
+    /// <summary>
+    /// Sums the daily income from all currently spawned NPCs and returns the total.
+    /// </summary>
+    private float CollectDailyIncome()
+    {
+        float total = 0f;
+
+        foreach (var pair in _spawnedNPCs)
+        {
+            if (pair.Value == null) continue;
+
+            var behaviour = pair.Value.GetComponent<NPCBehaviour>();
+            if (behaviour != null)
+                total += behaviour.CalculateDailyIncome();
+        }
+
+        return total;
     }
 }
