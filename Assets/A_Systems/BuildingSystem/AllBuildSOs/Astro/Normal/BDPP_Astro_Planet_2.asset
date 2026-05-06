@@ -1,0 +1,41 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_Astro_Planet_2
+  m_EditorClassIdentifier: 
+  enumKey: 76
+  stringKey: BDPP_Astro_Planet_2
+  prefab: {fileID: 5795734820859948155, guid: 197878f35da5f7d4bbf5146156606cdd, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 0, z: 0}
+    buildLayer: 0
+    occupancyFacings: 33
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes: []
+    cells:
+    - {x: 0, y: 1, z: 0}
+    buildLayer: 0
+    occupancyFacings: 17
+    requiredSurface: 0
+    requiredFacing: 0
+  surfaceZones: []
+  canRotate: 1
+  canMove: 1
+  iconSprite: {fileID: 21300000, guid: 13cf21bdc4af6e348aa3ab3d1e116775, type: 3}
+  displayName: ArtS_CanvaStack
+  furnitureTags: 0
