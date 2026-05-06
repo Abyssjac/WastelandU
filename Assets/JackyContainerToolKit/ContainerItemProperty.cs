@@ -87,5 +87,6 @@ public enum Key_ContainerItemPP
 
     ContainerItem_Base_Wall_XNegPos_OLayer_0 = 205,
 
-    ContainerItem_Fur_BookStore_BookShelf_113 = 300,
+    ContainerItem_Fur_BookStore_BookShelf_0 = 300,
+
 }

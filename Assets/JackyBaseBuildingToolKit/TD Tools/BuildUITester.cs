@@ -11,8 +11,8 @@ public class BuildUITester : MonoBehaviour
     [Serializable]
     public struct ItemAddSlot
     {
-        [Tooltip("The ContainerItemKey to add.")]
-        public Key_ContainerItemPP itemKey;
+        [Tooltip("The buildable key to add to the build container.")]
+        public Key_BuildablePP itemKey;
         [Tooltip("How many to add per key press.")]
         public int count;
     }
@@ -23,9 +23,9 @@ public class BuildUITester : MonoBehaviour
 
     private void Start()
     {
-        if (BuildManager.Instance == null || BuildManager.Instance.Container == null)
+        if (BuildManager.Instance == null || BuildManager.Instance.BuildableContainer == null)
         {
-            Debug.LogWarning("[BuildUITester] BuildManager or its Container not ready. " +
+            Debug.LogWarning("[BuildUITester] BuildManager or its BuildableContainer not ready. " +
                              "Make sure BuildManager is in the scene and databases are configured.");
             enabled = false;
             return;
@@ -49,21 +49,21 @@ public class BuildUITester : MonoBehaviour
 
     private void TryAddItem(ItemAddSlot slot)
     {
-        var container = BuildManager.Instance.Container;
+        var container = BuildManager.Instance.BuildableContainer;
         if (container == null)
         {
-            Debug.LogError("[BuildUITester] BuildManager.Container is null.");
+            Debug.LogError("[BuildUITester] BuildManager.BuildableContainer is null.");
             return;
         }
 
         int count = Mathf.Max(1, slot.count);
         if (container.TryAddItem(slot.itemKey, count, out string reason))
         {
-            Debug.Log($"[BuildUITester] Added {count}¡Á {slot.itemKey} to build container.");
+            Debug.Log($"[BuildUITester] Added {count}x {slot.itemKey} to build container.");
         }
         else
         {
-            Debug.LogWarning($"[BuildUITester] Failed to add {count}¡Á {slot.itemKey}: {reason}");
+            Debug.LogWarning($"[BuildUITester] Failed to add {count}x {slot.itemKey}: {reason}");
         }
     }
 }

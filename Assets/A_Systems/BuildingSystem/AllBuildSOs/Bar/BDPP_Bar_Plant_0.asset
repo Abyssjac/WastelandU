@@ -36,6 +36,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: c252b24ff5831154d8ec8eaf6aae771d, type: 3}
+  displayName: Bar Plant
   furnitureTags: 8

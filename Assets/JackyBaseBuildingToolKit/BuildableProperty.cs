@@ -207,7 +207,7 @@ public struct ResolvedSurfaceCell
 }
 
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
-public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>
+public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>, ISlotDisplayableProperty
 {
     [Header("Keys")]
     [SerializeField] private Key_BuildablePP enumKey;
@@ -249,6 +249,12 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     [Header("Furniture Tags")]
     [Tooltip("Functional tags used by the NPC affinity system.\nSupports multi-select (bit-mask).")]
     public FurnitureTag furnitureTags = FurnitureTag.None;
+
+    // ©¤©¤ ISlotDisplayableProperty ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    public SlotDisplayData ToSlotDisplayData(int itemCount)
+    {
+        return new SlotDisplayData(iconSprite, Color.white, itemCount);
+    }
 
     // ©¤©¤©¤ Cache ©¤©¤©¤
     private ResolvedOccupancyCell[] cachedOccupancy;

@@ -1,8 +1,9 @@
 using System;
+using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
 using JackyUtility;
-using System.Collections.Generic;
 /// <summary>
 /// Central manager for the base-building system.
 /// Owns the BuildGrid3D and orchestrates place / move / remove flow.
@@ -22,13 +23,9 @@ public class BuildManager : MonoBehaviour, IDebuggable
     [SerializeField] private Vector3Int gridMin = new Vector3Int(-50, -1, -50);
     [SerializeField] private Vector3Int gridMax = new Vector3Int(50, 10, 50);
 
-    [Header("Container Integration")]
-    [SerializeField] private UI_Container uiContainer;
-    [SerializeField] private int containerSlotCount = 6;
-
-    [Header("Build Info Panel")]
-    [SerializeField] private BuildItemInfoPanel buildItemInfoPanel;
-    [SerializeField] private UI_Container buildContainerPanel;
+    [Header("Container")]
+    [Tooltip("Number of slots in the build container.")]
+    [SerializeField] private int containerSlotCount = 20;
 
     [Header("Remove")]
     [Tooltip("Key to remove the hovered buildable (and its children).")]
@@ -111,18 +108,17 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private int blueprintRotationStep;
 
     // ©¤©¤©¤ Container Integration ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
-    private Container<Key_ContainerItemPP> container;
-    private ContainerPropertyLookup<ContainerItemProperty, Key_ContainerItemPP> containerLookup;
-    private ContainerItemDatabase containerItemDB;
+    private Container<Key_BuildablePP> container;
     private BuildableDatabase buildableDB;
-    private BuildActionDisplayDatabase displayDB;
 
-    /// <summary>The build container. Null if databases are missing.</summary>
-    public Container<Key_ContainerItemPP> Container => container;
+    /// <summary>The build container holding buildable items available to place. Null if database is missing.</summary>
+    public Container<Key_BuildablePP> BuildableContainer => container;
 
-    // Tracks which slot / action triggered the current placement so we can consume items on confirm.
-    private int pendingSlotIndex = -1;
-    private ContainerItemBuildAction pendingBuildAction;
+    /// <summary>Fired when the current placement or move action is cancelled via <see cref="CancelCurrentAction"/>.</summary>
+    public event Action OnActionCancelled;
+
+    // Tracks which buildable key triggered the current placement so we can consume it on confirm.
+    private Key_BuildablePP pendingBuildableKey = Key_BuildablePP.None;
 
     // debug cache (updated every frame for GUI display)
     private string debugCanPlaceReason = "";
@@ -268,11 +264,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (DebugConsoleManager.Instance != null)
             DebugConsoleManager.Instance.UnregisterDebugTarget(this);
-
-        if (uiContainer != null)
-            uiContainer.OnSelectionChanged -= OnContainerSelectionChanged;
-
-        containerLookup?.UnBindUIContainer();
     }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Container Init ©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -282,70 +273,19 @@ public class BuildManager : MonoBehaviour, IDebuggable
         var dbManager = PropertyDatabaseManager.Instance;
         if (dbManager == null) return;
 
-        containerItemDB = dbManager.GetDatabase<ContainerItemDatabase>();
         buildableDB = dbManager.GetDatabase<BuildableDatabase>();
         blueprintDB = dbManager.GetDatabase<BuildBlueprintDatabase>();
-        displayDB = dbManager.GetDatabase<BuildActionDisplayDatabase>();
 
-        if (containerItemDB == null || buildableDB == null)
+        if (buildableDB == null)
         {
-            Debug.LogWarning("[BuildManager] ContainerItemDatabase or BuildableDatabase not found. Container integration disabled.");
+            Debug.LogWarning("[BuildManager] BuildableDatabase not found. Container integration disabled.");
             return;
         }
 
-        container = new Container<Key_ContainerItemPP>(containerSlotCount, key =>
-        {
-            var prop = containerItemDB.GetByEnum(key);
-            return prop != null ? prop.maxStackCount : int.MaxValue;
-        });
-
-        containerLookup = new ContainerPropertyLookup<ContainerItemProperty, Key_ContainerItemPP>(container, containerItemDB);
-
-        if (uiContainer != null)
-        {
-            containerLookup.BindUIContainer(uiContainer);
-            uiContainer.OnSelectionChanged += OnContainerSelectionChanged;
-        }
-
-        if (buildItemInfoPanel != null)
-            buildItemInfoPanel.Initialize(this);
+        container = new Container<Key_BuildablePP>(containerSlotCount);
     }
 
-    private void OnContainerSelectionChanged(int slotIndex)
-    {
-        if (slotIndex < 0)
-        {
-            // Deselected ¡ª cancel placement if it was triggered from container
-            if (CurrentState == BuildState.Placing && pendingSlotIndex >= 0)
-                CancelCurrentAction();
 
-            // Keep the panel open but show the empty/placeholder state
-            if (buildItemInfoPanel != null)
-                buildItemInfoPanel.ShowEmpty();
-            return;
-        }
-
-        // Only available in build mode
-        if (!IsBuildModeActive) return;
-
-        // Resolve item and action
-        var itemProp = containerLookup != null ? containerLookup.GetPropertyByIndex(slotIndex) : null;
-        if (itemProp == null) return;
-
-        if (!itemProp.TryGetAction<ContainerItemBuildAction>(out var buildAction)) return;
-
-        // Show detail panel (informational, does not block placement)
-        if (buildItemInfoPanel != null)
-        {
-            BuildActionDisplayInfo dispInfo = displayDB != null
-                ? displayDB.GetByEnum(buildAction.displayType)
-                : null;
-            buildItemInfoPanel.Show(slotIndex, itemProp, buildAction, dispInfo);
-        }
-
-        // Immediately enter placement mode
-        SelectSlotForBuild(slotIndex);
-    }
 
     // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Build Mode Toggle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
 
@@ -356,13 +296,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         if (IsBuildModeActive) return;
         CurrentState = BuildState.Idle;
-
-        if (uiContainer != null)
-            uiContainer.Open();
-
-        if (buildItemInfoPanel != null)
-            buildItemInfoPanel.Open();
-
         OnBuildModeChanged?.Invoke(true);
     }
 
@@ -378,13 +311,6 @@ public class BuildManager : MonoBehaviour, IDebuggable
             CancelCurrentAction();
 
         previewController.HideHoverPreview();
-
-        if (uiContainer != null)
-            uiContainer.Close();
-
-        if (buildItemInfoPanel != null)
-            buildItemInfoPanel.Close();
-
         CurrentState = BuildState.Inactive;
         OnBuildModeChanged?.Invoke(false);
     }
@@ -415,54 +341,36 @@ public class BuildManager : MonoBehaviour, IDebuggable
     }
 
     /// <summary>
-    /// Called when the player selects a container slot to build.
-    /// Resolves the slot ¡ú ContainerItemProperty ¡ú BuildAction ¡ú BuildableProperty chain,
-    /// then enters Placing state. On confirm the item is consumed from the container.
+    /// Called from <see cref="BuildManagerUI"/> when the player selects a buildable slot.
+    /// Resolves the key to a <see cref="BuildableProperty"/> and enters Placing state.
+    /// On confirm, one item of this key is consumed from the container.
     /// </summary>
-    public bool SelectSlotForBuild(int slotIndex)
+    public bool SelectBuildable(Key_BuildablePP key)
     {
-        if (containerLookup == null || buildableDB == null)
+        if (buildableDB == null)
         {
-            Debug.LogWarning("[BuildManager] Container integration not initialised.");
+            Debug.LogWarning("[BuildManager] BuildableDatabase not initialised.");
             return false;
         }
 
-        // 1. Get the ContainerItemProperty for this slot
-        var itemProp = containerLookup.GetPropertyByIndex(slotIndex);
-        if (itemProp == null)
+        BuildableProperty prop = buildableDB.GetByEnum(key);
+        if (prop == null)
         {
-            Debug.LogWarning($"[BuildManager] Slot {slotIndex} is empty or has no property.");
+            Debug.LogWarning($"[BuildManager] No BuildableProperty found for key '{key}'.");
             return false;
         }
 
-        // 2. Check if this item has a build action
-        if (!itemProp.TryGetAction<ContainerItemBuildAction>(out var buildAction))
+        if (prop.prefab == null)
         {
-            Debug.LogWarning($"[BuildManager] Item '{itemProp.EnumKey}' has no ContainerItemBuildAction.");
+            Debug.LogWarning($"[BuildManager] BuildableProperty '{key}' has no prefab assigned.");
             return false;
         }
 
-        // 3. Resolve the BuildableProperty from the action's key
-        var buildProp = buildableDB.GetByEnum(buildAction.buildableKey);
-        if (buildProp == null)
-        {
-            Debug.LogWarning($"[BuildManager] No BuildableProperty found for key '{buildAction.buildableKey}'.");
-            return false;
-        }
-
-        if (buildProp.prefab == null)
-        {
-            Debug.LogWarning($"[BuildManager] BuildableProperty '{buildAction.buildableKey}' has no prefab.");
-            return false;
-        }
-
-        // 4. Cancel any in-progress action, then start placing
         if (CurrentState != BuildState.Idle)
             CancelCurrentAction();
 
-        pendingSlotIndex = slotIndex;
-        pendingBuildAction = buildAction;
-        BeginPlacing(buildProp);
+        pendingBuildableKey = key;
+        BeginPlacing(prop);
         return true;
     }
 
@@ -487,20 +395,14 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         selectedProperty = null;
         selectedBlueprint = null;
-        pendingSlotIndex = -1;
-        pendingBuildAction = null;
+        pendingBuildableKey = Key_BuildablePP.None;
         CurrentState = BuildState.Idle;
         previewController.HidePreview();
         previewController.HideBlueprintPreview();
         previewController.HideConflictHighlights();
         debugCanPlaceReason = "";
 
-        // Close info panel if open
-        if (buildItemInfoPanel != null && buildItemInfoPanel.IsOpen)
-            buildItemInfoPanel.Close();
-
-        if (uiContainer != null)
-            uiContainer.ClearSelection();
+        OnActionCancelled?.Invoke();
     }
 
     /// <summary>
@@ -1126,22 +1028,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void ConfirmPlace(Vector3Int anchor)
     {
-        // ©¤©¤ If this placement came from a container slot, consume the item first ©¤©¤
-        if (pendingSlotIndex >= 0 && pendingBuildAction != null && container != null)
+        // ©¤©¤ If this placement came from a container slot, consume one item ©¤©¤
+        if (pendingBuildableKey != Key_BuildablePP.None && container != null)
         {
-            var slot = container.GetItemInfoByIndex(pendingSlotIndex);
-            int cost = Mathf.Max(1, pendingBuildAction.costPerBuild);
-
-            if (slot.IsEmpty || slot.ItemCount < cost)
+            if (!container.TryRemoveItem(pendingBuildableKey, 1, out string removeReason))
             {
-                Debug.LogWarning($"[BuildManager] Slot {pendingSlotIndex} no longer has enough items to build (need {cost}).");
-                CancelCurrentAction();
-                return;
-            }
-
-            if (!container.TryRemoveItem(slot.ItemEnum, cost, out string removeReason))
-            {
-                Debug.LogWarning($"[BuildManager] Failed to consume items: {removeReason}");
+                Debug.LogWarning($"[BuildManager] Failed to consume '{pendingBuildableKey}': {removeReason}");
                 CancelCurrentAction();
                 return;
             }
@@ -1158,12 +1050,8 @@ public class BuildManager : MonoBehaviour, IDebuggable
         previewController.HideConflictHighlights();
         CurrentState = BuildState.Idle;
         selectedProperty = null;
-        pendingSlotIndex = -1;
-        pendingBuildAction = null;
+        pendingBuildableKey = Key_BuildablePP.None;
         debugCanPlaceReason = "";
-
-        if (uiContainer != null)
-            uiContainer.ClearSelection();
 
         if (placed.Property.furnitureTags != FurnitureTag.None)
             OnFurniturePlaced?.Invoke(placed);

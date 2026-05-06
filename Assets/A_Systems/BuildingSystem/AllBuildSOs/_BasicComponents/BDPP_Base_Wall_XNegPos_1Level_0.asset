@@ -88,6 +88,6 @@ MonoBehaviour:
     facing: 1
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: e0cd4bae4d3ba9448ae4405c2c6a2ebf, type: 3}
+  displayName: Wall XNegPos
   furnitureTags: 0

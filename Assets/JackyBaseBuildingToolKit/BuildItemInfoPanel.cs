@@ -112,6 +112,35 @@ public class BuildItemInfoPanel : MonoBehaviour
     }
 
     /// <summary>
+    /// Show the panel with information from a <see cref="BuildableProperty"/> directly.
+    /// Used by <see cref="BuildManagerUI"/> when the player selects a buildable slot.
+    /// </summary>
+    public void Show(BuildableProperty prop)
+    {
+        if (itemNameText != null)
+            itemNameText.text = prop != null && !string.IsNullOrEmpty(prop.displayName)
+                ? prop.displayName
+                : (prop != null ? prop.EnumKey.ToString() : "Unknown");
+
+        if (descriptionText != null)
+            descriptionText.text = "";
+
+        if (itemIconImage != null)
+            itemIconImage.sprite = prop != null ? prop.iconSprite : null;
+
+        if (categoryIconImage != null)
+            categoryIconImage.sprite = null;
+
+        if (costText != null)
+            costText.text = "Cost: 1";
+
+        if (panelRoot != null)
+            panelRoot.SetActive(true);
+
+        IsOpen = true;
+    }
+
+    /// <summary>
     /// Close / hide the panel and reset contents to the empty state.
     /// Called when exiting build mode.
     /// </summary>

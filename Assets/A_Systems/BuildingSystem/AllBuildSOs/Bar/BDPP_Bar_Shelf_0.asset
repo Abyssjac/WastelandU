@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 3713507798227999256, guid: 75dd722aa73d5c44aabdd419cecada3a, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 0, y: 0, z: 2}
     cells: []
@@ -25,7 +26,8 @@ MonoBehaviour:
     occupancyFacings: 33
     requiredSurface: 5
     requiredFacing: 0
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 1, z: 0}
       cornerB: {x: 0, y: 1, z: 2}
     cells: []
@@ -33,7 +35,8 @@ MonoBehaviour:
     occupancyFacings: 97
     requiredSurface: 0
     requiredFacing: 0
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 2, z: 0}
       cornerB: {x: 0, y: 2, z: 2}
     cells: []
@@ -41,7 +44,8 @@ MonoBehaviour:
     occupancyFacings: 65
     requiredSurface: 0
     requiredFacing: 0
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 0, z: 1}
       cornerB: {x: 0, y: 2, z: 1}
     cells: []
@@ -52,5 +56,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: af2957dc9934d0f4b91b426b6275654e, type: 3}
+  displayName: Bar Shelf
+  furnitureTags: 0
