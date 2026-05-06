@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 3584354587900655347, guid: 1124ff25a68ce0e41b0609f772d88872, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
@@ -27,5 +28,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
+  displayName: ArtS_Chair_0
+  furnitureTags: 0

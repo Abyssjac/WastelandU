@@ -36,6 +36,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 21300000, guid: eec1e2ce573a2614cbf0ced6d609e47b, type: 3}
+  iconSprite: {fileID: 21300000, guid: 201d93ae589423d40abe23fe94e4d6d3, type: 3}
   displayName: Art Plant
   furnitureTags: 8

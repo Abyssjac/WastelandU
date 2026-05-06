@@ -36,6 +36,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: 45e4d693a569a6044aceb6c27bdc2672, type: 3}
+  displayName: Artstudio_Easel_0
   furnitureTags: 1

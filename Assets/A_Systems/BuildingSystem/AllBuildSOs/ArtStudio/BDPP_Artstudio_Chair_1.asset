@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 4540400381215937976, guid: 7c1e87e06ac2088478473a4d1412d467, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
@@ -27,5 +28,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: 019ff07be9766d84cb7a632002920577, type: 3}
+  displayName: Artstudio_Chair_1
+  furnitureTags: 0
