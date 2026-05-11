@@ -381,7 +381,7 @@ public class BuildGrid3D
     /// Find all distinct placed buildables that would conflict (occupy the same cell/layer/facing)
     /// if the given property were placed at the specified anchor and rotation.
     /// Returns an empty list if there are no occupancy conflicts.
-    /// Does NOT check surface requirements ¡ª only occupancy collisions.
+    /// Does NOT check surface requirements ï¿½ï¿½ only occupancy collisions.
     /// </summary>
     public List<PlacedBuildableData> FindConflictingOccupants(BuildableProperty property, Vector3Int anchor, int rotationStep)
     {
@@ -422,7 +422,7 @@ public class BuildGrid3D
     /// Predicts whether removing the given buildable would cause other buildables
     /// to become illegal (lose a required surface). Checks cascading dependencies:
     /// if A provides surface for B, and B provides surface for C, removing A affects both B and C.
-    /// Does NOT modify any state ¡ª pure read-only simulation.
+    /// Does NOT modify any state ï¿½ï¿½ pure read-only simulation.
     /// 
     /// Note: a cell may have multiple surface providers of the same type.
     /// A dependent is only affected if ALL providers of its required surface at that cell
@@ -492,7 +492,7 @@ public class BuildGrid3D
 
                 if (stillProvided) continue;
 
-                // Surface is gone at this cell ¡ª find all occupants that require it
+                // Surface is gone at this cell ï¿½ï¿½ find all occupants that require it
                 foreach (var kvp in occupancyMap)
                 {
                     if (kvp.Key.Cell != worldCell) continue;
@@ -513,7 +513,7 @@ public class BuildGrid3D
                             if (occCells[o].RequiredFacing != providedFacing) continue;
                         }
 
-                        // This occupant depends on the lost surface ¡ú affected
+                        // This occupant depends on the lost surface ï¿½ï¿½ affected
                         if (!removedIds.Contains(occupant.InstanceId))
                         {
                             removedIds.Add(occupant.InstanceId);
