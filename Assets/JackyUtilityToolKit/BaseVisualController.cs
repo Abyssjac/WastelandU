@@ -1,4 +1,4 @@
-using System.Collections;
+ï»¿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,18 +7,18 @@ public class BaseVisualController : MonoBehaviour
 {
     public enum MaterialApplyMode
     {
-        InstanceMaterials,  // Ê¹ÓÃ Renderer.materials£¨ÍÆ¼ö£º²»ÎÛÈ¾ÆäËû¶ÔÏó£©
-        SharedMaterials     // Ê¹ÓÃ Renderer.sharedMaterials£¨»áÓ°Ïì¹²Ïí¸Ã²ÄÖÊµÄ¶ÔÏó£©
+        InstanceMaterials,  // Ê¹ï¿½ï¿½ Renderer.materialsï¿½ï¿½ï¿½Æ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+        SharedMaterials     // Ê¹ï¿½ï¿½ Renderer.sharedMaterialsï¿½ï¿½ï¿½ï¿½Ó°ï¿½ì¹²ï¿½ï¿½Ã²ï¿½ï¿½ÊµÄ¶ï¿½ï¿½ï¿½
     }
 
     [Header("Targets")]
-    [Tooltip("Îª¿ÕÔò×Ô¶¯×¥È¡×ÔÉí¼°×ÓÎïÌåÏÂËùÓÐ Renderer¡£")]
+    [Tooltip("Îªï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½×¥È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Rendererï¿½ï¿½")]
     [SerializeField] private Renderer[] targetRenderers;
 
     [Header("Behavior")]
     [SerializeField] private MaterialApplyMode applyMode = MaterialApplyMode.InstanceMaterials;
 
-    [Tooltip("Awake Ê±»º´æ³õÊ¼²ÄÖÊ£¬ÓÃÓÚ Flash/Reset¡£")]
+    [Tooltip("Awake Ê±ï¿½ï¿½ï¿½ï¿½ï¿½Ê¼ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ Flash/Resetï¿½ï¿½")]
     [SerializeField] private bool cacheOnAwake = true;
 
     private Renderer[] renderers;
@@ -36,7 +36,7 @@ public class BaseVisualController : MonoBehaviour
 
     private void OnValidate()
     {
-        // ½ö±à¼­Æ÷£º±£³ÖÒýÓÃ¸É¾»£¨±ÜÃâ¶ªÁË renderer »¹ÒÔÎªÓÐ£©
+        // ï¿½ï¿½ï¿½à¼­ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã¸É¾ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½â¶ªï¿½ï¿½ renderer ï¿½ï¿½ï¿½ï¿½Îªï¿½Ð£ï¿½
         if (targetRenderers != null && targetRenderers.Length == 0)
             targetRenderers = null;
     }
@@ -95,7 +95,7 @@ public class BaseVisualController : MonoBehaviour
     }
 
     /// <summary>
-    /// Ìæ»»ËùÓÐ Renderer µÄËùÓÐ material slot ÎªÍ¬Ò»¸ö²ÄÖÊ£¨³£ÓÃÓÚ¡°ÕûÌå±äÉ«/ÖÐ¶¾/±ù¶³×´Ì¬¡±£©¡£
+    /// ï¿½æ»»ï¿½ï¿½ï¿½ï¿½ Renderer ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ material slot ÎªÍ¬Ò»ï¿½ï¿½ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É«/ï¿½Ð¶ï¿½/ï¿½ï¿½ï¿½ï¿½×´Ì¬ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public void SetMaterialAll(Material material)
     {
@@ -120,9 +120,42 @@ public class BaseVisualController : MonoBehaviour
 
         CacheCurrentMaterials();
     }
+	/// <summary>
+	/// Temporarily replaces all material slots on all Renderers without updating the cache.
+	/// Call <see cref="ResetMaterials"/> to restore the original materials.
+	/// Use this for transient visual states such as Highlight or Focus.
+	/// </summary>
+	public void SetMaterialAllTemp(Material material)
+	{
+		if (material == null) return;
+
+		StopFlash();
+
+		EnsureResolved();
+
+		// Ensure cache is valid before we overwrite renderers
+		if (cachedMaterialsPerRenderer == null || cachedMaterialsPerRenderer.Length == 0)
+			CacheCurrentMaterials();
+
+		for (int i = 0; i < renderers.Length; i++)
+		{
+			var r = renderers[i];
+			if (r == null) continue;
+
+			var mats = GetMaterials(r);
+			if (mats == null || mats.Length == 0) continue;
+
+			for (int m = 0; m < mats.Length; m++)
+				mats[m] = material;
+
+			SetMaterials(r, mats);
+		}
+		// Intentionally does NOT call CacheCurrentMaterials()
+	}
+
 
     /// <summary>
-    /// Ìæ»»Ö¸¶¨ slot£¨ÀýÈçÄ³Ð©Ä£ÐÍµÚ 0 ¸öÊÇ body£¬µÚ 1 ¸öÊÇ weapon£©¡£
+    /// ï¿½æ»»Ö¸ï¿½ï¿½ slotï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ä³Ð©Ä£ï¿½Íµï¿½ 0 ï¿½ï¿½ï¿½ï¿½ bodyï¿½ï¿½ï¿½ï¿½ 1 ï¿½ï¿½ï¿½ï¿½ weaponï¿½ï¿½ï¿½ï¿½
     /// </summary>
     public void SetMaterialSlot(int slotIndex, Material material)
     {
@@ -149,7 +182,7 @@ public class BaseVisualController : MonoBehaviour
     }
 
     /// <summary>
-    /// ÉÁË¸£ºÁÙÊ±Ìæ»»²ÄÖÊ duration Ãëºó»Ö¸´£¨»Ö¸´µ½ Cache µÄ³õÊ¼²ÄÖÊ£©¡£
+    /// ï¿½ï¿½Ë¸ï¿½ï¿½ï¿½ï¿½Ê±ï¿½æ»»ï¿½ï¿½ï¿½ï¿½ duration ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ï¿½Ö¸ï¿½ï¿½ï¿½ Cache ï¿½Ä³ï¿½Ê¼ï¿½ï¿½ï¿½Ê£ï¿½ï¿½ï¿½
     /// </summary>
     public void FlashMaterial(Material flashMaterial, float duration)
     {
