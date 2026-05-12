@@ -27,6 +27,19 @@ public class NPCBehaviour : MonoBehaviour
     [Tooltip("Multiplier applied to TotalAffinity to calculate daily income. Income = TotalAffinity × coefficient.")]
     [SerializeField] private float incomeCoefficient = 1f;
 
+    [Header("Daily Interaction")]
+    [Tooltip("How much DailyInteractionAffinity increases per player interaction.")]
+    [SerializeField] private float interactionGainPerClick = 10f;
+
+    [Tooltip("If the player skips this many days without interacting, affinity starts to decay.")]
+    [SerializeField] private int decayThresholdDays = 3;
+
+    [Tooltip("How much DailyInteractionAffinity decreases each day after the decay threshold is exceeded.")]
+    [SerializeField] private float decayAmountPerDay = 5f;
+
+    [Tooltip("DailyInteractionAffinity will never decay below this floor.")]
+    [SerializeField] private float decayFloor = 0f;
+
     [Header("Room Assignment")]
     [Tooltip("Enable once an NPC is assigned to a room.")]
     [SerializeField] private bool hasRoom;
@@ -53,7 +66,7 @@ public class NPCBehaviour : MonoBehaviour
     {
         // Always initialise runtime data first so Start() never sees a null reference,
         // even in the brief window between Destroy(gameObject) and the deferred destroy.
-        _runtimeData = new NPCRuntimeData();
+        _runtimeData = new NPCRuntimeData(0f,50f,0f);
     }
 
     private void Start()
@@ -78,6 +91,10 @@ public class NPCBehaviour : MonoBehaviour
         if (GridRoomManager.Instance != null)
             GridRoomManager.Instance.OnRoomFurnitureChanged += HandleRoomFurnitureChanged;
 
+        // Subscribe to new-day event for decay + reset
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted += HandleNewDayStarted;
+
         // Calculate once on start (in case rooms already exist from a preset)
         RecalculateEnvironmentAffinity();
     }
@@ -86,6 +103,9 @@ public class NPCBehaviour : MonoBehaviour
     {
         if (GridRoomManager.Instance != null)
             GridRoomManager.Instance.OnRoomFurnitureChanged -= HandleRoomFurnitureChanged;
+
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted -= HandleNewDayStarted;
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -98,6 +118,47 @@ public class NPCBehaviour : MonoBehaviour
         if (room.StableId != assignedRoomStableId) return;
         RecalculateEnvironmentAffinity();
     }
+
+    // ─────────────────────────────────────────────────────────────
+    // Daily Interaction
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Called by the UI when the player clicks the daily-interact button.
+    /// Increases <see cref="NPCRuntimeData.DailyInteractionAffinity"/> and records the current day.
+    /// </summary>
+    public void AddDailyInteractionAffinity()
+    {
+        int today = DayNightManager.Instance != null ? DayNightManager.Instance.CurrentDay : 0;
+        _runtimeData.DailyInteractionAffinity =
+            Mathf.Min(maxOtherAffinityRuntime, _runtimeData.DailyInteractionAffinity + interactionGainPerClick);
+        _runtimeData.LastInteractionDay = today;
+        _runtimeData.InteractedToday = true;
+        Debug.Log($"[NPCBehaviour] {npcKey} interaction: +{interactionGainPerClick}, " +
+                  $"total={_runtimeData.DailyInteractionAffinity}, day={today}");
+    }
+
+    private void HandleNewDayStarted(int newDay)
+    {
+        _runtimeData.InteractedToday = false;
+
+        // Decay check
+        if (_runtimeData.LastInteractionDay >= 0)
+        {
+            int gap = newDay - _runtimeData.LastInteractionDay;
+            if (gap > decayThresholdDays)
+            {
+                _runtimeData.DailyInteractionAffinity =
+                    Mathf.Max(decayFloor, _runtimeData.DailyInteractionAffinity - decayAmountPerDay);
+                Debug.Log($"[NPCBehaviour] {npcKey} affinity decayed by {decayAmountPerDay} " +
+                          $"(gap={gap} days), new value={_runtimeData.DailyInteractionAffinity}");
+            }
+        }
+    }
+
+    // Cached max used by AddDailyInteractionAffinity — mirrors maxOtherAffinity in the UI
+    // kept here so NPCBehaviour can clamp independently of any UI instance.
+    [SerializeField] private float maxOtherAffinityRuntime = 100f;
 
     // ─────────────────────────────────────────────────────────────
     // Affinity calculation

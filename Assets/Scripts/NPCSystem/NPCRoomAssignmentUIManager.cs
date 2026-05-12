@@ -4,7 +4,7 @@ using UnityEngine.UI;
 
 /// <summary>
 /// Manages the NPC room-assignment panel: toggling visibility,
-/// dynamically generating <see cref="NPCRoomSlotUI"/> entries, and
+/// dynamically generating <see cref="NPCInfoSlotUI"/> entries, and
 /// showing/hiding the Confirm button during room-selection mode.
 /// </summary>
 public class NPCRoomAssignmentUIManager : MonoBehaviour
@@ -23,7 +23,7 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
     [SerializeField] private Button confirmButton;
 
     // ©¤©¤ State ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
-    private readonly List<NPCRoomSlotUI> _slots = new List<NPCRoomSlotUI>();
+    private readonly List<NPCInfoSlotUI> _slots = new List<NPCInfoSlotUI>();
     private bool _isPanelOpen;
 
     // ©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -92,7 +92,7 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
         foreach (var kvp in NPCManager.Instance.SpawnedNPCs)
         {
             GameObject    slotGO = Instantiate(npcSlotPrefab, npcSlotContainer);
-            NPCRoomSlotUI slot   = slotGO.GetComponent<NPCRoomSlotUI>();
+            NPCInfoSlotUI slot   = slotGO.GetComponent<NPCInfoSlotUI>();
             if (slot != null)
             {
                 slot.Initialize(kvp.Key, assignmentManager);

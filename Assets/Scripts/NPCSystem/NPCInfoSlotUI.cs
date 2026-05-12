@@ -7,7 +7,7 @@ using TMPro;
 /// Controls a single NPC entry in the room-assignment panel.
 /// Spawned and initialised by <see cref="NPCRoomAssignmentUIManager"/>.
 /// </summary>
-public class NPCRoomSlotUI : MonoBehaviour
+public class NPCInfoSlotUI : MonoBehaviour
 {
     // ©¤©¤ Inspector ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     [Header("UI References")]
@@ -15,6 +15,7 @@ public class NPCRoomSlotUI : MonoBehaviour
     [SerializeField] private Image           portraitImage;
     [SerializeField] private TextMeshProUGUI roomStatusText;
     [SerializeField] private Button          assignRoomButton;
+    [SerializeField] private Button          dailyInteractButton;
 
     [Header("Affinity Sliders")]
     [SerializeField] private Slider envAffinitySlider;
@@ -43,13 +44,27 @@ public class NPCRoomSlotUI : MonoBehaviour
         _manager = manager;
 
         assignRoomButton.onClick.AddListener(OnAssignRoomClicked);
+
+        if (dailyInteractButton != null)
+            dailyInteractButton.onClick.AddListener(OnDailyInteractClicked);
+
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted += HandleNewDayStarted;
+
         RefreshDisplay();
+        RefreshDailyInteractButton();
     }
 
     private void OnDestroy()
     {
         if (assignRoomButton != null)
             assignRoomButton.onClick.RemoveListener(OnAssignRoomClicked);
+
+        if (dailyInteractButton != null)
+            dailyInteractButton.onClick.RemoveListener(OnDailyInteractClicked);
+
+        if (DayNightManager.Instance != null)
+            DayNightManager.Instance.OnNewDayStarted -= HandleNewDayStarted;
     }
 
     // ©¤©¤ Public ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -115,6 +130,49 @@ public class NPCRoomSlotUI : MonoBehaviour
     }
 
     // ©¤©¤ Private ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private void OnDailyInteractClicked()
+    {
+        NPCBehaviour behaviour = null;
+        if (NPCManager.Instance != null)
+        {
+            GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(NpcKey);
+            if (npcGo != null)
+                behaviour = npcGo.GetComponent<NPCBehaviour>();
+        }
+
+        if (behaviour == null)
+        {
+            Debug.LogWarning($"[NPCInfoSlotUI] Could not find NPCBehaviour for {NpcKey}.");
+            return;
+        }
+
+        if (behaviour.RuntimeData.InteractedToday) return;
+
+        behaviour.AddDailyInteractionAffinity();
+        RefreshDailyInteractButton();
+        RefreshDisplay();
+    }
+
+    private void HandleNewDayStarted(int newDay)
+    {
+        RefreshDailyInteractButton();
+        RefreshDisplay();
+    }
+
+    private void RefreshDailyInteractButton()
+    {
+        if (dailyInteractButton == null) return;
+
+        bool interactedToday = false;
+        if (NPCManager.Instance != null)
+        {
+            GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(NpcKey);
+            if (npcGo != null)
+                interactedToday = npcGo.GetComponent<NPCBehaviour>()?.RuntimeData.InteractedToday ?? false;
+        }
+        dailyInteractButton.interactable = !interactedToday;
+    }
 
     private void OnAssignRoomClicked()
     {
