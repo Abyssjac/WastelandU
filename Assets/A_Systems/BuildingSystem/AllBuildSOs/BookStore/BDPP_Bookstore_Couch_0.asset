@@ -17,14 +17,16 @@ MonoBehaviour:
   prefab: {fileID: 1854866216307632041, guid: d7f1f06996f5a2b4194c8025947d1768, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
     occupancyFacings: 9
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 1}
     buildLayer: 0
@@ -34,5 +36,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: 201d93ae589423d40abe23fe94e4d6d3, type: 3}
+  displayName: Bookstore_Couch
+  furnitureTags: 0

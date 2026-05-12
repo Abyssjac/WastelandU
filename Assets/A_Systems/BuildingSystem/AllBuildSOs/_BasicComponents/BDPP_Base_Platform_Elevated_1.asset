@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 1761738599924792636, guid: c1638fff97fed6744a97891176294736, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
@@ -25,12 +26,14 @@ MonoBehaviour:
     requiredSurface: 5
     requiredFacing: 0
   surfaceZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 1, z: 0}
     providedSurface: 5
     facing: 0
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: 019ff07be9766d84cb7a632002920577, type: 3}
+  displayName: Base_Platform_Elevated
+  furnitureTags: 0

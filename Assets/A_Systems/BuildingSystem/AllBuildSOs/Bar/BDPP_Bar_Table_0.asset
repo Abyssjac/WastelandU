@@ -17,28 +17,32 @@ MonoBehaviour:
   prefab: {fileID: 8195918809460205141, guid: ec9d36cdede08394bb67ee5e5e0199c7, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
     buildLayer: 0
     occupancyFacings: 9
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 1}
     buildLayer: 0
     occupancyFacings: 25
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 0, y: 0, z: 2}
     buildLayer: 0
     occupancyFacings: 19
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 1, y: 0, z: 2}
     - {x: 2, y: 0, z: 2}
@@ -46,7 +50,8 @@ MonoBehaviour:
     occupancyFacings: 7
     requiredSurface: 5
     requiredFacing: 0
-  - boxes: []
+  - zoneName: 
+    boxes: []
     cells:
     - {x: 3, y: 0, z: 2}
     buildLayer: 0
@@ -56,5 +61,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
+  displayName: Bar_Table
+  furnitureTags: 0

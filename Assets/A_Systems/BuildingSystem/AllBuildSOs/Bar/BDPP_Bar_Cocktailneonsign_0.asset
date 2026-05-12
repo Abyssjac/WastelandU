@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 4544529999358515296, guid: 90fad4e57be164d40a20d72db41a35f4, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 0, y: 1, z: 1}
     cells: []
@@ -28,5 +29,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
+  displayName: Bar_Cocktailneonsign
+  furnitureTags: 0

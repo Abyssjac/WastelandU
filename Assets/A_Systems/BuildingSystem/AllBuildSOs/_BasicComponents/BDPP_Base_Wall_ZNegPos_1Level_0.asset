@@ -88,6 +88,6 @@ MonoBehaviour:
     facing: 3
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: da098e9c51c4f7d42bd00970713bfc95, type: 3}
+  displayName: Base_Wall_ZNegPos_1Level
   furnitureTags: 0

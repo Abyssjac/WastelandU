@@ -17,7 +17,8 @@ MonoBehaviour:
   prefab: {fileID: 5727756691042736592, guid: 72e5df3a2390ee1479943b1e580036ee, type: 3}
   previewPrefab: {fileID: 0}
   occupancyZones:
-  - boxes:
+  - zoneName: 
+    boxes:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 1, y: 0, z: 3}
     cells: []
@@ -28,5 +29,6 @@ MonoBehaviour:
   surfaceZones: []
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 0}
-  displayName: 
+  iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
+  displayName: Bar_Carpet
+  furnitureTags: 0

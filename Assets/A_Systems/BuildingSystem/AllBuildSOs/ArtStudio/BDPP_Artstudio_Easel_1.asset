@@ -37,5 +37,5 @@ MonoBehaviour:
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 21300000, guid: 4636197d4e6c0b94babd0f21a6dc2791, type: 3}
-  displayName: 
+  displayName: Artstudio_Easel
   furnitureTags: 1

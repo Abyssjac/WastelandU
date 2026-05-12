@@ -130,6 +130,6 @@ MonoBehaviour:
     facing: 1
   canRotate: 1
   canMove: 1
-  iconSprite: {fileID: 21300000, guid: 23cfec53737da0341b6ed0bc5b46582c, type: 3}
+  iconSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   displayName: Normal Plat
   furnitureTags: 0
