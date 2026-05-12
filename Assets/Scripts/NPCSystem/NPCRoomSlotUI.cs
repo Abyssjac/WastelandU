@@ -21,6 +21,11 @@ public class NPCRoomSlotUI : MonoBehaviour
     [SerializeField] private Slider dailyInteractionSlider;
     [SerializeField] private Slider familiaritySlider;
 
+    [Header("Affinity Labels")]
+    [SerializeField] private TextMeshProUGUI envAffinityLabel;
+    [SerializeField] private TextMeshProUGUI dailyInteractionLabel;
+    [SerializeField] private TextMeshProUGUI familiarityLabel;
+
     [Tooltip("Max value used for Daily Interaction and Familiarity sliders.")]
     [SerializeField] private float maxOtherAffinity = 100f;
 
@@ -85,17 +90,21 @@ public class NPCRoomSlotUI : MonoBehaviour
 
         float envMax = prop != null ? prop.maxEnvAffinity : maxOtherAffinity;
 
-        SetSlider(envAffinitySlider,         0f, envMax,          data?.LivingEnvironmentAffinity ?? 0f);
-        SetSlider(dailyInteractionSlider,    0f, maxOtherAffinity, data?.DailyInteractionAffinity  ?? 0f);
-        SetSlider(familiaritySlider,         0f, maxOtherAffinity, data?.FamiliarityAffinity        ?? 0f);
+        SetSlider(envAffinitySlider,      envAffinityLabel,      0f, envMax,           data?.LivingEnvironmentAffinity ?? 0f);
+        SetSlider(dailyInteractionSlider, dailyInteractionLabel, 0f, maxOtherAffinity, data?.DailyInteractionAffinity  ?? 0f);
+        SetSlider(familiaritySlider,      familiarityLabel,      0f, maxOtherAffinity, data?.FamiliarityAffinity        ?? 0f);
     }
 
-    private static void SetSlider(Slider slider, float min, float max, float value)
+    private static void SetSlider(Slider slider, TextMeshProUGUI label, float min, float max, float value)
     {
-        if (slider == null) return;
-        slider.minValue = min;
-        slider.maxValue = max;
-        slider.value    = value;
+        if (slider != null)
+        {
+            slider.minValue = min;
+            slider.maxValue = max;
+            slider.value    = value;
+        }
+        if (label != null)
+            label.text = $"{value}/{max}";
     }
 
     /// <summary>Enable or disable the Assign Room button.</summary>

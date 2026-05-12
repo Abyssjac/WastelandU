@@ -255,7 +255,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     // ©¤©¤ ISlotDisplayableProperty ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     public SlotDisplayData ToSlotDisplayData(int itemCount)
     {
-        return new SlotDisplayData(iconSprite, Color.white, itemCount);
+        return new SlotDisplayData(iconSprite, Color.white, itemCount, displayName);
     }
 
     // ©¤©¤©¤ Cache ©¤©¤©¤

@@ -7,6 +7,7 @@ public class UI_ContainerSlot : MonoBehaviour
 {
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemCountText;
+    [SerializeField] private TextMeshProUGUI itemLabel;
     [SerializeField] private GameObject emptyOverlay;
     [SerializeField] private Button button;
 
@@ -50,7 +51,7 @@ public class UI_ContainerSlot : MonoBehaviour
     /// Bind this UI element to a specific slot index and display the given data.
     /// Pass null sprite / 0 count to show an empty slot.
     /// </summary>
-    public void SetSlot(int index, Sprite icon, Color iconColor, int count)
+    public void SetSlot(int index, Sprite icon, Color iconColor, int count, string labelText = "")
     {
         slotIndex = index;
 
@@ -67,6 +68,12 @@ public class UI_ContainerSlot : MonoBehaviour
         {
             itemCountText.text = isEmpty ? "" : count.ToString();
             itemCountText.enabled = !isEmpty;
+        }
+
+        if (itemLabel != null)
+        {
+            itemLabel.text = isEmpty ? "" : labelText;
+            itemLabel.enabled = !isEmpty && !string.IsNullOrEmpty(labelText);
         }
 
         if (emptyOverlay != null)

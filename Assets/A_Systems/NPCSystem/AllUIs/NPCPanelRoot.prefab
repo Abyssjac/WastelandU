@@ -103,6 +103,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -387,6 +388,9 @@ MonoBehaviour:
   envAffinitySlider: {fileID: 5520869266016959992}
   dailyInteractionSlider: {fileID: 5291332399108450442}
   familiaritySlider: {fileID: 7531008061016048370}
+  envAffinityLabel: {fileID: 8101669084767367057}
+  dailyInteractionLabel: {fileID: 8475333093451021027}
+  familiarityLabel: {fileID: 6085343505078177947}
   maxOtherAffinity: 100
 --- !u!1 &2359790042415085565
 GameObject:
@@ -642,6 +646,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -975,6 +980,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1187,6 +1193,7 @@ MonoBehaviour:
   m_VerticalAlignment: 512
   m_textAlignment: 65535
   m_characterSpacing: 0
+  m_characterHorizontalScale: 1
   m_wordSpacing: 0
   m_lineSpacing: 0
   m_lineSpacingMax: 0
@@ -1231,6 +1238,10 @@ PrefabInstance:
     - target: {fileID: 1248642043359383091, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1828458866301188473, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+      propertyPath: m_text
+      value: Daily Affinity
       objectReference: {fileID: 0}
     - target: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_Pivot.x
@@ -1337,6 +1348,17 @@ RectTransform:
   m_CorrespondingSourceObject: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}
   m_PrefabInstance: {fileID: 5898614148027584632}
   m_PrefabAsset: {fileID: 0}
+--- !u!114 &8475333093451021027 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2612783618304879259, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+  m_PrefabInstance: {fileID: 5898614148027584632}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!1001 &6065383052942968074
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -1348,6 +1370,10 @@ PrefabInstance:
     - target: {fileID: 1248642043359383091, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1828458866301188473, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+      propertyPath: m_text
+      value: Env Affinity
       objectReference: {fileID: 0}
     - target: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_Pivot.x
@@ -1449,6 +1475,17 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 67db9e8f0e2ae9c40bc1e2b64352a6b4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &8101669084767367057 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2612783618304879259, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+  m_PrefabInstance: {fileID: 6065383052942968074}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &8134371996568260206 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}
@@ -1465,6 +1502,10 @@ PrefabInstance:
     - target: {fileID: 1248642043359383091, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_AnchorMax.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1828458866301188473, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+      propertyPath: m_text
+      value: Familarity Affinity
       objectReference: {fileID: 0}
     - target: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}
       propertyPath: m_Pivot.x
@@ -1555,6 +1596,17 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+--- !u!114 &6085343505078177947 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2612783618304879259, guid: 23cb8e48747044e49ab835930912237e, type: 3}
+  m_PrefabInstance: {fileID: 8084246614407903744}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!224 &6124484882127057252 stripped
 RectTransform:
   m_CorrespondingSourceObject: {fileID: 2652490419207736164, guid: 23cb8e48747044e49ab835930912237e, type: 3}

@@ -1,4 +1,5 @@
 using System;
+using JackyUtility;
 using UnityEngine;
 
 /// <summary>
@@ -37,6 +38,12 @@ public class BuildUITester : MonoBehaviour
 
     private void Update()
     {
+        if (Input.GetKeyDown(KeyCode.Alpha0))
+        {
+            AddAllBuildables();
+            return;
+        }
+
         for (int i = 0; i < addSlots.Length && i < 9; i++)
         {
             if (Input.GetKeyDown(KeyCode.Alpha1 + i))
@@ -44,6 +51,43 @@ public class BuildUITester : MonoBehaviour
                 TryAddItem(addSlots[i]);
                 return;
             }
+        }
+    }
+
+    [Tooltip("Amount added per entry when pressing Alpha0.")]
+    [SerializeField] private int buildAddCount = 20;
+
+    private void AddAllBuildables()
+    {
+        var dbMgr = PropertyDatabaseManager.Instance;
+        if (dbMgr == null)
+        {
+            Debug.LogError("[BuildUITester] PropertyDatabaseManager not found.");
+            return;
+        }
+
+        var db = dbMgr.GetDatabase<BuildableDatabase>();
+        if (db == null)
+        {
+            Debug.LogError("[BuildUITester] BuildableDatabase not found in PropertyDatabaseManager.");
+            return;
+        }
+
+        var container = BuildManager.Instance.BuildableContainer;
+        if (container == null)
+        {
+            Debug.LogError("[BuildUITester] BuildManager.BuildableContainer is null.");
+            return;
+        }
+
+        int count = Mathf.Max(1, buildAddCount);
+        foreach (var entry in db.Entries)
+        {
+            if (entry == null) continue;
+            if (container.TryAddItem(entry.EnumKey, count, out string reason))
+                Debug.Log($"[BuildUITester] Added {count}x {entry.EnumKey}.");
+            else
+                Debug.LogWarning($"[BuildUITester] Failed to add {count}x {entry.EnumKey}: {reason}");
         }
     }
 

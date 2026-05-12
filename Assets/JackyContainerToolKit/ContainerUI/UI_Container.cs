@@ -12,18 +12,20 @@ public struct SlotDisplayData
     public Sprite icon;
     public Color iconColor;
     public int count;
+    public string labelText;
 
     //public bool IsEmpty => icon == null || count <= 0;
     public bool IsEmpty => count <= 0;
 
-    public SlotDisplayData(Sprite icon, Color iconColor, int count)
+    public SlotDisplayData(Sprite icon, Color iconColor, int count, string labelText = "")
     {
         this.icon = icon;
         this.iconColor = iconColor;
         this.count = count;
+        this.labelText = labelText;
     }
 
-    public static SlotDisplayData Empty => new SlotDisplayData(null, Color.clear, 0);
+    public static SlotDisplayData Empty => new SlotDisplayData(null, Color.clear, 0, "");
 }
 
 /// <summary>
@@ -191,7 +193,7 @@ public class UI_Container : MonoBehaviour
             if (data.IsEmpty)
                 slotUIs[i].SetEmpty(i);
             else
-                slotUIs[i].SetSlot(i, data.icon, data.iconColor, data.count);
+                slotUIs[i].SetSlot(i, data.icon, data.iconColor, data.count, data.labelText);
 
             //Debug.Log($"Slot {i}: {(data.IsEmpty ? "Empty" : $"Icon={data.icon.name}, Color={data.iconColor}, Count={data.count}")}");
         }
@@ -211,6 +213,6 @@ public class UI_Container : MonoBehaviour
         if (data.IsEmpty)
             slotUIs[index].SetEmpty(index);
         else
-            slotUIs[index].SetSlot(index, data.icon, data.iconColor, data.count);
+            slotUIs[index].SetSlot(index, data.icon, data.iconColor, data.count, data.labelText);
     }
 }

@@ -56,7 +56,7 @@ public class ContainerItemProperty : EnumStringKeyedProperty<Key_ContainerItemPP
 
     public SlotDisplayData ToSlotDisplayData(int itemCount)
     {
-        return new SlotDisplayData(icon, Color.white, itemCount);
+        return new SlotDisplayData(icon, Color.white, itemCount, EnumKey.ToString());
     }
 }
 
