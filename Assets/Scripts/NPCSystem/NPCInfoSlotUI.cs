@@ -51,6 +51,9 @@ public class NPCInfoSlotUI : MonoBehaviour
         if (DayNightManager.Instance != null)
             DayNightManager.Instance.OnNewDayStarted += HandleNewDayStarted;
 
+        if (GridRoomManager.Instance != null)
+            GridRoomManager.Instance.OnRoomFurnitureChanged += HandleRoomFurnitureChanged;
+
         RefreshDisplay();
         RefreshDailyInteractButton();
     }
@@ -65,6 +68,9 @@ public class NPCInfoSlotUI : MonoBehaviour
 
         if (DayNightManager.Instance != null)
             DayNightManager.Instance.OnNewDayStarted -= HandleNewDayStarted;
+
+        if (GridRoomManager.Instance != null)
+            GridRoomManager.Instance.OnRoomFurnitureChanged -= HandleRoomFurnitureChanged;
     }
 
     // ©¤©¤ Public ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
@@ -157,6 +163,19 @@ public class NPCInfoSlotUI : MonoBehaviour
     private void HandleNewDayStarted(int newDay)
     {
         RefreshDailyInteractButton();
+        RefreshDisplay();
+    }
+
+    private void HandleRoomFurnitureChanged(RoomData room)
+    {
+        // Only refresh when the changed room belongs to this NPC
+        if (NPCManager.Instance == null) return;
+        GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(NpcKey);
+        if (npcGo == null) return;
+        NPCBehaviour behaviour = npcGo.GetComponent<NPCBehaviour>();
+        if (behaviour == null || !behaviour.HasRoom) return;
+        if (room.StableId != behaviour.AssignedRoomStableId) return;
+
         RefreshDisplay();
     }
 

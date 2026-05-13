@@ -127,7 +127,7 @@ public class BaseVisualController : MonoBehaviour
 	/// </summary>
 	public void SetMaterialAllTemp(Material material)
 	{
-		if (material == null) return;
+        if (material == null) return;
 
 		StopFlash();
 
