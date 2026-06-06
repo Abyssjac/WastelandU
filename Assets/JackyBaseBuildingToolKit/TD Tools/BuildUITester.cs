@@ -9,6 +9,7 @@ using UnityEngine;
 /// </summary>
 public class BuildUITester : MonoBehaviour
 {
+    [SerializeField] private PlayerMovementCC playerMovementCC;
     [Serializable]
     public struct ItemAddSlot
     {
@@ -89,6 +90,9 @@ public class BuildUITester : MonoBehaviour
             else
                 Debug.LogWarning($"[BuildUITester] Failed to add {count}x {entry.EnumKey}: {reason}");
         }
+        //PlayerMovementCC.TeleportToPosition();
+        //playerMovementCC.TeleportToPosition(new Vector3(0, 0, 0));
+        //PropertyDatabaseManager.Instance
     }
 
     private void TryAddItem(ItemAddSlot slot)

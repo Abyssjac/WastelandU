@@ -19,6 +19,10 @@ namespace JackyUtility
             DontDestroyOnLoad(gameObject);
 
             InitDatabaseMap();
+
+            gameObject.GetComponent<Rigidbody>();
+
+            PropertyDatabaseManager.Instance.GetDatabase<BuildableDatabase>();
         }
 
         private void InitDatabaseMap()
