@@ -252,6 +252,8 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     [Tooltip("Functional tags used by the NPC affinity system.\nSupports multi-select (bit-mask).")]
     public FurnitureTag furnitureTags = FurnitureTag.None;
 
+    //[SerializeField] private List<Vector2Int> occupiedPosition;
+
     // ©¤©¤ ISlotDisplayableProperty ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
     public SlotDisplayData ToSlotDisplayData(int itemCount)
     {

@@ -17,7 +17,7 @@ public struct TagAffinityWeight
 
 /// <summary>
 /// Static configuration for a single NPC type.
-/// Create via  Assets ¡ú Create ¡ú AllProperties ¡ú NPCProperty.
+/// Create via  Assets ï¿½ï¿½ Create ï¿½ï¿½ AllProperties ï¿½ï¿½ NPCProperty.
 /// </summary>
 [CreateAssetMenu(fileName = "NPCPP_", menuName = "AllProperties/NPCProperty")]
 public class NPCProperty : EnumStringKeyedProperty<Key_NPC>
@@ -34,6 +34,19 @@ public class NPCProperty : EnumStringKeyedProperty<Key_NPC>
     [Tooltip("Hard cap on living environment affinity for this NPC.")]
     public float maxEnvAffinity = 100f;
 
-    [Tooltip("Per-tag weights used in:  EnvAffinity = Min(maxEnvAffinity, ¦² weight ¡Á tagCount)")]
+    [Tooltip("Per-tag weights used in:  EnvAffinity = Min(maxEnvAffinity, ï¿½ï¿½ weight ï¿½ï¿½ tagCount)")]
     public TagAffinityWeight[] tagWeights = new TagAffinityWeight[0];
+}
+
+
+/// <summary>
+/// Key identifying an NPC type. Should correspond to entries in <see cref="NPCDatabase"/>.
+/// </summary>
+public enum Key_NPC
+{
+    None = 0,
+    Artist = 1,   // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    Botanist = 2,   // Ö²ï¿½ï¿½Ñ§ï¿½ï¿½
+    Athlete = 3,   // ï¿½Ë¶ï¿½Ô±
+    Engineer = 4,
 }
