@@ -2,8 +2,9 @@ using UnityEngine;
 
 /// <summary>
 /// Intermediate abstract layer for interactables that open a UI panel when triggered.
-/// Subclasses provide the panel reference and any data the panel needs.
-/// The panel calls <see cref="NotifyPanelClosed"/> when the player exits,
+/// Subclasses assign <see cref="_panel"/> inside <see cref="OnOpenPanel"/> and the base class
+/// handles forced panel closure when the interaction is ended externally (e.g. player walks out of range).
+/// The panel calls <see cref="NotifyPanelClosed"/> when the player exits normally,
 /// which in turn calls <see cref="InteractorTargetDetector.EndInteraction"/>.
 /// </summary>
 public abstract class BasePanelInteractable : BaseInteractable
@@ -11,6 +12,13 @@ public abstract class BasePanelInteractable : BaseInteractable
     // ── Runtime ───────────────────────────────────────────────────
 
     private InteractorTargetDetector _caller;
+
+    /// <summary>
+    /// Subclasses must assign this inside <see cref="OnOpenPanel"/> before returning.
+    /// Used by <see cref="OnInteractEnd"/> to forcibly close the panel when the interaction
+    /// is terminated externally (e.g. player walks out of range).
+    /// </summary>
+    protected IInteractablePanel _panel;
 
     // ─────────────────────────────────────────────────────────────
     // BaseInteractable
@@ -24,6 +32,19 @@ public abstract class BasePanelInteractable : BaseInteractable
     {
         _caller = caller;
         OnOpenPanel();
+    }
+
+    /// <summary>
+    /// Called by <see cref="InteractorTargetDetector.EndInteraction"/> when the interaction
+    /// is terminated externally (e.g. player walks out of range).
+    /// Forcibly closes the panel without going through <see cref="NotifyPanelClosed"/>.
+    /// </summary>
+    public override void OnInteractEnd()
+    {
+        var panel = _panel;
+        _panel  = null;
+        _caller = null;
+        panel?.ClosePanel();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -47,6 +68,7 @@ public abstract class BasePanelInteractable : BaseInteractable
     public void NotifyPanelClosed()
     {
         var caller = _caller;
+        _panel  = null;
         _caller = null;
 
         if (caller != null)

@@ -60,8 +60,9 @@ public class InteractorTargetDetector : MonoBehaviour
 
     private void Update()
     {
-        // Do not scan for new targets while an interaction is in progress
-        if (CurrentState != InteractState.Interacting)
+        if (CurrentState == InteractState.Interacting)
+            CheckTargetInRange();
+        else
             ScanForTarget();
 
         if (CurrentState == InteractState.HasTarget && Input.GetKeyDown(interactKey))
@@ -72,7 +73,8 @@ public class InteractorTargetDetector : MonoBehaviour
     // Detection
     // ─────────────────────────────────────────────────────────────
 
-    private void ScanForTarget()
+    // Returns the first valid BaseInteractable from the capsule cast, or null.
+    private BaseInteractable PerformCapsuleCast()
     {
         Vector3 origin = transform.position + Vector3.up * castHeightOffset;
         Vector3 direction = transform.forward;
@@ -85,21 +87,38 @@ public class InteractorTargetDetector : MonoBehaviour
             point1, point2, detectRadius, direction,
             _hitBuffer, detectRange, interactableLayer);
 
-        BaseInteractable found = null;
         for (int i = 0; i < hitCount; i++)
         {
             var interactable = _hitBuffer[i].collider.GetComponentInParent<BaseInteractable>();
             if (interactable != null)
-            {
-                found = interactable;
-                break; // Take the first valid one
-            }
+                return interactable;
         }
+        return null;
+    }
 
+    private void ScanForTarget()
+    {
+        BaseInteractable found = PerformCapsuleCast();
         if (found != _currentTarget)
             SetTarget(found);
+    }
 
+    /// <summary>
+    /// Called every frame while <see cref="InteractState.Interacting"/>.
+    /// If the first cast hit is no longer <see cref="_currentTarget"/>, the current interaction
+    /// is forcibly ended via <see cref="EndInteraction"/>.
+    /// If a different target is now first in range, it is immediately interacted with.
+    /// </summary>
+    private void CheckTargetInRange()
+    {
+        BaseInteractable found = PerformCapsuleCast();
+        if (found == _currentTarget) return;
 
+        EndInteraction();
+
+        // A different target is now the first hit — immediately interact with it
+        if (found != null && CurrentState == InteractState.HasTarget)
+            TriggerInteract();
     }
 
     private void SetTarget(BaseInteractable newTarget)

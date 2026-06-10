@@ -1,0 +1,156 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 4a3d0e1b696cac9419f6cf66af159f83, type: 3}
+  m_Name: BDPP_Base_Platform_Normal_Free_10x10
+  m_EditorClassIdentifier: 
+  enumKey: 6
+  stringKey: BDPP_Base_Platform_Normal_Free_10x10
+  prefab: {fileID: 8790898579236394328, guid: c37bb3689cf9d28478f696c387bda94e, type: 3}
+  previewPrefab: {fileID: 0}
+  occupancyZones:
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 0, z: 0}
+      cornerB: {x: 9, y: 0, z: 9}
+    cells: []
+    buildLayer: 0
+    occupancyFacings: 32
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    buildLayer: 0
+    occupancyFacings: 64
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 0, z: 0}
+      cornerB: {x: 9, y: 0, z: 9}
+    cells: []
+    buildLayer: 3
+    occupancyFacings: 32
+    requiredSurface: 0
+    requiredFacing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    buildLayer: 3
+    occupancyFacings: 64
+    requiredSurface: 0
+    requiredFacing: 0
+  surfaceZones:
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    providedSurface: 6
+    facing: 4
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    providedSurface: 6
+    facing: 3
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    providedSurface: 6
+    facing: 2
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    providedSurface: 6
+    facing: 1
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 9, y: 0, z: 10}
+      cornerB: {x: 0, y: 0, z: 10}
+    cells: []
+    providedSurface: 2
+    facing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 9, y: 0, z: -1}
+      cornerB: {x: 0, y: 0, z: -1}
+    cells: []
+    providedSurface: 2
+    facing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 10, y: 0, z: 0}
+      cornerB: {x: 10, y: 0, z: 9}
+    cells: []
+    providedSurface: 2
+    facing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: -1, y: 0, z: 0}
+      cornerB: {x: -1, y: 0, z: 9}
+    cells: []
+    providedSurface: 2
+    facing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 0}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells: []
+    providedSurface: 5
+    facing: 0
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: 1}
+      cornerB: {x: 9, y: 1, z: 10}
+    cells:
+    - {x: 0, y: 1, z: 1}
+    providedSurface: 6
+    facing: 4
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 0, y: 1, z: -1}
+      cornerB: {x: 9, y: 1, z: 9}
+    cells:
+    - {x: 0, y: 1, z: -1}
+    providedSurface: 6
+    facing: 3
+  - zoneName: 
+    boxes:
+    - cornerA: {x: 1, y: 1, z: 0}
+      cornerB: {x: 10, y: 1, z: 9}
+    cells:
+    - {x: 1, y: 1, z: 0}
+    providedSurface: 6
+    facing: 2
+  - zoneName: 
+    boxes:
+    - cornerA: {x: -1, y: 1, z: 0}
+      cornerB: {x: 8, y: 1, z: 9}
+    cells:
+    - {x: -1, y: 1, z: 0}
+    providedSurface: 6
+    facing: 1
+  canRotate: 0
+  canMove: 0
+  iconSprite: {fileID: 21300000, guid: 019ff07be9766d84cb7a632002920577, type: 3}
+  displayName: Base_Platform_Normal_Free
+  furnitureTags: 0

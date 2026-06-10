@@ -50,6 +50,7 @@ public class NPCInteractable : BasePanelInteractable
         }
 
         panel.OpenPanel(this);
+        _panel = panel;
     }
 
     // ─────────────────────────────────────────────────────────────

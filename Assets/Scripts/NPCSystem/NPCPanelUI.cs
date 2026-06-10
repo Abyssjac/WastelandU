@@ -89,7 +89,7 @@ public class NPCPanelUI : MonoBehaviour, IInteractablePanel
             }
             else if (_state == PanelState.InSubOperation)
             {
-                // ESC during room-selection → cancel selection, stay in panel
+                // ESC during room-selection → cancel selection, stay in panel, also update the potential pending selection by using ExitSelecctRoomMode instead of CancelSelectRoomMode
                 NPCRoomAssignmentManager.Instance?.ExitSelectRoomMode();
                 // HandleSelectionModeExited will transition us back to MainMenu
             }
@@ -116,10 +116,15 @@ public class NPCPanelUI : MonoBehaviour, IInteractablePanel
 
     /// <summary>
     /// Forcibly close without notifying the owner (external cleanup only).
+    /// Cancels any active sub-operation (e.g. room selection) before closing.
     /// </summary>
     public void ClosePanel()
     {
+        // Set state first so HandleSelectionModeExited is a no-op if it fires
         _state = PanelState.Closed;
+
+        NPCRoomAssignmentManager.Instance?.CancelSelectRoomMode();
+
         _owner = null;
         _currentNpcKey = Key_NPC.None;
         panelRoot.SetActive(false);

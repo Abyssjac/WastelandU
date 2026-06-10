@@ -159,6 +159,21 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     }
 
     /// <summary>
+    /// Exit room-selection mode, discarding any pending room change.
+    /// Broadcasts <see cref="OnSelectionModeExited"/> after cleanup.
+    /// Safe to call when already Idle.
+    /// </summary>
+    public void CancelSelectRoomMode()
+    {
+        if (_state != SelectionState.Selecting) return;
+
+        _state = SelectionState.Idle;
+        DestroyHighlightCubes();
+
+        OnSelectionModeExited?.Invoke();
+    }
+
+    /// <summary>
     /// Directly assign <paramref name="npcKey"/> to <paramref name="roomStableId"/>,
     /// evicting any previous occupant of that room and clearing the NPC's old room.
     /// </summary>

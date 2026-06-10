@@ -563,6 +563,7 @@ public enum Key_BuildablePP
     [InspectorName("Base/Platform Elevated 0")]     Build_Base_Platform_Elevated_0     = 3,
     [InspectorName("Base/Platform Elevated 1")]     Build_Base_Platform_Elevated_1     = 4,
     [InspectorName("Base/Platform Trans Free 0")]   Build_Base_Platform_Trans_Free_0   = 5,
+    [InspectorName("Base/Platform Normal 10x10")]   Build_Base_Platform_Normal_10x10   = 6,
 
     [InspectorName("Room/5x5")]                     Build_Room_5x5                     = 10,
     [InspectorName("Base/Wall XNegPos 1Level 0")]   Build_Base_Wall_XNegPos_1Level_0   = 11,
