@@ -1,0 +1,2086 @@
+{
+    "entries": [
+        {
+            "instanceId": "build_0",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 0,
+                "y": -1,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_1",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 10,
+                "y": -1,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_2",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": -9,
+                "y": -1,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_3",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 0,
+                "y": -1,
+                "z": 10
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_4",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 0,
+                "y": -1,
+                "z": -9
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_5",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": -9,
+                "y": -1,
+                "z": -9
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_6",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": -9,
+                "y": -1,
+                "z": 10
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_7",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 10,
+                "y": -1,
+                "z": -9
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_8",
+            "enumKey": 6,
+            "anchorCell": {
+                "x": 10,
+                "y": -1,
+                "z": 10
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_9",
+            "enumKey": 25,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_10",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_11",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_12",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_13",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_14",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_15",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_16",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_17",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_18",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_19",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_20",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_21",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_22",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_23",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_24",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_25",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_26",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_27",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_28",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_29",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_30",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_31",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_32",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_33",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_34",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_35",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": 0
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_36",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_37",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_38",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_39",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -1,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_40",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 0,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_41",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 1,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_42",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_43",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_44",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -1,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_45",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 0,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_46",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 1,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_47",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_48",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_49",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -1,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_50",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 0,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_51",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 1,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_52",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_53",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -2,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_54",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -1,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_55",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 0,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_56",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 1,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_57",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_58",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -2,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_59",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -1,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_60",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 0,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_61",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 1,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_62",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 2,
+                "y": 1,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_63",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -2,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_64",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -1,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_65",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 0,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_66",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 1,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_67",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 2,
+                "y": 2,
+                "z": 2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_68",
+            "enumKey": 53,
+            "anchorCell": {
+                "x": -1,
+                "y": 0,
+                "z": -1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_69",
+            "enumKey": 54,
+            "anchorCell": {
+                "x": 1,
+                "y": 0,
+                "z": 1
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_70",
+            "enumKey": 50,
+            "anchorCell": {
+                "x": 0,
+                "y": 0,
+                "z": -1
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_71",
+            "enumKey": 51,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 0
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_72",
+            "enumKey": 52,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": -1
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_73",
+            "enumKey": 55,
+            "anchorCell": {
+                "x": 1,
+                "y": 0,
+                "z": -2
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_74",
+            "enumKey": 56,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": 2
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_75",
+            "enumKey": 25,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_76",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_77",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_78",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_79",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_80",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_81",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_82",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_83",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_84",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_85",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_86",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_87",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_88",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_89",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_90",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_91",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_92",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_93",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_94",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_95",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_96",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_97",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_98",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_99",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_100",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_101",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_102",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_103",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_104",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_105",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -6,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_106",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -5,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_107",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -4,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_108",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_109",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_110",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -6,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_111",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -5,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_112",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -4,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_113",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_114",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_115",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -6,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_116",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -5,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_117",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -4,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_118",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_119",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_120",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -6,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_121",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -5,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_122",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -4,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_123",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_124",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -7,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_125",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -6,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_126",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -5,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_127",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -4,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_128",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -3,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_129",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -7,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_130",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -6,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_131",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -5,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_132",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -4,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_133",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_134",
+            "enumKey": 67,
+            "anchorCell": {
+                "x": -3,
+                "y": 2,
+                "z": -7
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_135",
+            "enumKey": 66,
+            "anchorCell": {
+                "x": -4,
+                "y": 1,
+                "z": -3
+            },
+            "rotationStep": 1
+        },
+        {
+            "instanceId": "build_136",
+            "enumKey": 64,
+            "anchorCell": {
+                "x": -6,
+                "y": 0,
+                "z": -4
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_137",
+            "enumKey": 63,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 3
+        },
+        {
+            "instanceId": "build_138",
+            "enumKey": 60,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_139",
+            "enumKey": 61,
+            "anchorCell": {
+                "x": -3,
+                "y": 0,
+                "z": -4
+            },
+            "rotationStep": 2
+        },
+        {
+            "instanceId": "build_140",
+            "enumKey": 65,
+            "anchorCell": {
+                "x": -7,
+                "y": 0,
+                "z": -7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_141",
+            "enumKey": 25,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_142",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_143",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_144",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_145",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_146",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_147",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_148",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_149",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_150",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_151",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_152",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_153",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_154",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_155",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_156",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_157",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_158",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_159",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_160",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_161",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_162",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_163",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_164",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_165",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_166",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 4
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_167",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 5
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_168",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_169",
+            "enumKey": 12,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_170",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_171",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 4,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_172",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 5,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_173",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 6,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_174",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_175",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_176",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 4,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_177",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 5,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_178",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 6,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_179",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_180",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_181",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 4,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_182",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 5,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_183",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 6,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_184",
+            "enumKey": 13,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 3
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_185",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 3,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_186",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 4,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_187",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 5,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_188",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 6,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_189",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 7,
+                "y": 0,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_190",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 3,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_191",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 4,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_192",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 5,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_193",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 6,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_194",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 7,
+                "y": 1,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_195",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 3,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_196",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 4,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_197",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 5,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_198",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 6,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_199",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": 7,
+                "y": 2,
+                "z": 7
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_200",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -1,
+                "y": 0,
+                "z": 8
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_201",
+            "enumKey": 11,
+            "anchorCell": {
+                "x": -1,
+                "y": 1,
+                "z": 8
+            },
+            "rotationStep": 1
+        },
+        {
+            "instanceId": "build_202",
+            "enumKey": 14,
+            "anchorCell": {
+                "x": -1,
+                "y": 2,
+                "z": 8
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_203",
+            "enumKey": 5,
+            "anchorCell": {
+                "x": -1,
+                "y": 2,
+                "z": 8
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_204",
+            "enumKey": 1,
+            "anchorCell": {
+                "x": -1,
+                "y": 3,
+                "z": 9
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_205",
+            "enumKey": 5,
+            "anchorCell": {
+                "x": -1,
+                "y": 3,
+                "z": 8
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_206",
+            "enumKey": 1,
+            "anchorCell": {
+                "x": 0,
+                "y": 3,
+                "z": 9
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_207",
+            "enumKey": 1,
+            "anchorCell": {
+                "x": 1,
+                "y": 3,
+                "z": 9
+            },
+            "rotationStep": 0
+        }
+    ],
+    "instanceCounterSnapshot": 208,
+    "savedAt": "2026-06-12 16:00:55"
+}

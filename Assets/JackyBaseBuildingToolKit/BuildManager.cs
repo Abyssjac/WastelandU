@@ -1,4 +1,4 @@
-using System;
+ï»¿using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -6,7 +6,7 @@ using JackyUtility;
 /// <summary>
 /// Central manager for the base-building system.
 /// Owns the BuildGrid3D and orchestrates place / move / remove flow.
-/// Supports layered placement (World ¡ú Platform ¡ú Room) with parent-child relationships.
+/// Supports layered placement (World ï¿½ï¿½ Platform ï¿½ï¿½ Room) with parent-child relationships.
 /// Optionally bridges with a Container of buildable items so that
 /// selecting a slot triggers placement and confirming a build consumes items.
 /// </summary>
@@ -77,13 +77,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     /// <summary>
     /// Fired when a furniture buildable (furnitureTags != None) is confirmed placed.
-    /// Does NOT fire OnGridChanged ¡ª room structure is unaffected by furniture.
+    /// Does NOT fire OnGridChanged ï¿½ï¿½ room structure is unaffected by furniture.
     /// </summary>
     public event Action<PlacedBuildableData> OnFurniturePlaced;
 
     /// <summary>
     /// Fired when a furniture buildable (furnitureTags != None) is removed or picked up.
-    /// Does NOT fire OnGridChanged ¡ª room structure is unaffected by furniture.
+    /// Does NOT fire OnGridChanged ï¿½ï¿½ room structure is unaffected by furniture.
     /// </summary>
     public event Action<PlacedBuildableData> OnFurnitureRemoved;
 
@@ -101,12 +101,15 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private int instanceCounter;
 
-    // ©¤©¤©¤ Blueprint Integration ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    /// <summary>Current instance counter value. Used by save system to restore counter state after load.</summary>
+    public int InstanceCounter => instanceCounter;
+
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Blueprint Integration
     private BuildBlueprintDatabase blueprintDB;
     private BuildBlueprintProperty selectedBlueprint;
     private int blueprintRotationStep;
 
-    // ©¤©¤©¤ Container Integration ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Container Integration ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     private Container<Key_BuildablePP> container;
     private BuildableDatabase buildableDB;
 
@@ -124,7 +127,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
     private bool debugCanPlace;
     private bool debugDrawOccupancy = false;
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Lifecycle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private void Awake()
     {
@@ -169,7 +172,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             var group = startPreset.groups[g];
             string groupLabel = string.IsNullOrEmpty(group.groupName) ? $"Group[{g}]" : group.groupName;
 
-            // ©¤©¤ Individual buildable entries ©¤©¤
+            // ï¿½ï¿½ï¿½ï¿½ Individual buildable entries ï¿½ï¿½ï¿½ï¿½
             if (group.entries != null)
             {
                 for (int i = 0; i < group.entries.Length; i++)
@@ -200,7 +203,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                 }
             }
 
-            // ©¤©¤ Blueprint entries ©¤©¤
+            // ï¿½ï¿½ï¿½ï¿½ Blueprint entries ï¿½ï¿½ï¿½ï¿½
             if (group.blueprints != null && bpDB != null)
             {
                 for (int b = 0; b < group.blueprints.Length; b++)
@@ -265,7 +268,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             DebugConsoleManager.Instance.UnregisterDebugTarget(this);
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Container Init ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Container Init ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private void InitContainer()
     {
@@ -286,7 +289,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
 
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Build Mode Toggle ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Build Mode Toggle ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     /// <summary>
     /// Activate the build system. Transitions from <see cref="BuildState.Inactive"/> to <see cref="BuildState.Idle"/>.
@@ -323,7 +326,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         else EnterBuildMode();
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Public API ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     /// <summary>
     /// Called from UI when the player picks a buildable to place.
@@ -451,16 +454,80 @@ public class BuildManager : MonoBehaviour, IDebuggable
         return true;
     }
 
+    // --- Save / Load API ---
+
+    /// <summary>
+    /// Destroys all spawned buildable GameObjects and resets the grid.
+    /// Called by the save system before restoring a saved state.
+    /// </summary>
+    public void ClearAllBuildables()
+    {
+        if (CurrentState != BuildState.Idle && CurrentState != BuildState.Inactive)
+            CancelCurrentAction();
+
+        foreach (var kvp in Grid.AllPlaced)
+        {
+            if (kvp.Value.SpawnedObject != null)
+                Destroy(kvp.Value.SpawnedObject);
+        }
+
+        grid = new BuildGrid3D(gridMin, gridMax);
+        grid.Initialize();
+        instanceCounter = 0;
+    }
+
+    /// <summary>
+    /// Restores the grid from a <see cref="BuildSaveData"/> snapshot.
+    /// Clears all existing buildables first, then force-places each entry.
+    /// Fires <see cref="OnGridChanged"/> once after all entries are restored.
+    /// </summary>
+    public void RestoreFromSaveData(BuildSaveData saveData)
+    {
+        if (saveData == null || saveData.entries == null) return;
+
+        var dbManager = PropertyDatabaseManager.Instance;
+        if (dbManager == null) { Debug.LogWarning("[BuildManager] PropertyDatabaseManager not found. Cannot load save."); return; }
+
+        var db = dbManager.GetDatabase<BuildableDatabase>();
+        if (db == null) { Debug.LogWarning("[BuildManager] BuildableDatabase not found. Cannot load save."); return; }
+
+        ClearAllBuildables();
+
+        instanceCounter = saveData.instanceCounterSnapshot;
+
+        int restored = 0;
+        for (int i = 0; i < saveData.entries.Count; i++)
+        {
+            var entry = saveData.entries[i];
+            var prop = db.GetByEnum(entry.enumKey);
+            if (prop == null)
+            {
+                Debug.LogWarning($"[BuildManager] RestoreFromSaveData: No BuildableProperty for key '{entry.enumKey}'. Skipped.");
+                continue;
+            }
+            if (prop.prefab == null)
+            {
+                Debug.LogWarning($"[BuildManager] RestoreFromSaveData: '{entry.enumKey}' has no prefab. Skipped.");
+                continue;
+            }
+
+            ForcePlaceImmediate(prop, entry.anchorCell, entry.rotationStep, entry.instanceId);
+            restored++;
+        }
+
+        Debug.Log($"[BuildManager] RestoreFromSaveData: {restored}/{saveData.entries.Count} buildables restored.");
+        OnGridChanged?.Invoke();
+    }
 
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Update Loop ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Update Loop ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private void Update()
     {
         switch (CurrentState)
         {
             case BuildState.Inactive:
-                return; // build system is off ¡ª skip all input
+                return; // build system is off ï¿½ï¿½ skip all input
             case BuildState.Idle:
                 HandleIdleInput();
                 break;
@@ -491,7 +558,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         if (hitBuildable != null && hitBuildable.Data != null)
         {
-            // Track hover target change ¡ª clear old alert highlights when moving to a different object
+            // Track hover target change ï¿½ï¿½ clear old alert highlights when moving to a different object
             if (lastHoveredBuildable != hitBuildable)
             {
                 previewController.HideHoverPreview();
@@ -504,7 +571,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
                 if (!data.Property.canMove)
                 {
-                    // canMove == false ¡ú show disabled highlight + affected buildables on click
+                    // canMove == false ï¿½ï¿½ show disabled highlight + affected buildables on click
                     var impact = Grid.WouldRemoveAffectOthers(data.InstanceId);
                     previewController.ShowHoverPreview(data,
                         BuildPreviewController.HoverState.Disabled,
@@ -516,7 +583,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     var impact = Grid.WouldRemoveAffectOthers(data.InstanceId);
                     if (impact.WouldAffectOthers)
                     {
-                        // Would affect others ¡ú show alert highlight on click
+                        // Would affect others ï¿½ï¿½ show alert highlight on click
                         previewController.ShowHoverPreview(data,
                             BuildPreviewController.HoverState.Alert,
                             impact.AffectedBuildables,
@@ -524,7 +591,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     }
                     else
                     {
-                        // Safe ¡ú immediately begin moving
+                        // Safe ï¿½ï¿½ immediately begin moving
                         previewController.HideHoverPreview();
                         lastHoveredBuildable = null;
                         BeginMoving(data);
@@ -534,7 +601,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
         else
         {
-            // No buildable under cursor ¡ª clear hover
+            // No buildable under cursor ï¿½ï¿½ clear hover
             if (lastHoveredBuildable != null)
             {
                 previewController.HideHoverPreview();
@@ -600,7 +667,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void HandleMovingUpdate()
     {
-        // Remove key ¡ª destroy the buildable instead of placing it back.
+        // Remove key ï¿½ï¿½ destroy the buildable instead of placing it back.
         // movingData is already removed from the grid by BeginMoving,
         // so we only need to destroy the GameObject and clean up state.
         if (Input.GetKeyDown(removeKey))
@@ -671,7 +738,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             ConfirmMove(anchor);
         }
 
-        // Cancel move ¡ª rollback
+        // Cancel move ï¿½ï¿½ rollback
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
             Grid.ForcePlaceIntoGrid(movingData);
@@ -686,7 +753,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Blueprint Placing ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Blueprint Placing ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     /// <summary>
     /// Enter blueprint placement mode. The player drags the blueprint and places it as a single unit.
@@ -924,7 +991,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             toSpawn.Add(data);
         }
 
-        // All validated ¡ª flush to real grid
+        // All validated ï¿½ï¿½ flush to real grid
         sandbox.Flush();
 
         // Spawn GameObjects
@@ -953,18 +1020,18 @@ public class BuildManager : MonoBehaviour, IDebuggable
         OnGridChanged?.Invoke();
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Internal ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Internal ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     /// <summary>
     /// Core placement logic: create data, place in grid, establish parent-child link, spawn GO.
     /// Used by both ConfirmPlace (player action) and LoadPreset (initialization).
     /// Returns true on success.
     /// </summary>
-    private PlacedBuildableData PlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    private PlacedBuildableData PlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep, string overrideInstanceId = null)
     {
         PlacedBuildableData data = new PlacedBuildableData
         {
-            InstanceId = $"build_{instanceCounter++}",
+            InstanceId = overrideInstanceId ?? $"build_{instanceCounter++}",
             Property = property,
             AnchorCell = anchor,
             RotationStep = rotationStep,
@@ -995,11 +1062,11 @@ public class BuildManager : MonoBehaviour, IDebuggable
     /// Force-place a buildable into the grid
     /// Used by preset loading when <see cref="BuildPresetGroup.forced"/> is true.
     /// </summary>
-    private bool ForcePlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep)
+    private bool ForcePlaceImmediate(BuildableProperty property, Vector3Int anchor, int rotationStep, string overrideInstanceId = null)
     {
         PlacedBuildableData data = new PlacedBuildableData
         {
-            InstanceId = $"build_{instanceCounter++}",
+            InstanceId = overrideInstanceId ?? $"build_{instanceCounter++}",
             Property = property,
             AnchorCell = anchor,
             RotationStep = rotationStep,
@@ -1027,7 +1094,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
     private void ConfirmPlace(Vector3Int anchor)
     {
-        // ©¤©¤ If this placement came from a container slot, consume one item ©¤©¤
+        // ï¿½ï¿½ï¿½ï¿½ If this placement came from a container slot, consume one item ï¿½ï¿½ï¿½ï¿½
         if (pendingBuildableKey != Key_BuildablePP.None && container != null)
         {
             if (!container.TryRemoveItem(pendingBuildableKey, 1, out string removeReason))
@@ -1041,7 +1108,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         PlacedBuildableData placed = PlaceImmediate(selectedProperty, anchor, currentRotationStep);
         if (placed == null)
         {
-            Debug.LogError($"[BuildManager] PlaceImmediate failed at {anchor} ¡ª should not happen after CanPlace check.");
+            Debug.LogError($"[BuildManager] PlaceImmediate failed at {anchor} ï¿½ï¿½ should not happen after CanPlace check.");
             return;
         }
 
@@ -1094,7 +1161,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
 
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Commands ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Debug Commands ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private void RegisterDebugCommands()
     {
@@ -1154,7 +1221,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     for (int i = 0; i < entries.Count; i++)
                     {
                         var e = entries[i];
-                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  occZones={e.occupancyZones.Length}  surfZones={e.surfaceZones.Length}");
+                        Debug.Log($"  {e.StringKey} ï¿½ï¿½ {e.EnumKey}  occZones={e.occupancyZones.Length}  surfZones={e.surfaceZones.Length}");
                     }
                     return;
                 }
@@ -1209,7 +1276,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
                     for (int i = 0; i < bpEntries.Count; i++)
                     {
                         var e = bpEntries[i];
-                        Debug.Log($"  {e.StringKey} ¡ú {e.EnumKey}  entries={e.Entries.Length}");
+                        Debug.Log($"  {e.StringKey} ï¿½ï¿½ {e.EnumKey}  entries={e.Entries.Length}");
                     }
                     return;
                 }
@@ -1236,7 +1303,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         ));
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug Gizmos ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Debug Gizmos ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private static readonly Color GizmoColorWorld    = new Color(0.2f, 0.8f, 0.2f, 0.5f);  // green
     private static readonly Color GizmoColorPlatform = new Color(0.2f, 0.5f, 1.0f, 0.5f);  // blue
@@ -1355,7 +1422,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         }
     }
 
-    // ©¤©¤©¤©¤©¤©¤©¤©¤©¤ Debug GUI (Game view top-left) ©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Debug GUI (Game view top-left) ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private void OnGUI()
     {
@@ -1363,7 +1430,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
         var panel = DebugGUIPanel.Begin(new Vector2(10f, 10f), 420f, 16);
 
-        panel.DrawLine("<b>¨T¨T¨T BuildManager Debug ¨T¨T¨T</b>");
+        panel.DrawLine("<b>ï¿½Tï¿½Tï¿½T BuildManager Debug ï¿½Tï¿½Tï¿½T</b>");
 
         string stateColor = CurrentState == BuildState.Inactive ? "gray" :
                             CurrentState == BuildState.Idle ? "white" :
@@ -1382,7 +1449,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         else if (movingData != null)
             panel.DrawLine($"OccZones: {movingData.Property.occupancyZones.Length}");
 
-        panel.DrawLine($"RotationStep: {currentRotationStep}  ({currentRotationStep * 90}¡ã)");
+        panel.DrawLine($"RotationStep: {currentRotationStep}  ({currentRotationStep * 90}ï¿½ï¿½)");
 
         panel.DrawLine($"HasValidHit: {positionProvider.HasValidHit}");
         if (positionProvider.HasValidHit)
@@ -1415,7 +1482,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         panel.DrawLine($"CanPlace: <color={canPlaceColor}><b>{debugCanPlace}</b></color>");
         panel.DrawLine($"Reason: <color={canPlaceColor}>{debugCanPlaceReason}</color>");
 
-        panel.DrawLine($"Grid Bounds: {Grid.GridMin} ¡ú {Grid.GridMax}");
+        panel.DrawLine($"Grid Bounds: {Grid.GridMin} ï¿½ï¿½ {Grid.GridMax}");
         panel.DrawLine($"Placed Objects: {Grid.AllPlaced.Count}");
 
         panel.End();
@@ -1424,7 +1491,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
 public enum BuildState
 {
-    Inactive,         // build system is off ¡ª no input processed
+    Inactive,         // build system is off ï¿½ï¿½ no input processed
     Idle,
     Selecting,        // UI choosing which buildable
     Placing,          // dragging preview, about to place
