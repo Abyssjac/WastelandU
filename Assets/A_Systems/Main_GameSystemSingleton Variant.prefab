@@ -10,15 +10,15 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3366969590307832922, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: m_LocalPosition.x
-      value: 0
+      value: 298.48877
       objectReference: {fileID: 0}
     - target: {fileID: 3366969590307832922, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 0
+      value: -0
       objectReference: {fileID: 0}
     - target: {fileID: 3366969590307832922, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: 1517.7747
       objectReference: {fileID: 0}
     - target: {fileID: 3366969590307832922, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: m_LocalRotation.w
@@ -52,18 +52,22 @@ PrefabInstance:
       propertyPath: m_Name
       value: Main_GameSystemSingleton Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 3703025122255817200, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 9046353673579635272, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: allSystemPrefabSingletons.Array.size
-      value: 2
+      value: 3
       objectReference: {fileID: 0}
     - target: {fileID: 9046353673579635272, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: 'allSystemPrefabSingletons.Array.data[1]'
       value: 
-      objectReference: {fileID: 6129394521149381260, guid: f73df7826e1fb924b9b9aacaebd8baf6, type: 3}
+      objectReference: {fileID: 6664795504721969252, guid: dae45e85406fcad42aea33b9cf4fd79b, type: 3}
     - target: {fileID: 9046353673579635272, guid: 1895077025f90ce42b665b23a6a417f2, type: 3}
       propertyPath: 'allSystemPrefabSingletons.Array.data[2]'
       value: 
-      objectReference: {fileID: 8084526617420873689, guid: 5737f8e7a6496914983b30664fc51be8, type: 3}
+      objectReference: {fileID: 105142257259295123, guid: a6fbabb9b0b528e43acf93a0970d4f08, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

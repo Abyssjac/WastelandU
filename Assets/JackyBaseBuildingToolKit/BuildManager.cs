@@ -144,7 +144,12 @@ public class BuildManager : MonoBehaviour, IDebuggable
     {
         DebugConsoleManager.Instance.RegisterDebugTarget(this);
         RegisterDebugCommands();
-        LoadPreset();
+        if (BuildSaveManager.Instance != null && BuildSaveManager.Instance.SaveExists())
+            BuildSaveManager.Instance.Load();
+        else {
+            LoadPreset();
+        }
+        //LoadPreset();
     }
 
     /// <summary>
