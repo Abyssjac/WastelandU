@@ -1999,8 +1999,48 @@
                 "z": 7
             },
             "rotationStep": 0
+        },
+        {
+            "instanceId": "build_207",
+            "enumKey": 1,
+            "anchorCell": {
+                "x": 2,
+                "y": 0,
+                "z": -6
+            },
+            "rotationStep": 0
+        },
+        {
+            "instanceId": "build_208",
+            "enumKey": 32,
+            "anchorCell": {
+                "x": -1,
+                "y": 0,
+                "z": 6
+            },
+            "rotationStep": 1
+        },
+        {
+            "instanceId": "build_209",
+            "enumKey": 35,
+            "anchorCell": {
+                "x": -6,
+                "y": 0,
+                "z": 1
+            },
+            "rotationStep": 1
+        },
+        {
+            "instanceId": "build_210",
+            "enumKey": 30,
+            "anchorCell": {
+                "x": -5,
+                "y": 0,
+                "z": 4
+            },
+            "rotationStep": 1
         }
     ],
-    "instanceCounterSnapshot": 207,
-    "savedAt": "2026-06-15 16:19:40"
+    "instanceCounterSnapshot": 211,
+    "savedAt": "2026-06-15 16:56:57"
 }
