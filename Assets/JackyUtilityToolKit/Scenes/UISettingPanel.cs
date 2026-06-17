@@ -14,11 +14,12 @@ using UnityEngine.SceneManagement;
 ///       ├── ExitToMainMenuButton
 ///       └── CloseButton
 ///
-/// Panel toggle: Settings button click  OR  Escape key.
+/// Panel toggle: Settings button click  OR  Escape key (routed through AllUIManager).
 /// The panel is force-closed on every scene transition.
 /// The Settings button is hidden while in the MainMenu scene.
+/// Registered as the AllUIManager fallback panel: opens when ESC is pressed with no other panel active.
 /// </summary>
-public class UISettingPanel : MonoBehaviour
+public class UISettingPanel : MonoBehaviour, IGeneralPanelOwner
 {
     public static UISettingPanel Instance { get; private set; }
 
@@ -37,9 +38,6 @@ public class UISettingPanel : MonoBehaviour
     [SerializeField] private Button exitToMainMenuButton;
     [SerializeField] private Button closeButton;
 
-    [Header("Input")]
-    [SerializeField] private KeyCode toggleKey = KeyCode.Escape;
-
     [Header("Scene")]
     [Tooltip("Settings button is hidden while this scene is active. Must match the MainMenu scene name exactly.")]
     [SerializeField] private string mainMenuSceneName = "S_MainMenu";
@@ -56,10 +54,10 @@ public class UISettingPanel : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
-        if (settingsButton        != null) settingsButton.onClick.AddListener(TogglePanel);
+        if (settingsButton        != null) settingsButton.onClick.AddListener(OnSettingsButtonClicked);
         if (saveButton            != null) saveButton.onClick.AddListener(OnSaveClicked);
         if (exitToMainMenuButton  != null) exitToMainMenuButton.onClick.AddListener(OnExitToMainMenuClicked);
-        if (closeButton           != null) closeButton.onClick.AddListener(ClosePanel);
+        if (closeButton           != null) closeButton.onClick.AddListener(OnClosePanelButtonClicked);
 
         SetPanelVisible(false);
 
@@ -70,29 +68,27 @@ public class UISettingPanel : MonoBehaviour
     {
         // sceneLoaded does not fire for the scene that is already loaded at startup
         RefreshSettingsButtonVisibility(SceneManager.GetActiveScene().name);
+
+        AllUIManager.Instance?.RegisterFallbackPanel(this);
     }
 
     private void OnDestroy()
     {
         SceneManager.sceneLoaded -= OnSceneLoaded;
 
-        if (settingsButton        != null) settingsButton.onClick.RemoveListener(TogglePanel);
+        if (settingsButton        != null) settingsButton.onClick.RemoveListener(OnSettingsButtonClicked);
         if (saveButton            != null) saveButton.onClick.RemoveListener(OnSaveClicked);
         if (exitToMainMenuButton  != null) exitToMainMenuButton.onClick.RemoveListener(OnExitToMainMenuClicked);
-        if (closeButton           != null) closeButton.onClick.RemoveListener(ClosePanel);
-    }
-
-    private void Update()
-    {
-        if (Input.GetKeyDown(toggleKey))
-            TogglePanel();
+        if (closeButton           != null) closeButton.onClick.RemoveListener(OnClosePanelButtonClicked);
     }
 
     // ── Internal ─────────────────────────────────────────────────────────────
 
     private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
     {
-        if (_isOpen) SetPanelVisible(false);
+        if (_isOpen)
+            AllUIManager.Instance?.RequestClose(this);
+        SetPanelVisible(false);
         RefreshSettingsButtonVisibility(scene.name);
     }
 
@@ -102,11 +98,39 @@ public class UISettingPanel : MonoBehaviour
             settingsButton.gameObject.SetActive(sceneName != mainMenuSceneName);
     }
 
-    private void TogglePanel()
+    // ── IGeneralPanelOwner ────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Called by AllUIManager when this panel is the fallback and ESC is pressed,
+    /// or when the settings button routes through AllUIManager.
+    /// Guards against opening in the MainMenu scene.
+    /// </summary>
+    public void OnPanelOpenRequested()
     {
-        // ESC should not open the panel while the settings button is hidden (e.g. in MainMenu)
-        if (!_isOpen && !IsSettingsButtonVisible()) return;
-        SetPanelVisible(!_isOpen);
+        if (!IsSettingsButtonVisible()) return;
+        SetPanelVisible(true);
+    }
+
+    /// <summary>Called by AllUIManager or the Close button to close this panel.</summary>
+    public void OnPanelCloseRequested()
+    {
+        SetPanelVisible(false);
+    }
+
+    // ── Internal ─────────────────────────────────────────────────────────────
+
+    private void OnSettingsButtonClicked()
+    {
+        if (_isOpen)
+            AllUIManager.Instance?.RequestClose(this);
+        else
+            AllUIManager.Instance?.RequestOpen(this, PanelOpenType.Override);
+    }
+
+    private void OnClosePanelButtonClicked()
+    {
+        AllUIManager.Instance?.RequestClose(this);
+        //Debug.Log("Setting Panel Closed");
     }
 
     private void SetPanelVisible(bool visible)
@@ -139,9 +163,7 @@ public class UISettingPanel : MonoBehaviour
             Debug.LogWarning("[UISettingPanel] MySceneManager not found. Cannot exit to main menu.");
             return;
         }
-        SetPanelVisible(false);
+        AllUIManager.Instance?.RequestClose(this);
         MySceneManager.Instance.GoToMainMenu();
     }
-
-    private void ClosePanel() => SetPanelVisible(false);
 }

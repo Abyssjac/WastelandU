@@ -10,7 +10,7 @@ using JackyUtility;
 /// Optionally bridges with a Container of buildable items so that
 /// selecting a slot triggers placement and confirming a build consumes items.
 /// </summary>
-public class BuildManager : MonoBehaviour, IDebuggable
+public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 {
     public static BuildManager Instance { get; private set; }
 
@@ -331,6 +331,13 @@ public class BuildManager : MonoBehaviour, IDebuggable
         else EnterBuildMode();
     }
 
+    // ── IGeneralPanelOwner ───────────────────────────────────────
+    /// <summary>Called by AllUIManager when the build panel is approved to open.</summary>
+    public void OnPanelOpenRequested() => EnterBuildMode();
+
+    /// <summary>Called by AllUIManager when the build panel should close.</summary>
+    public void OnPanelCloseRequested() => ExitBuildMode();
+
     // ������������������ Public API ������������������
 
     /// <summary>
@@ -344,6 +351,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         currentRotationStep = 0;
         CurrentState = BuildState.Placing;
 
+        AllUIManager.Instance?.SetUIInputEnabled(false);
         previewController.ShowPreview(selectedProperty, currentRotationStep, positionProvider.CellSize);
     }
 
@@ -404,6 +412,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         selectedBlueprint = null;
         pendingBuildableKey = Key_BuildablePP.None;
         CurrentState = BuildState.Idle;
+        AllUIManager.Instance?.SetUIInputEnabled(true);
         previewController.HidePreview();
         previewController.HideBlueprintPreview();
         previewController.HideConflictHighlights();
@@ -432,6 +441,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             data.SpawnedObject.SetActive(false);
 
         CurrentState = BuildState.Moving;
+        AllUIManager.Instance?.SetUIInputEnabled(false);
         previewController.ShowPreview(data.Property, currentRotationStep, positionProvider.CellSize);
     }
 
@@ -743,7 +753,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
             ConfirmMove(anchor);
         }
 
-        // Cancel move �� rollback
+        // Cancel move — rollback
         if (Input.GetMouseButtonDown(1) || Input.GetKeyDown(KeyCode.Escape))
         {
             Grid.ForcePlaceIntoGrid(movingData);
@@ -752,6 +762,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
 
             movingData = null;
             CurrentState = BuildState.Idle;
+            AllUIManager.Instance?.SetUIInputEnabled(true);
             previewController.HidePreview();
             previewController.HideConflictHighlights();
             debugCanPlaceReason = "";
@@ -771,6 +782,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         blueprintRotationStep = 0;
         CurrentState = BuildState.PlacingBlueprint;
 
+        AllUIManager.Instance?.SetUIInputEnabled(false);
         SpawnBlueprintPreview(blueprint, blueprintRotationStep);
     }
 
@@ -1020,6 +1032,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         previewController.HideBlueprintPreview();
         selectedBlueprint = null;
         CurrentState = BuildState.Idle;
+        AllUIManager.Instance?.SetUIInputEnabled(true);
         debugCanPlaceReason = "";
 
         OnGridChanged?.Invoke();
@@ -1120,6 +1133,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         previewController.HidePreview();
         previewController.HideConflictHighlights();
         CurrentState = BuildState.Idle;
+        AllUIManager.Instance?.SetUIInputEnabled(true);
         selectedProperty = null;
         pendingBuildableKey = Key_BuildablePP.None;
         debugCanPlaceReason = "";
@@ -1148,6 +1162,7 @@ public class BuildManager : MonoBehaviour, IDebuggable
         PlacedBuildableData confirmedData = movingData;
         movingData = null;
         CurrentState = BuildState.Idle;
+        AllUIManager.Instance?.SetUIInputEnabled(true);
         debugCanPlaceReason = "";
 
         if (isFurniture)
