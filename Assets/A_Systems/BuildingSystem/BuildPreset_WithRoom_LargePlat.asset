@@ -44,6 +44,37 @@ MonoBehaviour:
       anchorCell: {x: 10, y: -1, z: 10}
       rotationStep: 0
     blueprints: []
+  - groupName: Ceiling
+    forced: 1
+    entries:
+    - buildableEnumKey: 7
+      anchorCell: {x: 0, y: 2, z: 0}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: 10, y: 2, z: 0}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: -9, y: 2, z: 0}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: 0, y: 2, z: 10}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: 0, y: 2, z: -9}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: -9, y: 2, z: -9}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: -9, y: 2, z: 10}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: 10, y: 2, z: -9}
+      rotationStep: 0
+    - buildableEnumKey: 7
+      anchorCell: {x: 10, y: 2, z: 10}
+      rotationStep: 0
+    blueprints: []
   - groupName: Rooms
     forced: 0
     entries: []

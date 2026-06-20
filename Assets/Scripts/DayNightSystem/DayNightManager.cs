@@ -17,8 +17,8 @@ public class DayNightManager : MonoBehaviour
     [Header("Start State")]
     [SerializeField] private int startDay = 1;
 
-    [Header("UI")]
-    [SerializeField] private GameObject dayNightManagerUIPrefab;
+    //[Header("UI")]
+    //[SerializeField] private GameObject dayNightManagerUIPrefab;
 
     [Header("Debug")]
     [SerializeField] private bool debugEnabled;
@@ -53,18 +53,18 @@ public class DayNightManager : MonoBehaviour
         CurrentDay     = startDay;
         CurrentSession = DaySession.Morning;
 
-        if (dayNightManagerUIPrefab != null)
-        {
-            Canvas canvas = FindFirstObjectByType<Canvas>();
-            if (canvas != null)
-            {
-                Instantiate(dayNightManagerUIPrefab, canvas.transform);
-            }
-            else
-            {
-                Instantiate(dayNightManagerUIPrefab);
-            }   
-        }
+        //if (dayNightManagerUIPrefab != null)
+        //{
+        //    Canvas canvas = FindFirstObjectByType<Canvas>();
+        //    if (canvas != null)
+        //    {
+        //        Instantiate(dayNightManagerUIPrefab, canvas.transform);
+        //    }
+        //    else
+        //    {
+        //        Instantiate(dayNightManagerUIPrefab);
+        //    }   
+        //}
     }
 
     // ©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤

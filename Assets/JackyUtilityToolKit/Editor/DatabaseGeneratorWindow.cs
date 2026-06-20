@@ -23,7 +23,7 @@ namespace JackyUtility
         // ── Styles (lazy-init) ───────────────────────────────────────────────
         private GUIStyle _previewStyle;
 
-        [MenuItem("Wasteland Tools/Database Generator")]
+        [MenuItem("Jacky Tools/Database Generator")]
         public static void ShowWindow() =>
             GetWindow<DatabaseGeneratorWindow>("Database Generator").Show();
 

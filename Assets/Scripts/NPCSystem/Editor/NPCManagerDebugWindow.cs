@@ -10,6 +10,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
 {
     private Key_NPC _selectedEnumKey   = Key_NPC.None;
     private string  _stringKeyInput    = "";
+    private Vector3 _spawnPosition     = Vector3.zero;
 
     [MenuItem("Wasteland Debug/NPC Manager")]
     public static void ShowWindow() =>
@@ -18,6 +19,9 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
     protected override void DrawContent()
     {
         NPCManager mgr = Target;
+
+        // ©¤©¤ Spawn / Despawn ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        DrawSpawnSection(mgr);
 
         // ©¤©¤ Overview ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
         Header("Overview");
@@ -81,6 +85,51 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
     }
 
     // ©¤©¤ Drawing helpers ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+
+    private void DrawSpawnSection(NPCManager mgr)
+    {
+        Header("Spawn / Despawn NPC");
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Enum Key", GUILayout.Width(90));
+        _selectedEnumKey = (Key_NPC)EditorGUILayout.EnumPopup(_selectedEnumKey);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField("Position", GUILayout.Width(90));
+        _spawnPosition = EditorGUILayout.Vector3Field("", _spawnPosition);
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.HelpBox("Position (0, 0, 0) uses the Manager's default spawn point.", MessageType.None);
+
+        DrawSeparator();
+
+        bool keyValid  = _selectedEnumKey != Key_NPC.None;
+        bool isSpawned = keyValid && mgr.IsSpawned(_selectedEnumKey);
+
+        ColoredRow("Status",
+            !keyValid ? "¡ª" : isSpawned ? "Spawned" : "Not Spawned",
+            !keyValid ? Color.gray : isSpawned ? Color.green : Color.gray);
+
+        EditorGUILayout.Space(4);
+        EditorGUILayout.BeginHorizontal();
+
+        GUI.enabled = keyValid && !isSpawned;
+        if (GUILayout.Button("Spawn", GUILayout.Height(22)))
+        {
+            if (_spawnPosition == Vector3.zero)
+                mgr.SpawnNPC(_selectedEnumKey);
+            else
+                mgr.SpawnNPC(_selectedEnumKey, _spawnPosition);
+        }
+
+        GUI.enabled = keyValid && isSpawned;
+        if (GUILayout.Button("Despawn", GUILayout.Height(22)))
+            mgr.DespawnNPC(_selectedEnumKey);
+
+        GUI.enabled = true;
+        EditorGUILayout.EndHorizontal();
+    }
 
     private void DrawNPCProperty(NPCProperty prop, NPCManager mgr)
     {

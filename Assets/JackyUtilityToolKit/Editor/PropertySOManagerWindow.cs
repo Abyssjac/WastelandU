@@ -74,7 +74,7 @@ namespace JackyUtility
         private Vector2 _scroll;
 
         // ────────────────────────────────────────────────────────────────────
-        [MenuItem("Wasteland Tools/Property SO Manager")]
+        [MenuItem("Jacky Tools/Property SO Manager")]
         public static void ShowWindow() =>
             GetWindow<PropertySOManagerWindow>("Property SO Manager").Show();
 

@@ -10,7 +10,7 @@ using UnityEngine.SceneManagement;
 /// </summary>
 public class MySceneManagerDebugWindow : EditorWindow
 {
-    [MenuItem("Wasteland Debug/Scene Manager")]
+    [MenuItem("Jacky Tools/Scene Manager")]
     public static void ShowWindow() =>
         GetWindow<MySceneManagerDebugWindow>("Scene Manager").Show();
 

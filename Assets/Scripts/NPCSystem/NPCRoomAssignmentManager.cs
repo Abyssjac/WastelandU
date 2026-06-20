@@ -114,7 +114,9 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     /// </summary>
     public void EnterSelectRoomMode(Key_NPC npcKey)
     {
+        Debug.Log($"Entering room selection mode for NPC: {npcKey}");
         if (_state == SelectionState.Selecting) return;
+        Debug.Log($"Current state: {_state}. Proceeding to enter Selecting state.");
         if (npcKey == Key_NPC.None) return;
 
         _selectedNPC = npcKey;

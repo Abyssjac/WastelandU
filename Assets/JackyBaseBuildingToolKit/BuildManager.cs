@@ -486,7 +486,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
                 Destroy(kvp.Value.SpawnedObject);
         }
 
-        grid = new BuildGrid3D(gridMin, gridMax);
+        //grid = new BuildGrid3D(gridMin, gridMax);
         grid.Initialize();
         instanceCounter = 0;
     }

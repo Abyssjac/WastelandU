@@ -137,8 +137,9 @@ public class NPCPanelUI : MonoBehaviour, IInteractablePanel
     private void OnAssignRoomClicked()
     {
         if (_currentNpcKey == Key_NPC.None) return;
+        Debug.Log("NPC KEY Existed");
         if (NPCRoomAssignmentManager.Instance == null) return;
-
+        Debug.Log("RoomAssignment Manager Exist");
         _state = PanelState.InSubOperation;
         NPCRoomAssignmentManager.Instance.EnterSelectRoomMode(_currentNpcKey);
     }
