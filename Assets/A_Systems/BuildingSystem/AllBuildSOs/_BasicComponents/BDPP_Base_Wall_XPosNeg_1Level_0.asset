@@ -90,4 +90,5 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 21300000, guid: da098e9c51c4f7d42bd00970713bfc95, type: 3}
   displayName: Base_Wall_XPosNeg_1Level
+  storePrice: 25
   furnitureTags: 0

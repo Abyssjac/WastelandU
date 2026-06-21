@@ -107,15 +107,6 @@ public class UI_Container : MonoBehaviour
             Close();
     }
 
-    private void Update()
-    {
-        if (Input.GetKeyDown(KeyCode.T)) {
-            RefreshSlot(0, new SlotDisplayData(null, Color.clear, 0, "", SlotState.SoldOut));
-            RefreshSlot(1, new SlotDisplayData(null, Color.clear, 0, "", SlotState.Locked));
-            RefreshSlot(2, new SlotDisplayData(null, Color.clear, 0, "", SlotState.Empty));
-        }
-    }
-
     // --- Init ---
 
     /// <summary>

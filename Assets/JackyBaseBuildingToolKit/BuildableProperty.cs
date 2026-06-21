@@ -248,6 +248,10 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public Sprite iconSprite;
     public string displayName;
 
+    [Header("Store")]
+    [Tooltip("Price displayed in the store. Used by StoreManager when building SlotDisplayData.")]
+    public float storePrice = 0f;
+
     [Header("Furniture Tags")]
     [Tooltip("Functional tags used by the NPC affinity system.\nSupports multi-select (bit-mask).")]
     public FurnitureTag furnitureTags = FurnitureTag.None;

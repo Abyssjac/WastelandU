@@ -153,4 +153,5 @@ MonoBehaviour:
   canMove: 0
   iconSprite: {fileID: 21300000, guid: 019ff07be9766d84cb7a632002920577, type: 3}
   displayName: Base_Platform_Normal_Free
+  storePrice: 25
   furnitureTags: 0

@@ -132,4 +132,5 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   displayName: Normal Plat
+  storePrice: 25
   furnitureTags: 0

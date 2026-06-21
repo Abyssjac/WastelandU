@@ -82,4 +82,26 @@ public class EconomyManager : MonoBehaviour
 
         OnCurrencyChanged?.Invoke(type, _amounts[type]);
     }
+
+    /// <summary>
+    /// Attempts to deduct <paramref name="amount"/> from the given currency.
+    /// Returns false without modifying the balance if funds are insufficient.
+    /// </summary>
+    public bool TrySpend(CurrencyType type, float amount)
+    {
+        if (!_amounts.TryGetValue(type, out float current) || current < amount)
+        {
+            if (debugEnabled)
+                Debug.Log($"[EconomyManager] TrySpend failed: {type} needs {amount:F1}, has {current:F1}");
+            return false;
+        }
+
+        _amounts[type] = current - amount;
+
+        if (debugEnabled)
+            Debug.Log($"[EconomyManager] {type} -{amount:F1} ¡ú {_amounts[type]:F1}");
+
+        OnCurrencyChanged?.Invoke(type, _amounts[type]);
+        return true;
+    }
 }

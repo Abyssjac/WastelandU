@@ -46,4 +46,5 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 21300000, guid: 13cf21bdc4af6e348aa3ab3d1e116775, type: 3}
   displayName: Astro_PoufMoon
+  storePrice: 10
   furnitureTags: 0

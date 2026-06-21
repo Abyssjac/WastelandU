@@ -30,4 +30,5 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 21300000, guid: 019ff07be9766d84cb7a632002920577, type: 3}
   displayName: Artstudio_Chair
+  storePrice: 5
   furnitureTags: 0
