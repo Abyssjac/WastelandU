@@ -1,31 +1,58 @@
-using System.Collections.Generic;
+ï»¿using System.Collections.Generic;
 using System;
 using UnityEngine;
 
 /// <summary>
-/// Pure-data struct describing what a single slot should look like.
-/// Prepared by the caller ¡ª this UI knows nothing about databases or properties.
+/// Describes the visual state of a slot.
+/// <see cref="Default"/> is the normal "has item" state.
+/// All other values correspond to a dedicated overlay GameObject configured on <see cref="UI_ContainerSlot"/>.
+/// </summary>
+public enum SlotState
+{
+    Default = 0,
+    Empty   = 1,
+    SoldOut = 2,
+    Locked  = 3,
+}
+
+/// <summary>
+/// Maps a <see cref="SlotState"/> value to the overlay GameObject that should be shown for it.
+/// Configure these on the <see cref="UI_ContainerSlot"/> prefab in the Inspector.
 /// </summary>
 [Serializable]
-public struct SlotDisplayData
+public struct SlotStateEntry
+{
+    public SlotState state;
+    public GameObject overlay;
+}
+
+/// <summary>
+/// Pure-data class describing what a single slot should look like.
+/// Prepared by the caller -- this UI knows nothing about databases or properties.
+/// The <see cref="state"/> field drives which overlay is shown on the slot.
+/// Set it explicitly; the UI layer does not infer state from other fields.
+/// </summary>
+[Serializable]
+public class SlotDisplayData
 {
     public Sprite icon;
     public Color iconColor;
     public int count;
     public string labelText;
+    public SlotState state;
 
-    //public bool IsEmpty => icon == null || count <= 0;
-    public bool IsEmpty => count <= 0;
+    public bool IsEmpty => state == SlotState.Empty;
 
-    public SlotDisplayData(Sprite icon, Color iconColor, int count, string labelText = "")
+    public SlotDisplayData(Sprite icon, Color iconColor, int count, string labelText = "", SlotState state = SlotState.Default)
     {
         this.icon = icon;
         this.iconColor = iconColor;
         this.count = count;
         this.labelText = labelText;
+        this.state = state;
     }
 
-    public static SlotDisplayData Empty => new SlotDisplayData(null, Color.clear, 0, "");
+    public static SlotDisplayData Empty => new SlotDisplayData(null, Color.clear, 0, "", SlotState.Empty);
 }
 
 /// <summary>
@@ -40,7 +67,7 @@ public interface ISlotDisplayableProperty
 
 /// <summary>
 /// Manages a grid of <see cref="UI_ContainerSlot"/> elements.
-/// Receives an array of <see cref="SlotDisplayData"/> ¡ª no generics, no database references.
+/// Receives an array of <see cref="SlotDisplayData"/> -- no generics, no database references.
 /// </summary>
 public class UI_Container : MonoBehaviour
 {
@@ -49,16 +76,17 @@ public class UI_Container : MonoBehaviour
     [SerializeField] private GameObject containerPanelRoot;
 
     [Header("References")]
-    [SerializeField] private Transform slotParent;
+    [SerializeField] protected Transform slotParent;
     [SerializeField] private UI_ContainerSlot slotPrefab;
 
     [Header("Selection")]
     [Tooltip("When true, clicking a slot selects it (highlight + event). When false, clicks are ignored.")]
     [SerializeField] private bool selectable = false;
+
     [Header("Settings")]
     [SerializeField] private bool hideWhenAwake = true;
 
-    private readonly List<UI_ContainerSlot> slotUIs = new List<UI_ContainerSlot>();
+    protected readonly List<UI_ContainerSlot> slotUIs = new List<UI_ContainerSlot>();
     private int selectedSlotIndex = -1;
 
     public IReadOnlyList<UI_ContainerSlot> SlotUIs => slotUIs;
@@ -79,13 +107,22 @@ public class UI_Container : MonoBehaviour
             Close();
     }
 
-    // ©¤©¤©¤ Init ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.T)) {
+            RefreshSlot(0, new SlotDisplayData(null, Color.clear, 0, "", SlotState.SoldOut));
+            RefreshSlot(1, new SlotDisplayData(null, Color.clear, 0, "", SlotState.Locked));
+            RefreshSlot(2, new SlotDisplayData(null, Color.clear, 0, "", SlotState.Empty));
+        }
+    }
+
+    // --- Init ---
 
     /// <summary>
     /// Create (or trim) slot UI elements to match <paramref name="slotCount"/>.
     /// Call once when the container size is known.
     /// </summary>
-    public void InitSlots(int slotCount)
+    public virtual void InitSlots(int slotCount)
     {
         // Remove excess
         while (slotUIs.Count > slotCount)
@@ -110,7 +147,7 @@ public class UI_Container : MonoBehaviour
         ClearSelection();
     }
 
-    private void HandleSlotClicked(int slotIndex)
+    protected virtual void HandleSlotClicked(int slotIndex)
     {
         if (!selectable) return;
 
@@ -124,7 +161,7 @@ public class UI_Container : MonoBehaviour
         SetSelection(slotIndex);
     }
 
-    // ©¤©¤©¤ Selection ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // --- Selection ---
 
     /// <summary>
     /// Programmatically select a slot by index. Pass -1 to clear.
@@ -156,7 +193,6 @@ public class UI_Container : MonoBehaviour
 
     /// <summary>
     /// Show the container panel.
-    /// Called when entering build mode.
     /// </summary>
     public void Open()
     {
@@ -166,7 +202,6 @@ public class UI_Container : MonoBehaviour
 
     /// <summary>
     /// Hide the container panel and clear any active selection.
-    /// Called when exiting build mode.
     /// </summary>
     public void Close()
     {
@@ -176,29 +211,21 @@ public class UI_Container : MonoBehaviour
             containerPanelRoot.SetActive(false);
     }
 
-    // ©¤©¤©¤ Refresh ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // --- Refresh ---
 
     /// <summary>
     /// Refresh every slot using pre-resolved display data.
     /// The array length should match the slot count set in <see cref="InitSlots"/>.
     /// </summary>
-    public void Refresh(SlotDisplayData[] displayData)
+    public virtual void Refresh(SlotDisplayData[] displayData)
     {
         if (displayData == null) return;
 
         int count = Mathf.Min(slotUIs.Count, displayData.Length);
         for (int i = 0; i < count; i++)
-        {
-            var data = displayData[i];
-            if (data.IsEmpty)
-                slotUIs[i].SetEmpty(i);
-            else
-                slotUIs[i].SetSlot(i, data.icon, data.iconColor, data.count, data.labelText);
+            slotUIs[i].SetSlot(i, displayData[i]);
 
-            //Debug.Log($"Slot {i}: {(data.IsEmpty ? "Empty" : $"Icon={data.icon.name}, Color={data.iconColor}, Count={data.count}")}");
-        }
-
-        // Any remaining slots beyond displayData length ¡ú empty
+        // Any remaining slots beyond displayData length -> empty
         for (int i = count; i < slotUIs.Count; i++)
             slotUIs[i].SetEmpty(i);
     }
@@ -206,14 +233,10 @@ public class UI_Container : MonoBehaviour
     /// <summary>
     /// Refresh a single slot at <paramref name="index"/>.
     /// </summary>
-    public void RefreshSlot(int index, SlotDisplayData data)
+    public virtual void RefreshSlot(int index, SlotDisplayData data)
     {
         if (index < 0 || index >= slotUIs.Count) return;
 
-        if (data.IsEmpty)
-            slotUIs[index].SetEmpty(index);
-        else
-            slotUIs[index].SetSlot(index, data.icon, data.iconColor, data.count, data.labelText);
+        slotUIs[index].SetSlot(index, data);
     }
 }
-

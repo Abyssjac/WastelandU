@@ -1,4 +1,5 @@
-using System;
+﻿using System;
+using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
@@ -8,16 +9,22 @@ public class UI_ContainerSlot : MonoBehaviour
     [SerializeField] private Image itemIcon;
     [SerializeField] private TextMeshProUGUI itemCountText;
     [SerializeField] private TextMeshProUGUI itemLabel;
-    [SerializeField] private GameObject emptyOverlay;
     [SerializeField] private Button button;
 
     [Header("Highlight")]
     [SerializeField] private GameObject highlightOverlay;
 
+    [Header("State Overlays")]
+    [Tooltip("Map each SlotState to its overlay GameObject. Default state needs no entry.")]
+    [SerializeField] private List<SlotStateEntry> stateOverlays = new List<SlotStateEntry>();
+
     private int slotIndex = -1;
     private Action<int> onClicked;
 
     public int SlotIndex => slotIndex;
+
+    /// <summary>The state currently displayed on this slot.</summary>
+    public SlotState CurrentState { get; private set; } = SlotState.Empty;
 
     private void Awake()
     {
@@ -49,42 +56,59 @@ public class UI_ContainerSlot : MonoBehaviour
 
     /// <summary>
     /// Bind this UI element to a specific slot index and display the given data.
-    /// Pass null sprite / 0 count to show an empty slot.
+    /// The <see cref="SlotDisplayData.state"/> field determines which overlay is shown.
+    /// <see cref="SlotState.Default"/> shows the icon and count; all other states clear the content area.
     /// </summary>
-    public void SetSlot(int index, Sprite icon, Color iconColor, int count, string labelText = "")
+    public virtual void SetSlot(int index, SlotDisplayData data)
     {
         slotIndex = index;
 
-        bool isEmpty = icon == null || count <= 0;
+        bool showContent = data != null && data.state == SlotState.Default;
 
         if (itemIcon != null)
         {
-            itemIcon.sprite = icon;
-            itemIcon.color = isEmpty ? Color.clear : iconColor;
-            itemIcon.enabled = !isEmpty;
+            itemIcon.sprite = showContent ? data.icon : null;
+            itemIcon.color  = showContent ? data.iconColor : Color.clear;
+            itemIcon.enabled = showContent;
         }
 
         if (itemCountText != null)
         {
-            itemCountText.text = isEmpty ? "" : count.ToString();
-            itemCountText.enabled = !isEmpty;
+            itemCountText.text    = showContent ? data.count.ToString() : "";
+            itemCountText.enabled = showContent;
         }
 
         if (itemLabel != null)
         {
-            itemLabel.text = isEmpty ? "" : labelText;
-            itemLabel.enabled = !isEmpty && !string.IsNullOrEmpty(labelText);
+            itemLabel.text    = showContent ? data.labelText : "";
+            itemLabel.enabled = showContent && !string.IsNullOrEmpty(data.labelText);
         }
 
-        if (emptyOverlay != null)
-            emptyOverlay.SetActive(isEmpty);
+        ApplyStateOverlays(data != null ? data.state : SlotState.Empty);
     }
 
     /// <summary>
-    /// Display this slot as empty.
+    /// Display this slot as empty (<see cref="SlotState.Empty"/>).
+    /// Called by <see cref="UI_Container.InitSlots"/> and trailing-slot cleanup in Refresh.
     /// </summary>
-    public void SetEmpty(int index)
+    public virtual void SetEmpty(int index)
     {
-        SetSlot(index, null, Color.clear, 0);
+        SetSlot(index, SlotDisplayData.Empty);
+    }
+
+    /// <summary>
+    /// Activates the overlay matching <paramref name="state"/> and deactivates all others.
+    /// Updates <see cref="CurrentState"/>.
+    /// </summary>
+    protected void ApplyStateOverlays(SlotState state)
+    {
+        CurrentState = state;
+
+        for (int i = 0; i < stateOverlays.Count; i++)
+        {
+            var entry = stateOverlays[i];
+            if (entry.overlay != null)
+                entry.overlay.SetActive(entry.state == state);
+        }
     }
 }
