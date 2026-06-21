@@ -216,3 +216,4 @@ public class UI_Container : MonoBehaviour
             slotUIs[index].SetSlot(index, data.icon, data.iconColor, data.count, data.labelText);
     }
 }
+
