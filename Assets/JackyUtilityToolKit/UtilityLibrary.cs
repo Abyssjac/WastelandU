@@ -1,74 +1,74 @@
-using UnityEngine;
+// using UnityEngine;
 
-public static class UtilityLibrary
-{
-    /// <summary>
-    /// ÈÃÄ¿±ê³¯ÏòÉãÏñ»ú£¨Ò»´ÎÐÔ¶ÔÆë£©¡£³£ÓÃÓÚÄã×Ô¼ºÔÚ Update/LateUpdate ÖÐÃ¿Ö¡µ÷ÓÃ¡£
-    /// </summary>
-    /// <param name="target">ÐèÒªÃæÏòÉãÏñ»úµÄÎïÌå£¨UI/Canvas/ÊÀ½ç¿Õ¼äÎïÌå¾ù¿É£©</param>
-    /// <param name="camera">Ö¸¶¨ÉãÏñ»ú£»´« null Ê±Ê¹ÓÃ Camera.main</param>
-    /// <param name="keepUp">
-    /// true: Ê¹ÓÃÉãÏñ»úµÄ up ×÷Îª³¯ÉÏ·½Ïò£¨¸ü¡°Õý¡±£©¡£
-    /// false: ÊÀ½ç up£¨Vector3.up£©£¬¸üÎÈ¶¨µ«ÓëÉãÏñ»úÇãÐ±Ê±¿ÉÄÜ²»ÍêÈ«Ò»ÖÂ¡£
-    /// </param>
-    /// <param name="invertForward">
-    /// ÓÐÐ© UI/Æ½Ãæ·¨Ïß·½ÏòÏà·´»á¡°±³¶Ô¡±ÉãÏñ»ú£¬ÉèÎª true »á·´¹ýÀ´¡£
-    /// </param>
-    public static void FaceCameraOnce(GameObject target, Camera camera = null, bool keepUp = true, bool invertForward = false)
-    {
-        if (target == null)
-            return;
+// public static class UtilityLibrary
+// {
+//     /// <summary>
+//     /// ï¿½ï¿½Ä¿ï¿½ê³¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ë£©ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¼ï¿½ï¿½ï¿½ Update/LateUpdate ï¿½ï¿½Ã¿Ö¡ï¿½ï¿½ï¿½Ã¡ï¿½
+//     /// </summary>
+//     /// <param name="target">ï¿½ï¿½Òªï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å£¨UI/Canvas/ï¿½ï¿½ï¿½ï¿½Õ¼ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½É£ï¿½</param>
+//     /// <param name="camera">Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ null Ê±Ê¹ï¿½ï¿½ Camera.main</param>
+//     /// <param name="keepUp">
+//     /// true: Ê¹ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ up ï¿½ï¿½Îªï¿½ï¿½ï¿½Ï·ï¿½ï¿½ò£¨¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//     /// false: ï¿½ï¿½ï¿½ï¿½ upï¿½ï¿½Vector3.upï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È¶ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð±Ê±ï¿½ï¿½ï¿½Ü²ï¿½ï¿½ï¿½È«Ò»ï¿½Â¡ï¿½
+//     /// </param>
+//     /// <param name="invertForward">
+//     /// ï¿½ï¿½Ð© UI/Æ½ï¿½æ·¨ï¿½ß·ï¿½ï¿½ï¿½ï¿½à·´ï¿½á¡°ï¿½ï¿½ï¿½Ô¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Îª true ï¿½á·´ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//     /// </param>
+//     public static void FaceCameraOnce(GameObject target, Camera camera = null, bool keepUp = true, bool invertForward = false)
+//     {
+//         if (target == null)
+//             return;
 
-        var cam = camera != null ? camera : Camera.main;
-        if (cam == null)
-            return;
+//         var cam = camera != null ? camera : Camera.main;
+//         if (cam == null)
+//             return;
 
-        var t = target.transform;
+//         var t = target.transform;
 
-        // ÈÃÎïÌåµÄ forward Ö¸ÏòÉãÏñ»ú£¨»ò·´Ïò£©
-        Vector3 dir = cam.transform.position - t.position;
-        if (invertForward)
-            dir = -dir;
+//         // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ forward Ö¸ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         Vector3 dir = cam.transform.position - t.position;
+//         if (invertForward)
+//             dir = -dir;
 
-        if (dir.sqrMagnitude < 0.000001f)
-            return;
+//         if (dir.sqrMagnitude < 0.000001f)
+//             return;
 
-        Vector3 up = keepUp ? cam.transform.up : Vector3.up;
-        t.rotation = Quaternion.LookRotation(dir, up);
-    }
+//         Vector3 up = keepUp ? cam.transform.up : Vector3.up;
+//         t.rotation = Quaternion.LookRotation(dir, up);
+//     }
 
-    /// <summary>
-    /// ÈÃÄ¿±ê³ÖÐøÃæÏòÉãÏñ»ú£º×Ô¶¯Ìí¼Ó/»ñÈ¡Ò»¸ö¸úËæ×é¼þ£¨µ÷ÓÃÒ»´Î¼´¿É³ÖÐøÉúÐ§£©
-    /// </summary>
-    public static FaceCameraBillboard EnsureFaceCamera(GameObject target, Camera camera = null, bool keepUp = true, bool invertForward = false)
-    {
-        if (target == null)
-            return null;
+//     /// <summary>
+//     /// ï¿½ï¿½Ä¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ï¿½ï¿½ï¿½ï¿½/ï¿½ï¿½È¡Ò»ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Î¼ï¿½ï¿½É³ï¿½ï¿½ï¿½ï¿½ï¿½Ð§ï¿½ï¿½
+//     /// </summary>
+//     public static FaceCameraBillboard EnsureFaceCamera(GameObject target, Camera camera = null, bool keepUp = true, bool invertForward = false)
+//     {
+//         if (target == null)
+//             return null;
 
-        var comp = target.GetComponent<FaceCameraBillboard>();
-        if (comp == null)
-            comp = target.AddComponent<FaceCameraBillboard>();
+//         var comp = target.GetComponent<FaceCameraBillboard>();
+//         if (comp == null)
+//             comp = target.AddComponent<FaceCameraBillboard>();
 
-        comp.TargetCamera = camera;
-        comp.KeepUp = keepUp;
-        comp.InvertForward = invertForward;
+//         comp.TargetCamera = camera;
+//         comp.KeepUp = keepUp;
+//         comp.InvertForward = invertForward;
 
-        return comp;
-    }
+//         return comp;
+//     }
 
-    /// <summary>
-    /// ³ÖÐø½«ÎïÌå³¯ÏòÉãÏñ»úµÄ×é¼þ£¨ÓÃÓÚ¡°µ÷ÓÃÒ»´Îºó×Ô¶¯Ã¿Ö¡¶ÔÆë¡±£©
-    /// </summary>
-    public sealed class FaceCameraBillboard : MonoBehaviour
-    {
-        public Camera TargetCamera;
-        public bool KeepUp = true;
-        public bool InvertForward = false;
+//     /// <summary>
+//     /// ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½å³¯ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ú¡ï¿½ï¿½ï¿½ï¿½ï¿½Ò»ï¿½Îºï¿½ï¿½Ô¶ï¿½Ã¿Ö¡ï¿½ï¿½ï¿½ë¡±ï¿½ï¿½
+//     /// </summary>
+//     public sealed class FaceCameraBillboard : MonoBehaviour
+//     {
+//         public Camera TargetCamera;
+//         public bool KeepUp = true;
+//         public bool InvertForward = false;
 
-        // UI/¸úËæÍ¨³£·Åµ½ LateUpdate£¬±ÜÃâºÍÆäËûÎ»ÒÆ/¶¯»­¶¶¶¯
-        private void LateUpdate()
-        {
-            UtilityLibrary.FaceCameraOnce(gameObject, TargetCamera, KeepUp, InvertForward);
-        }
-    }
-}
+//         // UI/ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½Åµï¿½ LateUpdateï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Î»ï¿½ï¿½/ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+//         private void LateUpdate()
+//         {
+//             UtilityLibrary.FaceCameraOnce(gameObject, TargetCamera, KeepUp, InvertForward);
+//         }
+//     }
+// }

@@ -1,0 +1,16 @@
+{
+    "name": "Abyss.General.Editor",
+    "rootNamespace": "",
+    "references": [
+        "GUID:4b1dd20f71b590748b93736f0c333cf1"
+    ],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}
