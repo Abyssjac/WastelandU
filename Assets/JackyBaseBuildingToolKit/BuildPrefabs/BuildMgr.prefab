@@ -15,6 +15,8 @@ GameObject:
   - component: {fileID: 1383023693414985362}
   - component: {fileID: 634502552085456998}
   - component: {fileID: 4558221930718066652}
+  - component: {fileID: 5107391124531187957}
+  - component: {fileID: 8740306805969758294}
   m_Layer: 0
   m_Name: BuildMgr
   m_TagString: Untagged
@@ -53,10 +55,7 @@ MonoBehaviour:
   previewController: {fileID: 1383023693414985362}
   gridMin: {x: -15, y: -2, z: -15}
   gridMax: {x: 15, y: 10, z: 15}
-  uiContainer: {fileID: 0}
-  containerSlotCount: 10
-  buildItemInfoPanel: {fileID: 0}
-  buildContainerPanel: {fileID: 0}
+  containerSlotCount: 100
   removeKey: 99
   startPreset: {fileID: 11400000, guid: 690ec870d9cc3a641b1106335700ba81, type: 2}
   enableDebug: 0
@@ -122,12 +121,12 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 25ebded3dd33894409409ff2dc883409, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  validPreviewMaterial: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
-  invalidPreviewMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
-  conflictPreviewMaterial: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
-  hoverValidMaterial: {fileID: 2100000, guid: a38a32bf29683ca47957985e5b7d727e, type: 2}
-  hoverAlertMaterial: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
-  hoverDisabledMaterial: {fileID: 2100000, guid: 700beac4b96e0464f99b259711009dfc, type: 2}
+  validPreviewMaterial: {fileID: 2100000, guid: 90450a8c40bed1143ab30c2d2175b21c, type: 2}
+  invalidPreviewMaterial: {fileID: 2100000, guid: 2d0b469d5c173ae48bab5074ef9aad3e, type: 2}
+  conflictPreviewMaterial: {fileID: 2100000, guid: a09f1d2dd9b657346a216d483c8e9f98, type: 2}
+  hoverValidMaterial: {fileID: 2100000, guid: 90450a8c40bed1143ab30c2d2175b21c, type: 2}
+  hoverAlertMaterial: {fileID: 2100000, guid: 2d0b469d5c173ae48bab5074ef9aad3e, type: 2}
+  hoverDisabledMaterial: {fileID: 2100000, guid: 2d0b469d5c173ae48bab5074ef9aad3e, type: 2}
   previewUnitPrefab: {fileID: 8382963424789111466, guid: 282f8d74be17cd54392557f0fe044160, type: 3}
   unitScaleFactor: 0.95
 --- !u!114 &634502552085456998
@@ -143,14 +142,15 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   addSlots:
-  - itemKey: 204
+  - itemKey: 50
     count: 20
-  - itemKey: 206
+  - itemKey: 51
     count: 20
-  - itemKey: 207
+  - itemKey: 52
     count: 20
-  - itemKey: 205
+  - itemKey: 53
     count: 20
+  buildAddCount: 20
 --- !u!114 &4558221930718066652
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -163,3 +163,33 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9ce6ec61875eadd4cb1d55beb63205f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &5107391124531187957
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 44c5309eac4174540abfec76e555556d, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  buildManager: {fileID: 5690045053215457573}
+  uiContainer: {fileID: 0}
+  buildItemInfoPanel: {fileID: 0}
+  enterBuildButton: {fileID: 0}
+  exitBuildButton: {fileID: 0}
+--- !u!114 &8740306805969758294
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6407987559157291023}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8422246b1d0777e4982c699f52de9605, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::BuildSaveAdapter
+  buildManager: {fileID: 0}

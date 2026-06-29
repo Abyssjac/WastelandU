@@ -67,7 +67,7 @@ MeshRenderer:
   m_RenderingLayerMask: 1
   m_RendererPriority: 0
   m_Materials:
-  - {fileID: 2100000, guid: 79ed6769c500b714b9ed1accbf227d1f, type: 2}
+  - {fileID: 2100000, guid: c71990895e0638b468e63139f6134ce4, type: 2}
   m_StaticBatchInfo:
     firstSubMesh: 0
     subMeshCount: 0
@@ -233,11 +233,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 6306569099869462661}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a06e6390b7545624aac4bdb04eea70ca, type: 3}
+  m_Script: {fileID: 11500000, guid: 97a803cad14820a4381fd718287b09e8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::BaseVisualController
-  targetRenderers:
-  - {fileID: 4218356873380617822}
+  targetRenderers: []
   applyMode: 0
   cacheOnAwake: 1
 --- !u!114 &8763420014526563624
@@ -253,7 +252,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::NPCInteractable
   interactPrompt: '[E] Interact'
-  highlightMaterial: {fileID: 2100000, guid: b9322fd4bbd2d7944bc485032c1d77f3, type: 2}
+  highlightMaterial: {fileID: 2100000, guid: 90450a8c40bed1143ab30c2d2175b21c, type: 2}
 --- !u!1 &6363576996670530449
 GameObject:
   m_ObjectHideFlags: 0
