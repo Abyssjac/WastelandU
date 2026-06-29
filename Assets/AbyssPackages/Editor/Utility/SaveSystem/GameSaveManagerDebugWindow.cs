@@ -8,7 +8,7 @@ using UnityEditor;
 /// </summary>
 public class GameSaveManagerDebugWindow : EditorWindow
 {
-    [MenuItem("Wasteland Debug/Game Save Manager")]
+    [MenuItem("Jacky Tools/Game Save Manager")]
     public static void ShowWindow() =>
         GetWindow<GameSaveManagerDebugWindow>("Game Save Manager").Show();
 
