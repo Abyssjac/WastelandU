@@ -1,7 +1,7 @@
 {
   "dependencies": {
     "com.abyss.packages": {
-      "version": "file:E:/Git docs/AbyssPackages",
+      "version": "file:E:/Git docs/AbyssToolKitUnity",
       "depth": 0,
       "source": "local",
       "dependencies": {}
