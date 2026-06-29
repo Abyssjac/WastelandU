@@ -10,7 +10,10 @@ GameObject:
   m_Component:
   - component: {fileID: 3992795403211247833}
   - component: {fileID: 6961653617491484666}
+  - component: {fileID: 1585069774282415191}
   - component: {fileID: 7292739574960922526}
+  - component: {fileID: -9073998809019225414}
+  - component: {fileID: -892392489369395350}
   m_Layer: 0
   m_Name: InitGameObject
   m_TagString: Untagged
@@ -51,6 +54,20 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 2b18c42aab454b841bb6b702b3056dbb, type: 2}
   - {fileID: 11400000, guid: 566965a957d830d43bc93aba710d3970, type: 2}
   - {fileID: 11400000, guid: e735ae0ea5fa9aa49931020c1abff4a6, type: 2}
+--- !u!114 &1585069774282415191
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233144074376067813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bd46166974bce1a4ea422fb06369bc60, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::AllUIManager
+  escapeKey: 27
+  debugEnabled: 0
 --- !u!114 &7292739574960922526
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -64,3 +81,42 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   defaultCameraMode: 2
+--- !u!114 &-9073998809019225414
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233144074376067813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ddc0fb6ffc86974e99e9d085e413292, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MySceneManager
+  sceneEntries:
+  - displayName: MainMenu
+    sceneName: S_MainMenu
+    autoSaveBeforeLeaving: 0
+    autoLoadAfterEntering: 0
+    modifier: 1
+    hotkey: 49
+  mainMenuSceneName: S_MainMenu
+  autoSaveOnLeaveGameScene: 0
+  enableHotkeys: 1
+--- !u!114 &-892392489369395350
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 233144074376067813}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 930fe9f39d981934b8080fc74a6405fb, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::GameSaveManager
+  saveVersion: 1
+  runtimeSaveFolder: Saves
+  saveFileName: game_save.json
+  useAssetsPathInEditor: 1
+  editorSaveFolder: Assets/_SaveData

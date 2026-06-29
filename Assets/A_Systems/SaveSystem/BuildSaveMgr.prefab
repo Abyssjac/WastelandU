@@ -9,7 +9,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4485576629906605654}
-  - component: {fileID: 5355766416232151523}
+  - component: {fileID: 4605086032513145440}
   m_Layer: 0
   m_Name: BuildSaveMgr
   m_TagString: Untagged
@@ -32,7 +32,7 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5355766416232151523
+--- !u!114 &4605086032513145440
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -41,10 +41,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 6664795504721969252}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 6a1aa138e18ff3442bc36071a10926fd, type: 3}
+  m_Script: {fileID: 11500000, guid: 930fe9f39d981934b8080fc74a6405fb, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::BuildSaveManager
+  m_EditorClassIdentifier: Assembly-CSharp::GameSaveManager
+  saveVersion: 1
   runtimeSaveFolder: Saves
-  saveFileName: build_save.json
+  saveFileName: game_save.json
   useAssetsPathInEditor: 1
   editorSaveFolder: Assets/_SaveData

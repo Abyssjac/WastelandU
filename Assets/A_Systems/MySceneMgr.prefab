@@ -58,5 +58,5 @@ MonoBehaviour:
     modifier: 1
     hotkey: 49
   mainMenuSceneName: S_MainMenu
-  autoSaveOnLeaveGameScene: 1
+  autoSaveOnLeaveGameScene: 0
   enableHotkeys: 1

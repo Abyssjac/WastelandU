@@ -951,6 +951,22 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 270266939073367945, guid: 93a7285fd9669794b98f2d552e8118f9, type: 3}
+      propertyPath: allSystemPrefabSingletons.Array.size
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 270266939073367945, guid: 93a7285fd9669794b98f2d552e8118f9, type: 3}
+      propertyPath: 'allSystemPrefabSingletons.Array.data[0]'
+      value: 
+      objectReference: {fileID: 6239459547807785433, guid: 332d50ff69165ed4bb8c1486ecf755b3, type: 3}
+    - target: {fileID: 270266939073367945, guid: 93a7285fd9669794b98f2d552e8118f9, type: 3}
+      propertyPath: 'allSystemPrefabSingletons.Array.data[1]'
+      value: 
+      objectReference: {fileID: 6664795504721969252, guid: dae45e85406fcad42aea33b9cf4fd79b, type: 3}
+    - target: {fileID: 270266939073367945, guid: 93a7285fd9669794b98f2d552e8118f9, type: 3}
+      propertyPath: 'allSystemPrefabSingletons.Array.data[2]'
+      value: 
+      objectReference: {fileID: 8339872529627514267, guid: 4ebdb5dee4edfbe4fabb696cce6b2cc1, type: 3}
     - target: {fileID: 5559972325629387825, guid: 93a7285fd9669794b98f2d552e8118f9, type: 3}
       propertyPath: m_Name
       value: Main_GameSystemSingleton Variant
