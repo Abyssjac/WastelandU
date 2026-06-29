@@ -2,15 +2,15 @@ using UnityEngine;
 using UnityEditor;
 
 /// <summary>
-/// Editor debug window for BuildSaveManager.
+/// Editor debug window for GameSaveManager.
 /// Open via  Wasteland Debug → Build Save Manager  in the Unity menu bar.
 /// Requires Play Mode — shows Save / Load / Delete buttons and current save status.
 /// </summary>
 public class BuildSaveManagerDebugWindow : EditorWindow
 {
-    [MenuItem("Wasteland Debug/Build Save Manager")]
+    [MenuItem("Wasteland Debug/Game Save Manager")]
     public static void ShowWindow() =>
-        GetWindow<BuildSaveManagerDebugWindow>("Build Save Manager").Show();
+        GetWindow<BuildSaveManagerDebugWindow>("Game Save Manager").Show();
 
     private Vector2 _scrollPos;
 
@@ -28,10 +28,10 @@ public class BuildSaveManagerDebugWindow : EditorWindow
             return;
         }
 
-        var sm = BuildSaveManager.Instance;
+        var sm = GameSaveManager.Instance;
         if (sm == null)
         {
-            EditorGUILayout.HelpBox("No BuildSaveManager found in the active scene.", MessageType.Warning);
+            EditorGUILayout.HelpBox("No GameSaveManager found in the active scene.", MessageType.Warning);
             return;
         }
 
@@ -79,18 +79,11 @@ public class BuildSaveManagerDebugWindow : EditorWindow
         EditorGUILayout.Space(6);
 
         // ── Grid Stats ──────────────────────────────────────────────────────
-        SectionHeader("Grid (live)");
+        SectionHeader("Registered Savables");
 
-        var bm = BuildManager.Instance;
-        if (bm != null)
-        {
-            EditorGUILayout.LabelField("Placed Objects",   bm.Grid.AllPlaced.Count.ToString());
-            EditorGUILayout.LabelField("Instance Counter", bm.InstanceCounter.ToString());
-        }
-        else
-        {
-            EditorGUILayout.HelpBox("BuildManager not found in scene.", MessageType.Warning);
-        }
+        EditorGUILayout.LabelField("Count", sm.RegisteredSavableCount.ToString());
+        foreach (var key in sm.GetRegisteredSavableKeys())
+            EditorGUILayout.LabelField("Key", key);
 
         EditorGUILayout.EndScrollView();
     }

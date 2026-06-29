@@ -1,4 +1,5 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.SceneManagement;
@@ -28,6 +29,13 @@ public class SceneEntry
 
     [Tooltip("Exact scene name as registered in File → Build Settings.")]
     public string sceneName;
+
+    [Header("Save / Load")]
+    [Tooltip("If true, GameSaveManager.Save() is called before leaving this scene.")]
+    public bool autoSaveBeforeLeaving = true;
+
+    [Tooltip("If true, GameSaveManager.Load() is called after entering this scene.")]
+    public bool autoLoadAfterEntering = false;
 
 #if UNITY_EDITOR
     [Header("Developer Hotkey (Editor only)")]
@@ -72,7 +80,7 @@ public class MySceneManager : MonoBehaviour
     [Tooltip("Scene name of the main menu. Used by GoToMainMenu().")]
     [SerializeField] private string mainMenuSceneName = "S_MainMenu";
 
-    [Tooltip("When leaving a non-MainMenu scene, automatically call BuildSaveManager.Save() first.")]
+    [Tooltip("Master switch for scene-entry auto save before scene transitions.")]
     [SerializeField] private bool autoSaveOnLeaveGameScene = true;
 
 #if UNITY_EDITOR
@@ -89,7 +97,18 @@ public class MySceneManager : MonoBehaviour
         Instance = this;
         DontDestroyOnLoad(gameObject);
 
+        SceneManager.sceneLoaded += OnSceneLoaded;
         RegisterDebugCommands();
+    }
+
+    private void Start()
+    {
+        ScheduleAutoLoadForScene(SceneManager.GetActiveScene().name);
+    }
+
+    private void OnDestroy()
+    {
+        SceneManager.sceneLoaded -= OnSceneLoaded;
     }
 
     private void Update()
@@ -104,8 +123,8 @@ public class MySceneManager : MonoBehaviour
 
     /// <summary>
     /// Load a scene by its exact Build Settings name.
-    /// If <see cref="autoSaveOnLeaveGameScene"/> is enabled and the current scene is not the
-    /// main menu, <see cref="BuildSaveManager"/> is asked to save before the transition.
+    /// If the current scene entry allows it, <see cref="GameSaveManager"/> is asked to save
+    /// before the transition.
     /// </summary>
     public void LoadScene(string sceneName)
     {
@@ -154,13 +173,68 @@ public class MySceneManager : MonoBehaviour
     private void TryAutoSave()
     {
         if (!autoSaveOnLeaveGameScene) return;
-        if (GetCurrentSceneName() == mainMenuSceneName) return;
+        string currentSceneName = GetCurrentSceneName();
+        if (!ShouldAutoSaveBeforeLeaving(currentSceneName)) return;
 
-        if (BuildSaveManager.Instance != null)
+        if (GameSaveManager.Instance != null)
         {
-            BuildSaveManager.Instance.Save();
+            GameSaveManager.Instance.Save();
             Debug.Log("[MySceneManager] Auto-saved before scene transition.");
         }
+    }
+
+    private void OnSceneLoaded(Scene scene, LoadSceneMode mode)
+    {
+        ScheduleAutoLoadForScene(scene.name);
+    }
+
+    private void ScheduleAutoLoadForScene(string sceneName)
+    {
+        if (!ShouldAutoLoadAfterEntering(sceneName)) return;
+        StartCoroutine(AutoLoadAfterSceneReady(sceneName));
+    }
+
+    private IEnumerator AutoLoadAfterSceneReady(string sceneName)
+    {
+        yield return null;
+
+        if (SceneManager.GetActiveScene().name != sceneName) yield break;
+
+        if (GameSaveManager.Instance == null)
+        {
+            Debug.LogWarning("[MySceneManager] GameSaveManager not found. Cannot auto-load.");
+            yield break;
+        }
+
+        GameSaveManager.Instance.Load();
+        Debug.Log($"[MySceneManager] Auto-loaded save after entering scene: {sceneName}");
+    }
+
+    private bool ShouldAutoSaveBeforeLeaving(string sceneName)
+    {
+        SceneEntry entry = FindSceneEntry(sceneName);
+        if (entry != null)
+            return entry.autoSaveBeforeLeaving;
+
+        return sceneName != mainMenuSceneName;
+    }
+
+    private bool ShouldAutoLoadAfterEntering(string sceneName)
+    {
+        SceneEntry entry = FindSceneEntry(sceneName);
+        return entry != null && entry.autoLoadAfterEntering;
+    }
+
+    private SceneEntry FindSceneEntry(string sceneName)
+    {
+        for (int i = 0; i < sceneEntries.Count; i++)
+        {
+            var entry = sceneEntries[i];
+            if (entry != null && entry.sceneName == sceneName)
+                return entry;
+        }
+
+        return null;
     }
 
     private void RegisterDebugCommands()

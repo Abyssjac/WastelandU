@@ -147,12 +147,12 @@ public class UISettingPanel : MonoBehaviour, IGeneralPanelOwner
 
     private void OnSaveClicked()
     {
-        if (BuildSaveManager.Instance == null)
+        if (GameSaveManager.Instance == null)
         {
-            Debug.LogWarning("[UISettingPanel] BuildSaveManager not found. Cannot save.");
+            Debug.LogWarning("[UISettingPanel] GameSaveManager not found. Cannot save.");
             return;
         }
-        BuildSaveManager.Instance.Save();
+        GameSaveManager.Instance.Save();
         Debug.Log("[UISettingPanel] Game saved.");
     }
 

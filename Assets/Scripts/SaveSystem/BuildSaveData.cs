@@ -2,7 +2,7 @@ using System.Collections.Generic;
 
 /// <summary>
 /// Top-level container for one build save slot.
-/// Serialized to / from JSON by BuildSaveManager.
+/// Stored inside the "build" section of GameSaveData.
 /// </summary>
 [System.Serializable]
 public class BuildSaveData
@@ -20,6 +20,4 @@ public class BuildSaveData
     /// </summary>
     public int instanceCounterSnapshot;
 
-    /// <summary>Human-readable timestamp written when the save was created.</summary>
-    public string savedAt;
 }

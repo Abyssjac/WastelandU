@@ -47,10 +47,14 @@ MonoBehaviour:
   sceneEntries:
   - displayName: MainMenu
     sceneName: S_MainMenu
+    autoSaveBeforeLeaving: 0
+    autoLoadAfterEntering: 0
     modifier: 0
     hotkey: 0
   - displayName: Game
     sceneName: S_BaseBuilding
+    autoSaveBeforeLeaving: 1
+    autoLoadAfterEntering: 1
     modifier: 1
     hotkey: 49
   mainMenuSceneName: S_MainMenu

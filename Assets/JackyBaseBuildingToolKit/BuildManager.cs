@@ -144,19 +144,13 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     {
         DebugConsoleManager.Instance.RegisterDebugTarget(this);
         RegisterDebugCommands();
-        if (BuildSaveManager.Instance != null && BuildSaveManager.Instance.SaveExists())
-            BuildSaveManager.Instance.Load();
-        else {
-            LoadPreset();
-        }
-        //LoadPreset();
     }
 
     /// <summary>
     /// Load the start preset, placing all entries into the grid in order.
     /// Groups are processed sequentially. Within each group, individual entries first, then blueprints.
     /// </summary>
-    private void LoadPreset()
+    public void LoadPreset()
     {
         if (startPreset == null || startPreset.groups == null || startPreset.groups.Length == 0) return;
 
