@@ -80,9 +80,6 @@ public class MySceneManager : MonoBehaviour
     [Tooltip("Scene name of the main menu. Used by GoToMainMenu().")]
     [SerializeField] private string mainMenuSceneName = "S_MainMenu";
 
-    [Tooltip("Master switch for scene-entry auto save before scene transitions.")]
-    [SerializeField] private bool autoSaveOnLeaveGameScene = true;
-
 #if UNITY_EDITOR
     [Header("Developer Hotkeys (Editor only)")]
     [Tooltip("Master switch — disable to ignore all hotkeys without clearing the bindings.")]
@@ -172,7 +169,6 @@ public class MySceneManager : MonoBehaviour
 
     private void TryAutoSave()
     {
-        if (!autoSaveOnLeaveGameScene) return;
         string currentSceneName = GetCurrentSceneName();
         if (!ShouldAutoSaveBeforeLeaving(currentSceneName)) return;
 
@@ -213,16 +209,25 @@ public class MySceneManager : MonoBehaviour
     private bool ShouldAutoSaveBeforeLeaving(string sceneName)
     {
         SceneEntry entry = FindSceneEntry(sceneName);
-        if (entry != null)
-            return entry.autoSaveBeforeLeaving;
+        if (entry == null)
+        {
+            Debug.LogWarning($"[MySceneManager] Current scene '{sceneName}' is not registered in sceneEntries. Auto-save skipped.");
+            return false;
+        }
 
-        return sceneName != mainMenuSceneName;
+        return entry.autoSaveBeforeLeaving;
     }
 
     private bool ShouldAutoLoadAfterEntering(string sceneName)
     {
         SceneEntry entry = FindSceneEntry(sceneName);
-        return entry != null && entry.autoLoadAfterEntering;
+        if (entry == null)
+        {
+            Debug.LogWarning($"[MySceneManager] Loaded scene '{sceneName}' is not registered in sceneEntries. Auto-load skipped.");
+            return false;
+        }
+
+        return entry.autoLoadAfterEntering;
     }
 
     private SceneEntry FindSceneEntry(string sceneName)

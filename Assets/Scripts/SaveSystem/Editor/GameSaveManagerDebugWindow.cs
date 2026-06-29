@@ -6,11 +6,11 @@ using UnityEditor;
 /// Open via  Wasteland Debug → Build Save Manager  in the Unity menu bar.
 /// Requires Play Mode — shows Save / Load / Delete buttons and current save status.
 /// </summary>
-public class BuildSaveManagerDebugWindow : EditorWindow
+public class GameSaveManagerDebugWindow : EditorWindow
 {
     [MenuItem("Wasteland Debug/Game Save Manager")]
     public static void ShowWindow() =>
-        GetWindow<BuildSaveManagerDebugWindow>("Game Save Manager").Show();
+        GetWindow<GameSaveManagerDebugWindow>("Game Save Manager").Show();
 
     private Vector2 _scrollPos;
 
