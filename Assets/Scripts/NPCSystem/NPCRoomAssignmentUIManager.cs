@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using JackyUtility;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -23,7 +24,13 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
     [SerializeField] private Button confirmButton;
 
     // ���� State ����������������������������������������������������������������������������������������������������������������������������������
-    private readonly List<NPCAffinityTabUI> _slots = new List<NPCAffinityTabUI>();
+    private class SlotBinding
+    {
+        public Key_NPC Key;
+        public NPCAffinityTabUI Tab;
+    }
+
+    private readonly List<SlotBinding> _slots = new List<SlotBinding>();
     private bool _isPanelOpen;
 
     // ���� Lifecycle ��������������������������������������������������������������������������������������������������������������������������
@@ -92,11 +99,12 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
         foreach (var kvp in NPCManager.Instance.SpawnedNPCs)
         {
             GameObject    slotGO = Instantiate(npcSlotPrefab, npcSlotContainer);
-            NPCAffinityTabUI slot   = slotGO.GetComponent<NPCAffinityTabUI>();
+            NPCAffinityTabUI slot = slotGO.GetComponent<NPCAffinityTabUI>();
             if (slot != null)
             {
-                slot.Initialize(kvp.Key, assignmentManager);
-                _slots.Add(slot);
+                slot.SetData(BuildAffinityData(kvp.Key));
+                slot.Open();
+                _slots.Add(new SlotBinding { Key = kvp.Key, Tab = slot });
             }
         }
     }
@@ -104,7 +112,7 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
     private void ClearSlots()
     {
         for (int i = 0; i < _slots.Count; i++)
-            if (_slots[i] != null) Destroy(_slots[i].gameObject);
+            if (_slots[i]?.Tab != null) Destroy(_slots[i].Tab.gameObject);
         _slots.Clear();
     }
 
@@ -114,9 +122,8 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
     {
         confirmButton.gameObject.SetActive(true);
 
-        // Disable the "Assign Room" button on every slot EXCEPT the one being assigned.
-        for (int i = 0; i < _slots.Count; i++)
-            _slots[i].SetAssignButtonInteractable(_slots[i].NpcKey == npcKey);
+        // Legacy manager only refreshes visible affinity slots now.
+        RefreshSlotForNPC(npcKey);
     }
 
     private void HandleSelectionModeExited()
@@ -126,8 +133,7 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
         // Re-enable all slots and refresh their displayed room status.
         for (int i = 0; i < _slots.Count; i++)
         {
-            _slots[i].SetAssignButtonInteractable(true);
-            _slots[i].RefreshDisplay();
+            RefreshSlot(_slots[i]);
         }
     }
 
@@ -145,11 +151,52 @@ public class NPCRoomAssignmentUIManager : MonoBehaviour
     {
         for (int i = 0; i < _slots.Count; i++)
         {
-            if (_slots[i].NpcKey == npcKey)
+            if (_slots[i].Key == npcKey)
             {
-                _slots[i].RefreshDisplay();
+                RefreshSlot(_slots[i]);
                 return;
             }
         }
+    }
+
+    private void RefreshSlot(SlotBinding slot)
+    {
+        if (slot?.Tab == null) return;
+
+        slot.Tab.SetData(BuildAffinityData(slot.Key));
+        slot.Tab.Refresh();
+    }
+
+    private NPCAffinityTabData BuildAffinityData(Key_NPC npcKey)
+    {
+        NPCProperty property = ResolveProperty(npcKey);
+        NPCRuntimeData runtimeData = null;
+
+        if (NPCManager.Instance != null)
+        {
+            GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(npcKey);
+            if (npcGo != null)
+                runtimeData = npcGo.GetComponent<NPCBehaviour>()?.RuntimeData;
+        }
+
+        return new NPCAffinityTabData
+        {
+            EnvironmentValue = runtimeData != null ? runtimeData.LivingEnvironmentAffinity : 0f,
+            EnvironmentMax = property != null ? property.maxEnvAffinity : 100f,
+            DailyInteractionValue = runtimeData != null ? runtimeData.DailyInteractionAffinity : 0f,
+            DailyInteractionMax = 100f,
+            FamiliarityValue = runtimeData != null ? runtimeData.FamiliarityAffinity : 0f,
+            FamiliarityMax = 100f,
+            DailyInteractable = false
+        };
+    }
+
+    private static NPCProperty ResolveProperty(Key_NPC npcKey)
+    {
+        var dbMgr = PropertyDatabaseManager.Instance;
+        if (dbMgr == null) return null;
+
+        var db = dbMgr.GetDatabase<NPCDatabase>();
+        return db?.GetByEnum(npcKey);
     }
 }

@@ -26,10 +26,15 @@ public class NPCInteractable : BasePanelInteractable
     {
         base.Awake();
         _behaviour = GetComponent<NPCBehaviour>();
-        npcKey = _behaviour.NpcKey; // Auto-assign from NPCBehaviour to avoid mismatches in the inspector
 
         if (_behaviour == null)
+        {
             Debug.LogWarning($"[NPCInteractable] No NPCBehaviour found on '{gameObject.name}'.", this);
+            npcKey = Key_NPC.None;
+            return;
+        }
+
+        npcKey = _behaviour.NpcKey; // Auto-assign from NPCBehaviour to avoid mismatches in the inspector
     }
 
     // ─────────────────────────────────────────────────────────────
