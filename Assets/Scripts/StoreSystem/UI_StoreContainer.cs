@@ -60,7 +60,8 @@ public class UI_StoreContainer : UI_Container
 
     /// <summary>
     /// Blocks selection for <see cref="SlotState.Locked"/> slots.
-    /// All other states proceed through the normal base-class selection flow.
+    /// Re-clicking the selected store slot keeps it selected instead of toggling
+    /// it off, so keyboard submit cannot accidentally clear the current choice.
     /// </summary>
     protected override void HandleSlotClicked(int slotIndex)
     {
@@ -69,6 +70,9 @@ public class UI_StoreContainer : UI_Container
             if (_storeSlotUIs[slotIndex].CurrentState == SlotState.Locked)
                 return;
         }
+
+        if (slotIndex == SelectedSlotIndex)
+            return;
 
         base.HandleSlotClicked(slotIndex);
     }

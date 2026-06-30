@@ -12,6 +12,31 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eeea8ae73223cda4295734ed98871651, type: 3}
   m_Name: StoreInventory_Test
   m_EditorClassIdentifier: Assembly-CSharp::StoreInventorySO
+  storeContainer:
+    maxSlots: 5
+    slots:
+    - itemEnum: 35
+      itemCount: 5
+      isLocked: 0
+      initialStock: 5
+    - itemEnum: 53
+      itemCount: 3
+      isLocked: 0
+      initialStock: 3
+    - itemEnum: 61
+      itemCount: 2
+      isLocked: 0
+      initialStock: 2
+    - itemEnum: 0
+      itemCount: 0
+      isLocked: 1
+      initialStock: 0
+    - itemEnum: 0
+      itemCount: 0
+      isLocked: 1
+      initialStock: 0
+    useMaxStack: 1
+    maxStackCount: 99
   entries:
   - itemKey: 35
     initialStock: 5
