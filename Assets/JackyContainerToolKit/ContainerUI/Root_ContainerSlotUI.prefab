@@ -216,7 +216,7 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_Sprite: {fileID: 21300000, guid: 01e5a57de5f823146b89862d2f42f93b, type: 3}
+  m_Sprite: {fileID: 21300000, guid: 9370fc72bfc71bb41a90bf1d5c911f07, type: 3}
   m_Type: 1
   m_PreserveAspect: 0
   m_FillCenter: 1
@@ -239,7 +239,7 @@ GameObject:
   - component: {fileID: 7808892445200084693}
   - component: {fileID: 1514273274474657974}
   m_Layer: 5
-  m_Name: Root_ContainerSlot
+  m_Name: Root_ContainerSlotUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

@@ -111,7 +111,7 @@ GameObject:
   - component: {fileID: 343649977217019127}
   - component: {fileID: 2010880566036993965}
   m_Layer: 5
-  m_Name: ContainerUIPanelRoot
+  m_Name: Root_ContainerUI
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
