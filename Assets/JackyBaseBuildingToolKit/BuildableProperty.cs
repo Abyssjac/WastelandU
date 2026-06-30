@@ -64,7 +64,7 @@ public enum FacingMask
     YPos     = 1 << 5,
     YNeg     = 1 << 6,
 
-    // ©¤©¤ Common presets ©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ Common presets ï¿½ï¿½ï¿½ï¿½
 
     XWallFaces = XPos | XNeg,
     YWallFaces = YPos | YNeg,
@@ -125,9 +125,9 @@ public struct FootprintBox
     }
 }
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
-// Zone definitions ¡ª each zone is a region of cells with its own layer / surface config
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// ï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½T
+// Zone definitions ï¿½ï¿½ each zone is a region of cells with its own layer / surface config
+// ï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½T
 
 /// <summary>
 /// An occupancy zone: a region of cells that this buildable physically occupies.
@@ -137,7 +137,7 @@ public struct FootprintBox
 public struct OccupancyZone
 {
     public string zoneName;  // for debugging and readability in the inspector
-    [Header("Cells (additive ¡ª boxes + manual cells merged)")]
+    [Header("Cells (additive ï¿½ï¿½ boxes + manual cells merged)")]
     public FootprintBox[] boxes;
     public Vector3Int[] cells;
 
@@ -163,14 +163,14 @@ public struct OccupancyZone
 
 /// <summary>
 /// A surface zone: a region of cells where this buildable provides a surface for others.
-/// Written into <c>surfaceMap</c>, does NOT block placement ¡ª only enables it for others.
+/// Written into <c>surfaceMap</c>, does NOT block placement ï¿½ï¿½ only enables it for others.
 /// Can extend beyond the buildable's own occupancy footprint.
 /// </summary>
 [System.Serializable]
 public struct SurfaceZone
 {
     public string zoneName;  // for debugging and readability in the inspector
-    [Header("Cells (additive ¡ª boxes + manual cells merged)")]
+    [Header("Cells (additive ï¿½ï¿½ boxes + manual cells merged)")]
     public FootprintBox[] boxes;
     public Vector3Int[] cells;
 
@@ -184,7 +184,7 @@ public struct SurfaceZone
     public SurfaceFacing facing;
 }
 
-// ¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T¨T
+// ï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½Tï¿½T
 
 /// <summary>
 /// Resolved cell data for a single occupancy cell, ready for grid operations.
@@ -247,6 +247,8 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     [Header("UI Display")]
     public Sprite iconSprite;
     public string displayName;
+    [TextArea]
+    public string description;
 
     [Header("Store")]
     [Tooltip("Price displayed in the store. Used by StoreManager when building SlotDisplayData.")]
@@ -258,13 +260,13 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
 
     //[SerializeField] private List<Vector2Int> occupiedPosition;
 
-    // ©¤©¤ ISlotDisplayableProperty ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ ISlotDisplayableProperty ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     public SlotDisplayData ToSlotDisplayData(int itemCount)
     {
         return new SlotDisplayData(iconSprite, Color.white, itemCount, displayName);
     }
 
-    // ©¤©¤©¤ Cache ©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Cache ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
     private ResolvedOccupancyCell[] cachedOccupancy;
     private ResolvedSurfaceCell[] cachedSurface;
     private Vector3Int[] cachedOccupancyCellsOnly;  // just the cell positions, for preview / legacy
@@ -277,7 +279,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     {
         if (!dirty && cachedOccupancy != null) return;
 
-        // ©¤©¤ Occupancy ©¤©¤
+        // ï¿½ï¿½ï¿½ï¿½ Occupancy ï¿½ï¿½ï¿½ï¿½
         List<ResolvedOccupancyCell> occList = new List<ResolvedOccupancyCell>();
         HashSet<Vector3Int> occCellSet = new HashSet<Vector3Int>();
 
@@ -332,7 +334,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
 
         // NOTE: If an OccupancyZone has occupancyFacings == FacingMask.None,
         // ExpandFacingMask returns an empty array and the zone produces zero resolved cells.
-        // This is intentional ¡ª a zone with no facings occupies nothing.
+        // This is intentional ï¿½ï¿½ a zone with no facings occupies nothing.
 
         cachedOccupancy = occList.ToArray();
 
@@ -340,7 +342,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         cachedOccupancyCellsOnly = new Vector3Int[occCellSet.Count];
         occCellSet.CopyTo(cachedOccupancyCellsOnly);
 
-        // ©¤©¤ Surface ©¤©¤
+        // ï¿½ï¿½ï¿½ï¿½ Surface ï¿½ï¿½ï¿½ï¿½
         List<ResolvedSurfaceCell> surfList = new List<ResolvedSurfaceCell>();
 
         if (surfaceZones != null)
@@ -376,7 +378,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         dirty = false;
     }
 
-    // ©¤©¤©¤ Public API ©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Public API ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     /// <summary>
     /// All resolved occupancy cells (with per-cell layer and required surface), unrotated.
@@ -473,7 +475,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
         return ((rotationStep % 4 + 4) % 4) * 90f;
     }
 
-    // ©¤©¤©¤ FacingMask Expansion ©¤©¤©¤
+    // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ FacingMask Expansion ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
     private static readonly FacingMask[] s_allBits =
     {
@@ -488,7 +490,7 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
 
     private static readonly SurfaceFacing[] s_bitToFacing =
     {
-        SurfaceFacing.None,   // Cell  ¡ú None (the cell itself)
+        SurfaceFacing.None,   // Cell  ï¿½ï¿½ None (the cell itself)
         SurfaceFacing.XPos,
         SurfaceFacing.XNeg,
         SurfaceFacing.ZPos,
