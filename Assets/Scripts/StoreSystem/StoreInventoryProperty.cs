@@ -4,6 +4,7 @@ using System;
 public enum Key_StoreInventory
 {
     None = 0,
+    StoreInv_Test_0 = 1,
 }
 
 [CreateAssetMenu(fileName = "StoreInventoryPropertyPP_", menuName = "AllProperties/StoreInventoryProperty")]

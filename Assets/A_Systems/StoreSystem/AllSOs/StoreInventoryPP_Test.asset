@@ -9,9 +9,11 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: eeea8ae73223cda4295734ed98871651, type: 3}
-  m_Name: StoreInventory_Test
-  m_EditorClassIdentifier: Assembly-CSharp::StoreInventorySO
+  m_Script: {fileID: 11500000, guid: 613036033507527439bf34e0b7c9404f, type: 3}
+  m_Name: StoreInventoryPP_Test
+  m_EditorClassIdentifier: Assembly-CSharp::StoreInventoryProperty
+  enumKey: 1
+  stringKey: StoreInv_Test_0
   storeContainer:
     maxSlots: 5
     slots:
@@ -37,19 +39,3 @@ MonoBehaviour:
       initialStock: 0
     useMaxStack: 1
     maxStackCount: 99
-  entries:
-  - itemKey: 35
-    initialStock: 5
-    isLocked: 0
-  - itemKey: 53
-    initialStock: 3
-    isLocked: 0
-  - itemKey: 61
-    initialStock: 2
-    isLocked: 0
-  - itemKey: 0
-    initialStock: 0
-    isLocked: 1
-  - itemKey: 0
-    initialStock: 0
-    isLocked: 1

@@ -9,7 +9,7 @@ using JackyUtility;
 /// in the centralised UI stack managed by <see cref="AllUIManager"/>.
 ///
 /// Responsibilities:
-///   - Own the runtime <see cref="StoreContainer"/> copied from <see cref="StoreInventorySO"/>.
+///   - Own the runtime <see cref="StoreContainer"/> copied from <see cref="StoreInventoryProperty"/>.
 ///   - Build <see cref="SlotDisplayData"/> arrays that encode item state
 ///     (Default / SoldOut / Empty / Locked) for <see cref="UI_StoreContainer"/>.
 ///   - Show selected item details without purchasing on click.
@@ -22,8 +22,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     // --- Inspector ---
 
     [Header("Data")]
-    [Tooltip("ScriptableObject that defines the fixed slot list for this store.")]
-    [SerializeField] private StoreInventorySO inventory;
+    [Tooltip("Key used to resolve this store's inventory from StoreInventoryDatabase.")]
+    [SerializeField] private Key_StoreInventory inventoryKey = Key_StoreInventory.None;
 
     [Header("References")]
     [SerializeField] private UI_StoreContainer uiContainer;
@@ -43,6 +43,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     // --- Runtime state ---
 
     private BuildableDatabase _db;
+    private StoreInventoryDatabase _inventoryDb;
+    private StoreInventoryProperty _inventoryProperty;
     private StoreContainer _runtimeStoreContainer;
     private bool _isStoreOpen;
 
@@ -67,10 +69,16 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     {
         var dbManager = PropertyDatabaseManager.Instance;
         if (dbManager != null)
+        {
             _db = dbManager.GetDatabase<BuildableDatabase>();
+            _inventoryDb = dbManager.GetDatabase<StoreInventoryDatabase>();
+        }
 
         if (_db == null)
             Debug.LogWarning("[StoreManager] BuildableDatabase not found via PropertyDatabaseManager.");
+
+        if (_inventoryDb == null)
+            Debug.LogWarning("[StoreManager] StoreInventoryDatabase not found via PropertyDatabaseManager.");
 
         InitRuntimeInventory();
 
@@ -222,13 +230,23 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void InitRuntimeInventory()
     {
-        if (inventory == null)
+        _inventoryProperty = null;
+
+        if (_inventoryDb == null || inventoryKey == Key_StoreInventory.None)
         {
             _runtimeStoreContainer = new StoreContainer(0);
             return;
         }
 
-        _runtimeStoreContainer = inventory.CreateRuntimeContainer();
+        _inventoryProperty = _inventoryDb.GetByEnum(inventoryKey);
+        if (_inventoryProperty == null)
+        {
+            Debug.LogWarning($"[StoreManager] No StoreInventoryProperty found for key {inventoryKey}.");
+            _runtimeStoreContainer = new StoreContainer(0);
+            return;
+        }
+
+        _runtimeStoreContainer = _inventoryProperty.CreateRuntimeContainer();
     }
 
     private void RefreshUI()

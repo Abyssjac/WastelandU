@@ -9,7 +9,7 @@ using UnityEngine;
 ///     <see cref="UI_ContainerSlot"/> prefab so that store-specific overlays work.
 ///   - Intercepts clicks on <see cref="SlotState.Locked"/> slots before they
 ///     reach the selection system.
-///   - Slot count is fixed to the <see cref="StoreInventorySO"/> entry count and
+///   - Slot count is fixed to the <see cref="StoreInventoryProperty"/> slot count and
 ///     is initialised once when the store opens; it never changes at runtime.
 /// </summary>
 public class UI_StoreContainer : UI_Container
