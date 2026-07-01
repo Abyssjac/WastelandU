@@ -1,0 +1,20 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 56a574ef7953f2a4593cd8f7056c54d5, type: 3}
+  m_Name: MapNodePP_Trade
+  m_EditorClassIdentifier: Assembly-CSharp::MapNodeProperty
+  enumKey: 2
+  stringKey: MapNode_Trade
+  displayName: Trade Island
+  description: Trade Trade Trade ! Get new things from here!
+  icon: {fileID: 21300000, guid: dbd324a25f2a14b278455e4d12d2fc0a, type: 3}
+  nodeType: 2
