@@ -76,6 +76,7 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
         Row("Current Target", info.GetCurrentTarget() != null ? FormatNode(info.GetCurrentTarget()) : "-");
         Row("Route Index", info.CurrentRouteIndex.ToString());
         Row("Segment Time", mgr.GetCurrentSegmentTimeUnits().ToString());
+        Row("Segment Progress", $"{mgr.CurrentSegmentElapsedTime} / {mgr.CurrentSegmentTotalTime} ({mgr.SegmentProgress01:P0})");
     }
 
     private void DrawRuntimeNodesSection(FlightManager mgr)
@@ -151,6 +152,29 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
 
         if (GUILayout.Button("Proceed", GUILayout.Height(22)))
             SetResult(mgr.ProceedToNextNode(out string failReason), failReason);
+
+        EditorGUILayout.EndHorizontal();
+
+        EditorGUILayout.Space(4);
+        EditorGUILayout.BeginHorizontal();
+
+        if (GUILayout.Button("+1 TimeUnit", GUILayout.Height(22)))
+        {
+            mgr.AdvanceSegmentProgress(1);
+            lastResult = "Advanced segment progress by 1.";
+        }
+
+        if (GUILayout.Button("Complete Segment Progress", GUILayout.Height(22)))
+        {
+            mgr.CompleteSegmentProgress();
+            lastResult = "Segment progress completed.";
+        }
+
+        if (GUILayout.Button("Reset Progress", GUILayout.Height(22)))
+        {
+            mgr.ResetSegmentProgress();
+            lastResult = "Segment progress reset.";
+        }
 
         EditorGUILayout.EndHorizontal();
     }

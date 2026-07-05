@@ -1,7 +1,8 @@
 using JackyUtility;
 using UnityEngine;
+using UnityEngine.UI;
 
-public class FlightManager : MonoBehaviour, IDebuggable
+public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 {
     public static FlightManager Instance { get; private set; }
 
@@ -13,6 +14,11 @@ public class FlightManager : MonoBehaviour, IDebuggable
     [Header("Time")]
     [SerializeField, Min(1)] private int timePerGrid = 1;
 
+    [Header("UI")]
+    [SerializeField] private FlightMapPanelUI mapPanelUI;
+    [SerializeField] private FlightRoutePlanningPanelOwner routePlanningOwner;
+    [SerializeField] private Button openMapButton;
+
     [Header("Debug")]
     [SerializeField] private bool debugEnabled;
 
@@ -21,6 +27,8 @@ public class FlightManager : MonoBehaviour, IDebuggable
     private MapDataRuntime currentMap;
     private FlightInfo flightInfo;
     private FlightTimeCalculator timeCalculator;
+    private int currentSegmentElapsedTime;
+    private int currentSegmentTotalTime;
 
     public string DebugId => "flightmanager";
     public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
@@ -34,6 +42,11 @@ public class FlightManager : MonoBehaviour, IDebuggable
     public MapDataRuntime CurrentMap => currentMap;
     public FlightInfo FlightInfo => flightInfo;
     public FlightState State => flightInfo != null ? flightInfo.State : FlightState.Planning;
+    public int CurrentSegmentElapsedTime => currentSegmentElapsedTime;
+    public int CurrentSegmentTotalTime => currentSegmentTotalTime;
+    public float SegmentProgress01 => currentSegmentTotalTime > 0
+        ? Mathf.Clamp01((float)currentSegmentElapsedTime / currentSegmentTotalTime)
+        : 0f;
 
     private void Awake()
     {
@@ -46,6 +59,9 @@ public class FlightManager : MonoBehaviour, IDebuggable
         Instance = this;
         flightInfo = new FlightInfo();
         timeCalculator = new FlightTimeCalculator(timePerGrid);
+
+        if (openMapButton != null)
+            openMapButton.onClick.AddListener(RequestOpenPanel);
     }
 
     private void Start()
@@ -65,6 +81,66 @@ public class FlightManager : MonoBehaviour, IDebuggable
             timePerGrid = 1;
     }
 
+    private void OnDestroy()
+    {
+        if (openMapButton != null)
+            openMapButton.onClick.RemoveListener(RequestOpenPanel);
+    }
+
+    public void OnPanelOpenRequested()
+    {
+        if (currentMap == null)
+            RefreshMap();
+
+        mapPanelUI?.OpenPanel();
+    }
+
+    public void OnPanelCloseRequested()
+    {
+        if (routePlanningOwner != null && routePlanningOwner.IsRoutePlanningOpen)
+            routePlanningOwner.OnPanelCloseRequested();
+
+        mapPanelUI?.ClosePanel();
+    }
+
+    public void RequestOpenPanel()
+    {
+        if (AllUIManager.Instance != null)
+            AllUIManager.Instance.RequestOpen(this, PanelOpenType.Override);
+        else
+            OnPanelOpenRequested();
+    }
+
+    public void RequestClosePanel()
+    {
+        if (AllUIManager.Instance != null)
+            AllUIManager.Instance.RequestClose(this);
+        else
+            OnPanelCloseRequested();
+    }
+
+    public void RequestOpenRoutePlanning()
+    {
+        if (routePlanningOwner == null || State != FlightState.Planning)
+            return;
+
+        if (AllUIManager.Instance != null)
+            AllUIManager.Instance.RequestOpen(routePlanningOwner, PanelOpenType.Overlay);
+        else
+            routePlanningOwner.OnPanelOpenRequested();
+    }
+
+    public void RequestCloseRoutePlanning()
+    {
+        if (routePlanningOwner == null)
+            return;
+
+        if (AllUIManager.Instance != null && AllUIManager.Instance.IsTopPanel(routePlanningOwner))
+            AllUIManager.Instance.RequestClose(routePlanningOwner);
+        else
+            routePlanningOwner.OnPanelCloseRequested();
+    }
+
     public void SetCurrentMapKey(Key_MapDataPP mapKey)
     {
         currentMapKey = mapKey;
@@ -81,6 +157,7 @@ public class FlightManager : MonoBehaviour, IDebuggable
         {
             currentMap = null;
             flightInfo.ResetForNewMap();
+            ResetSegmentProgress();
             DebugLog("No current map key selected. Runtime map cleared.");
             return false;
         }
@@ -96,18 +173,20 @@ public class FlightManager : MonoBehaviour, IDebuggable
         {
             currentMap = null;
             flightInfo.ResetForNewMap();
+            ResetSegmentProgress();
             Debug.LogWarning($"[FlightManager] No MapDataProperty found for key {currentMapKey}.");
             return false;
         }
 
         currentMap = mapProperty.CreateRuntimeMapData(mapNodeDatabase);
         flightInfo.ResetForNewMap();
+        ResetSegmentProgress();
 
         DebugLog($"Runtime map refreshed: {currentMapKey}, nodes: {currentMap.NodeCount}.");
         return true;
     }
 
-    public bool TryAddNodeToRoute(int runtimeId, out string failReason)
+    public bool CanAddNodeToRoute(int runtimeId, out string failReason)
     {
         failReason = string.Empty;
 
@@ -135,6 +214,20 @@ public class FlightManager : MonoBehaviour, IDebuggable
             return false;
         }
 
+        return flightInfo.CanAddNode(node, out failReason);
+    }
+
+    public bool TryAddNodeToRoute(int runtimeId, out string failReason)
+    {
+        if (!CanAddNodeToRoute(runtimeId, out failReason))
+            return false;
+
+        if (!currentMap.TryGetNodeByRuntimeId(runtimeId, out MapNodeRuntime node))
+        {
+            failReason = $"Runtime node {runtimeId} not found.";
+            return false;
+        }
+
         bool result = flightInfo.TryAddNode(node, out failReason);
         if (result)
             DebugLog($"Added node {runtimeId} to route.");
@@ -150,7 +243,11 @@ public class FlightManager : MonoBehaviour, IDebuggable
             return false;
         }
 
-        return flightInfo.RemoveLastNode(out failReason);
+        bool result = flightInfo.RemoveLastNode(out failReason);
+        if (result)
+            ResetSegmentProgress();
+
+        return result;
     }
 
     public bool ClearRoute(out string failReason)
@@ -161,7 +258,11 @@ public class FlightManager : MonoBehaviour, IDebuggable
             return false;
         }
 
-        return flightInfo.ClearRoute(out failReason);
+        bool result = flightInfo.ClearRoute(out failReason);
+        if (result)
+            ResetSegmentProgress();
+
+        return result;
     }
 
     public bool CanConfirmRoute(out string failReason)
@@ -185,7 +286,11 @@ public class FlightManager : MonoBehaviour, IDebuggable
 
         bool result = flightInfo.StartFlight(out failReason);
         if (result)
+        {
+            ResetSegmentProgress();
+            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
             DebugLog("Flight started.");
+        }
 
         return result;
     }
@@ -200,7 +305,10 @@ public class FlightManager : MonoBehaviour, IDebuggable
 
         bool result = flightInfo.ArriveCurrentTarget(out failReason);
         if (result)
+        {
+            CompleteSegmentProgress();
             DebugLog("Arrived current target.");
+        }
 
         return result;
     }
@@ -215,9 +323,52 @@ public class FlightManager : MonoBehaviour, IDebuggable
 
         bool result = flightInfo.ProceedToNextNode(out failReason);
         if (result)
+        {
+            ResetSegmentProgress();
+            if (flightInfo.State == FlightState.Flying)
+                currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+
             DebugLog($"Proceed result state: {flightInfo.State}.");
+        }
 
         return result;
+    }
+
+    public bool IsNodeInRoute(int runtimeId)
+    {
+        if (flightInfo == null)
+            return false;
+
+        for (int i = 0; i < flightInfo.RouteNodes.Count; i++)
+        {
+            MapNodeRuntime node = flightInfo.RouteNodes[i];
+            if (node != null && node.RuntimeId == runtimeId)
+                return true;
+        }
+
+        return false;
+    }
+
+    public bool IsLastRouteNode(int runtimeId)
+    {
+        if (flightInfo == null || flightInfo.RouteNodes.Count == 0)
+            return false;
+
+        MapNodeRuntime last = flightInfo.RouteNodes[flightInfo.RouteNodes.Count - 1];
+        return last != null && last.RuntimeId == runtimeId;
+    }
+
+    public MapNodeRuntime GetRouteTailNode()
+    {
+        if (flightInfo == null || flightInfo.RouteNodes.Count == 0)
+            return null;
+
+        return flightInfo.RouteNodes[flightInfo.RouteNodes.Count - 1];
+    }
+
+    public MapNodeRuntime GetCurrentTargetNode()
+    {
+        return flightInfo != null ? flightInfo.GetCurrentTarget() : null;
     }
 
     public FlightNodeState GetNodeState(int runtimeId)
@@ -244,6 +395,31 @@ public class FlightManager : MonoBehaviour, IDebuggable
     {
         EnsureTimeCalculator();
         return timeCalculator.CalculateTimeUnits(from, to);
+    }
+
+    public void AdvanceSegmentProgress(int timeUnits)
+    {
+        if (currentSegmentTotalTime <= 0)
+            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+
+        currentSegmentElapsedTime = Mathf.Clamp(
+            currentSegmentElapsedTime + Mathf.Max(0, timeUnits),
+            0,
+            Mathf.Max(0, currentSegmentTotalTime));
+    }
+
+    public void CompleteSegmentProgress()
+    {
+        if (currentSegmentTotalTime <= 0)
+            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+
+        currentSegmentElapsedTime = currentSegmentTotalTime;
+    }
+
+    public void ResetSegmentProgress()
+    {
+        currentSegmentElapsedTime = 0;
+        currentSegmentTotalTime = 0;
     }
 
     private void ResolveDatabases()
