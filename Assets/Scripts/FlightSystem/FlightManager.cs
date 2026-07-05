@@ -13,6 +13,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
     [Header("Time")]
     [SerializeField, Min(1)] private int timePerGrid = 1;
+    [SerializeField, Min(1)] private int gameTimePerProgressUnit = 1;
 
     [Header("UI")]
     [SerializeField] private FlightMapPanelUI mapPanelUI;
@@ -26,9 +27,8 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private MapDataDatabase mapDataDatabase;
     private MapDataRuntime currentMap;
     private FlightInfo flightInfo;
-    private FlightTimeCalculator timeCalculator;
-    private int currentSegmentElapsedTime;
-    private int currentSegmentTotalTime;
+    private FlightTimeController flightTime;
+    private float accumulatedGameTime;
 
     public string DebugId => "flightmanager";
     public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
@@ -39,14 +39,13 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         ? Mathf.Min(maxRouteNodeCount, currentMap.NodeCount)
         : maxRouteNodeCount;
     public int TimePerGrid => timePerGrid;
+    public int GameTimePerProgressUnit => gameTimePerProgressUnit;
     public MapDataRuntime CurrentMap => currentMap;
     public FlightInfo FlightInfo => flightInfo;
     public FlightState State => flightInfo != null ? flightInfo.State : FlightState.Planning;
-    public int CurrentSegmentElapsedTime => currentSegmentElapsedTime;
-    public int CurrentSegmentTotalTime => currentSegmentTotalTime;
-    public float SegmentProgress01 => currentSegmentTotalTime > 0
-        ? Mathf.Clamp01((float)currentSegmentElapsedTime / currentSegmentTotalTime)
-        : 0f;
+    public int CurrentSegmentElapsedTime => flightTime != null ? flightTime.ElapsedTimeUnits : 0;
+    public int CurrentSegmentTotalTime => flightTime != null ? flightTime.TotalTimeUnits : 0;
+    public float SegmentProgress01 => flightTime != null ? flightTime.Progress01 : 0f;
 
     private void Awake()
     {
@@ -58,7 +57,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
         Instance = this;
         flightInfo = new FlightInfo();
-        timeCalculator = new FlightTimeCalculator(timePerGrid);
+        flightTime = new FlightTimeController(timePerGrid);
 
         if (openMapButton != null)
             openMapButton.onClick.AddListener(RequestOpenPanel);
@@ -79,6 +78,15 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
         if (timePerGrid < 1)
             timePerGrid = 1;
+
+        if (gameTimePerProgressUnit < 1)
+            gameTimePerProgressUnit = 1;
+
+    }
+
+    private void Update()
+    {
+        AdvanceTravelByGameTime(Time.deltaTime);
     }
 
     private void OnDestroy()
@@ -287,8 +295,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         bool result = flightInfo.StartFlight(out failReason);
         if (result)
         {
-            ResetSegmentProgress();
-            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+            StartCurrentSegmentTimer();
             DebugLog("Flight started.");
         }
 
@@ -326,7 +333,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         {
             ResetSegmentProgress();
             if (flightInfo.State == FlightState.Flying)
-                currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+                StartCurrentSegmentTimer();
 
             DebugLog($"Proceed result state: {flightInfo.State}.");
         }
@@ -371,6 +378,11 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         return flightInfo != null ? flightInfo.GetCurrentTarget() : null;
     }
 
+    public bool HasNextRouteNode()
+    {
+        return flightInfo != null && flightInfo.HasNextRouteNode;
+    }
+
     public FlightNodeState GetNodeState(int runtimeId)
     {
         if (currentMap == null || flightInfo == null)
@@ -385,41 +397,59 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (flightInfo == null)
             return 0;
 
-        EnsureTimeCalculator();
-        return timeCalculator.CalculateTimeUnits(
+        EnsureFlightTimeController();
+        return flightTime.CalculateTimeUnits(
             flightInfo.GetCurrentSegmentStartPosition(),
             flightInfo.GetCurrentSegmentTargetPosition());
     }
 
     public int CalculateTimeUnits(Vector2Int from, Vector2Int to)
     {
-        EnsureTimeCalculator();
-        return timeCalculator.CalculateTimeUnits(from, to);
+        EnsureFlightTimeController();
+        return flightTime.CalculateTimeUnits(from, to);
+    }
+
+    public void AdvanceTravelByGameTime(float gameTimeAmount)
+    {
+        if (flightInfo == null || flightInfo.State != FlightState.Flying)
+            return;
+
+        EnsureFlightTimeController();
+        accumulatedGameTime += Mathf.Max(0, gameTimeAmount);
+
+        float requiredGameTime = Mathf.Max(0.0001f, gameTimePerProgressUnit);
+        while (accumulatedGameTime >= requiredGameTime)
+        {
+            accumulatedGameTime -= requiredGameTime;
+            flightTime.Advance(1);
+
+            if (TryAutoArriveWhenSegmentFinished())
+                break;
+        }
     }
 
     public void AdvanceSegmentProgress(int timeUnits)
     {
-        if (currentSegmentTotalTime <= 0)
-            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
+        if (flightInfo == null || flightInfo.State != FlightState.Flying)
+            return;
 
-        currentSegmentElapsedTime = Mathf.Clamp(
-            currentSegmentElapsedTime + Mathf.Max(0, timeUnits),
-            0,
-            Mathf.Max(0, currentSegmentTotalTime));
+        EnsureSegmentTimerReady();
+        flightTime.Advance(timeUnits);
+        TryAutoArriveWhenSegmentFinished();
     }
 
     public void CompleteSegmentProgress()
     {
-        if (currentSegmentTotalTime <= 0)
-            currentSegmentTotalTime = GetCurrentSegmentTimeUnits();
-
-        currentSegmentElapsedTime = currentSegmentTotalTime;
+        EnsureSegmentTimerReady();
+        flightTime.Complete();
+        TryAutoArriveWhenSegmentFinished();
     }
 
     public void ResetSegmentProgress()
     {
-        currentSegmentElapsedTime = 0;
-        currentSegmentTotalTime = 0;
+        EnsureFlightTimeController();
+        flightTime.Reset();
+        accumulatedGameTime = 0;
     }
 
     private void ResolveDatabases()
@@ -435,12 +465,46 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             mapDataDatabase = dbManager.GetDatabase<MapDataDatabase>();
     }
 
-    private void EnsureTimeCalculator()
+    private void EnsureFlightTimeController()
     {
-        if (timeCalculator == null)
-            timeCalculator = new FlightTimeCalculator(timePerGrid);
+        if (flightTime == null)
+            flightTime = new FlightTimeController(timePerGrid);
 
-        timeCalculator.TimePerGrid = timePerGrid;
+        flightTime.TimePerGrid = timePerGrid;
+    }
+
+    private void StartCurrentSegmentTimer()
+    {
+        if (flightInfo == null)
+            return;
+
+        EnsureFlightTimeController();
+        flightTime.StartSegment(
+            flightInfo.GetCurrentSegmentStartPosition(),
+            flightInfo.GetCurrentSegmentTargetPosition());
+        accumulatedGameTime = 0;
+        TryAutoArriveWhenSegmentFinished();
+    }
+
+    private void EnsureSegmentTimerReady()
+    {
+        EnsureFlightTimeController();
+
+        if (flightTime.TotalTimeUnits <= 0 && flightInfo != null && flightInfo.State == FlightState.Flying)
+            StartCurrentSegmentTimer();
+    }
+
+    private bool TryAutoArriveWhenSegmentFinished()
+    {
+        if (flightInfo == null || flightInfo.State != FlightState.Flying)
+            return false;
+
+        EnsureFlightTimeController();
+        if (!flightTime.IsFinished)
+            return false;
+
+        flightTime.Stop();
+        return ArriveCurrentTarget(out _);
     }
 
     private void DebugLog(string message)
@@ -448,4 +512,5 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (debugEnabled)
             Debug.Log($"[FlightManager] {message}");
     }
+
 }

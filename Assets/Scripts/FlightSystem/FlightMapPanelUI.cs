@@ -23,6 +23,7 @@ public class FlightMapPanelUI : MonoBehaviour
     [SerializeField] private string startTravelText = "Sail";
     [SerializeField] private string flyingText = "Sailing";
     [SerializeField] private string proceedText = "Proceed";
+    [SerializeField] private string completedText = "Completed";
 
     [Header("Progress")]
     [SerializeField] private Slider segmentProgressSlider;
@@ -265,8 +266,8 @@ public class FlightMapPanelUI : MonoBehaviour
                 SetTravelButtonText(flyingText);
                 break;
             case FlightState.Arrived:
-                travelButton.interactable = true;
-                SetTravelButtonText(proceedText);
+                travelButton.interactable = flightManager.HasNextRouteNode();
+                SetTravelButtonText(flightManager.HasNextRouteNode() ? proceedText : completedText);
                 break;
         }
     }

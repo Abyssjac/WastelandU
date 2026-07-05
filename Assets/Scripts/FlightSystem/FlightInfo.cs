@@ -14,6 +14,7 @@ public sealed class FlightInfo
 
     public bool IsPlanning => State == FlightState.Planning;
     public bool HasRoute => routeNodes.Count > 0;
+    public bool HasNextRouteNode => State == FlightState.Arrived && CurrentRouteIndex < routeNodes.Count - 1;
 
     public void ResetForNewMap()
     {
@@ -149,11 +150,10 @@ public sealed class FlightInfo
             return false;
         }
 
-        if (CurrentRouteIndex >= routeNodes.Count - 1)
+        if (!HasNextRouteNode)
         {
-            State = FlightState.Planning;
-            failReason = string.Empty;
-            return true;
+            failReason = "No next route node.";
+            return false;
         }
 
         CurrentRouteIndex++;

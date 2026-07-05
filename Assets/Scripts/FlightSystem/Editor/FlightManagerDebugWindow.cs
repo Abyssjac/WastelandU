@@ -49,6 +49,12 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
         }
         EditorGUILayout.EndHorizontal();
 
+        if (GUILayout.Button("Simulate New Day / Refresh Map", GUILayout.Height(22)))
+        {
+            bool refreshed = mgr.RefreshMap();
+            lastResult = refreshed ? "New day simulated. Runtime map refreshed." : "Failed to simulate new day.";
+        }
+
         Row("Current Map", mgr.CurrentMapKey.ToString());
         Row("Runtime Nodes", mgr.CurrentMap != null ? mgr.CurrentMap.NodeCount.ToString() : "0");
         Row("Max Route Nodes", mgr.MaxRouteNodeCount.ToString());
