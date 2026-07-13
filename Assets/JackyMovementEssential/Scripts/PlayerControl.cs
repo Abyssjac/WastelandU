@@ -10,7 +10,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private InputActionReference dash;
 
     [Header("Optional: Other actions to manage")]
-    [Tooltip("¶îÍâÏëµ÷ÊÔ/Ð£Ñé/¿ª¹ØµÄ actions£¨±ÈÈç Look, Jump, Inventory, etc.£©")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½/Ð£ï¿½ï¿½/ï¿½ï¿½ï¿½Øµï¿½ actionsï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Look, Jump, Inventory, etc.ï¿½ï¿½")]
     [SerializeField] private List<InputActionReference> extraActions = new();
 
     [Header("Init Debug / Validation")]
@@ -18,10 +18,10 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private bool autoEnableOnStart = true;
 
     [Header("Startup Toggles")]
-    [Tooltip("Æô¶¯Ê±½ûÓÃÕâÐ© action£¨Ç¿ÀàÐÍÒýÓÃ£¬²»ÅÂÆ´Ð´´í£©")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð© actionï¿½ï¿½Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½Æ´Ð´ï¿½ï¿½ï¿½ï¿½")]
     [SerializeField] private List<InputActionReference> disableOnStart = new();
 
-    [Tooltip("Æô¶¯Ê±ÆôÓÃÕâÐ© action£¨Ç¿ÀàÐÍÒýÓÃ£©")]
+    [Tooltip("ï¿½ï¿½ï¿½ï¿½Ê±ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ð© actionï¿½ï¿½Ç¿ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½")]
     [SerializeField] private List<InputActionReference> enableOnStart = new();
 
     // === Public API ===
@@ -30,7 +30,7 @@ public class PlayerControl : MonoBehaviour
     public bool InteractTriggered() => WasTriggered(interact);
     public bool DashTriggered() => WasTriggered(dash);
 
-    /// <summary>Enable/Disable ÈÎÒâ action£¨¿É¸øÍâ²¿ÏµÍ³ÓÃ£©</summary>
+    /// <summary>Enable/Disable ï¿½ï¿½ï¿½ï¿½ actionï¿½ï¿½ï¿½É¸ï¿½ï¿½â²¿ÏµÍ³ï¿½Ã£ï¿½</summary>
     public void SetEnabled(InputActionReference actionRef, bool enabled)
     {
         var a = GetAction(actionRef);
@@ -40,7 +40,7 @@ public class PlayerControl : MonoBehaviour
         else a.Disable();
     }
 
-    /// <summary>Ò»´ÎÐÔ¿ª¹Ø¶à¸ö action</summary>
+    /// <summary>Ò»ï¿½ï¿½ï¿½Ô¿ï¿½ï¿½Ø¶ï¿½ï¿½ action</summary>
     public void SetEnabled(IEnumerable<InputActionReference> refs, bool enabled)
     {
         if (refs == null) return;
@@ -49,13 +49,13 @@ public class PlayerControl : MonoBehaviour
 
     private void Awake()
     {
-        // ¿ÉÑ¡£ºÈç¹ûÄãÏ£ÍûÕâ¸ö×é¼þÍêÈ«¶ÀÁ¢ÓÚ PlayerInput£¬Ò²¿ÉÒÔ²» RequireComponent(PlayerInput)
-        // Ö»ÒªÒýÓÃµÄ InputActionReference À´×ÔÍ¬Ò»¸ö asset£¬ÕÕÑùÄÜ¹¤×÷¡£
+        // ï¿½ï¿½Ñ¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ï£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½È«ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PlayerInputï¿½ï¿½Ò²ï¿½ï¿½ï¿½Ô²ï¿½ RequireComponent(PlayerInput)
+        // Ö»Òªï¿½ï¿½ï¿½Ãµï¿½ InputActionReference ï¿½ï¿½ï¿½ï¿½Í¬Ò»ï¿½ï¿½ assetï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ü¹ï¿½ï¿½ï¿½ï¿½ï¿½
     }
 
     private void OnEnable()
     {
-        // InputActionReference Ä¬ÈÏ²»»á×Ô¶¯ Enable£¨È¡¾öÓÚÄãµÄ PlayerInput/ÄãÊÇ·ñÊÖ¶¯ Enable£©
+        // InputActionReference Ä¬ï¿½Ï²ï¿½ï¿½ï¿½ï¿½Ô¶ï¿½ Enableï¿½ï¿½È¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ PlayerInput/ï¿½ï¿½ï¿½Ç·ï¿½ï¿½Ö¶ï¿½ Enableï¿½ï¿½
         if (autoEnableOnStart)
         {
             EnableCoreIfValid();
@@ -69,8 +69,8 @@ public class PlayerControl : MonoBehaviour
 
     private void OnDisable()
     {
-        // ÕâÀïÍ¨³£²»Ç¿ÖÆ Disable£¬±ÜÃâÓ°Ïì±ðµÄÏµÍ³/×é¼þ
-        // Èç¹ûÄãÏë³¹µ×¡°×é¼þÏÂÏß¾Í½ûÓÃÊäÈë¡±£¬¿ÉÒÔ¸Ä³É DisableCoreIfValid();
+        // ï¿½ï¿½ï¿½ï¿½Í¨ï¿½ï¿½ï¿½ï¿½Ç¿ï¿½ï¿½ Disableï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ó°ï¿½ï¿½ï¿½ï¿½ÏµÍ³/ï¿½ï¿½ï¿½
+        // ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë³¹ï¿½×¡ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ß¾Í½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ë¡±ï¿½ï¿½ï¿½ï¿½ï¿½Ô¸Ä³ï¿½ DisableCoreIfValid();
     }
 
     // =========================
@@ -79,12 +79,12 @@ public class PlayerControl : MonoBehaviour
 
     private void EnableCoreIfValid()
     {
-        // ºËÐÄ actions Èç¹û°ó¶¨ÁË¾Í enable
+        // ï¿½ï¿½ï¿½ï¿½ actions ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Ë¾ï¿½ enable
         TryEnable(move);
         TryEnable(interact);
         TryEnable(dash);
 
-        // ¶îÍâ actions Ò²¿ÉÆôÓÃ£¨¿´ÄãÐèÇó£©
+        // ï¿½ï¿½ï¿½ï¿½ actions Ò²ï¿½ï¿½ï¿½ï¿½ï¿½Ã£ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
         if (extraActions != null)
         {
             foreach (var a in extraActions) TryEnable(a);

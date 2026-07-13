@@ -7,21 +7,34 @@ public class CameraBase : MonoBehaviour
     [SerializeField] private CameraMode cameraMode = CameraMode.BaseTest;
     [SerializeField] private MonoBehaviour[] reliedCameraComponents;
     [SerializeField] private bool deactivateSelfComponent = true;
+    [SerializeField] protected Transform target;
+
     public CameraMode CameraMode => cameraMode;
+    public Transform Target => target;
+    public bool HasTarget => target != null;
 
     public Camera CachedCamera { get; private set; }
+    private bool isRegistered;
 
     protected virtual void Awake()
     {
         CachedCamera = GetComponent<Camera>();
         DeactivateCamera(); // Start with the camera disabled by default. It will be activated by the AllCameraManager when needed.
 
+        if (AllCameraManager.Instance == null)
+        {
+            Debug.LogWarning($"[{nameof(CameraBase)}] No {nameof(AllCameraManager)} instance found. Camera '{name}' will not be registered.", this);
+            return;
+        }
+
         AllCameraManager.Instance.RegisterCamera(this);
+        isRegistered = true;
     }
 
     protected virtual void OnDestroy()
     {
-        AllCameraManager.Instance.UnRegisterCamera(this);
+        if (isRegistered && AllCameraManager.Instance != null)
+            AllCameraManager.Instance.UnRegisterCamera(this);
     }
 
     public virtual void LateUpdate()
@@ -69,6 +82,16 @@ public class CameraBase : MonoBehaviour
         {
             this.enabled = false;
         }
+    }
+
+    public virtual void SetTarget(Transform newTarget)
+    {
+        target = newTarget;
+    }
+
+    public virtual void ClearTarget()
+    {
+        SetTarget(null);
     }
 }
 

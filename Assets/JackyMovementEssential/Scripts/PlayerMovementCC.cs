@@ -194,9 +194,9 @@ public class PlayerMovementCC : MonoBehaviour
         // If we already spawned one and it still exists, just re-bind target
         if (spawnedCamera != null)
         {
-            var follow = spawnedCamera.GetComponent<PlayerCameraFollow>();
-            if (follow != null)
-                follow.SetTarget(transform);
+            var cameraBase = spawnedCamera.GetComponent<CameraBase>();
+            if (cameraBase != null)
+                cameraBase.SetTarget(transform);
 
             if (useCameraRelativeMove && moveReference == null)
                 moveReference = spawnedCamera.transform;
@@ -206,14 +206,14 @@ public class PlayerMovementCC : MonoBehaviour
 
         // Spawn a new one
         spawnedCamera = Instantiate(playerCameraPrefab);
-        var camFollow = spawnedCamera.GetComponent<PlayerCameraFollow>();
-        if (camFollow != null)
+        var camBase = spawnedCamera.GetComponent<CameraBase>();
+        if (camBase != null)
         {
-            camFollow.SetTarget(transform);
+            camBase.SetTarget(transform);
         }
         else
         {
-            Debug.LogWarning("[PlayerMovement] Spawned camera prefab missing PlayerCameraFollow.", spawnedCamera);
+            Debug.LogWarning("[PlayerMovement] Spawned camera prefab missing CameraBase.", spawnedCamera);
         }
 
         if (useCameraRelativeMove && moveReference == null)
