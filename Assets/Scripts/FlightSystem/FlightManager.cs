@@ -28,7 +28,6 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private MapDataRuntime currentMap;
     private FlightInfo flightInfo;
     private FlightTimeController flightTime;
-    private float accumulatedGameTime;
 
     public string DebugId => "flightmanager";
     public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
@@ -409,23 +408,21 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         return flightTime.CalculateTimeUnits(from, to);
     }
 
+    public float CalculateRouteDistance(Vector2Int from, Vector2Int to)
+    {
+        EnsureFlightTimeController();
+        return flightTime.GetEuclideanDistance(from, to);
+    }
+
     public void AdvanceTravelByGameTime(float gameTimeAmount)
     {
         if (flightInfo == null || flightInfo.State != FlightState.Flying)
             return;
 
         EnsureFlightTimeController();
-        accumulatedGameTime += Mathf.Max(0, gameTimeAmount);
-
         float requiredGameTime = Mathf.Max(0.0001f, gameTimePerProgressUnit);
-        while (accumulatedGameTime >= requiredGameTime)
-        {
-            accumulatedGameTime -= requiredGameTime;
-            flightTime.Advance(1);
-
-            if (TryAutoArriveWhenSegmentFinished())
-                break;
-        }
+        flightTime.Advance(Mathf.Max(0f, gameTimeAmount) / requiredGameTime);
+        TryAutoArriveWhenSegmentFinished();
     }
 
     public void AdvanceSegmentProgress(int timeUnits)
@@ -449,7 +446,6 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     {
         EnsureFlightTimeController();
         flightTime.Reset();
-        accumulatedGameTime = 0;
     }
 
     private void ResolveDatabases()
@@ -482,7 +478,6 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         flightTime.StartSegment(
             flightInfo.GetCurrentSegmentStartPosition(),
             flightInfo.GetCurrentSegmentTargetPosition());
-        accumulatedGameTime = 0;
         TryAutoArriveWhenSegmentFinished();
     }
 

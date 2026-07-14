@@ -5,7 +5,7 @@ public class FlightTimeController
 {
     [SerializeField, Min(1)] private int timePerGrid = 1;
 
-    private int elapsedTimeUnits;
+    private float elapsedTimeUnits;
     private int totalTimeUnits;
     private bool isRunning;
 
@@ -24,7 +24,8 @@ public class FlightTimeController
         set => timePerGrid = Mathf.Max(1, value);
     }
 
-    public int ElapsedTimeUnits => elapsedTimeUnits;
+    public int ElapsedTimeUnits => Mathf.FloorToInt(elapsedTimeUnits);
+    public float ElapsedTimeUnitsFloat => elapsedTimeUnits;
     public int TotalTimeUnits => totalTimeUnits;
     public bool IsRunning => isRunning;
     public bool IsFinished => isRunning && elapsedTimeUnits >= totalTimeUnits;
@@ -32,14 +33,14 @@ public class FlightTimeController
         ? Mathf.Clamp01((float)elapsedTimeUnits / totalTimeUnits)
         : 0f;
 
-    public int GetManhattanDistance(Vector2Int from, Vector2Int to)
+    public float GetEuclideanDistance(Vector2Int from, Vector2Int to)
     {
-        return Mathf.Abs(from.x - to.x) + Mathf.Abs(from.y - to.y);
+        return Vector2Int.Distance(from, to);
     }
 
     public int CalculateTimeUnits(Vector2Int from, Vector2Int to)
     {
-        return GetManhattanDistance(from, to) * timePerGrid;
+        return Mathf.CeilToInt(GetEuclideanDistance(from, to) * timePerGrid);
     }
 
     public void StartSegment(Vector2Int from, Vector2Int to)
@@ -49,7 +50,7 @@ public class FlightTimeController
         isRunning = totalTimeUnits > 0;
     }
 
-    public void Advance(int timeUnits)
+    public void Advance(float timeUnits)
     {
         if (!isRunning)
             return;
