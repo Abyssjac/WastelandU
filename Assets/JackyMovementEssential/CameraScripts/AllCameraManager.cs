@@ -25,7 +25,7 @@ public class AllCameraManager : MonoBehaviour
         // Usage: cam <mode>   e.g. "cam FollowTarget"
         DebugConsoleManager.Instance.RegisterCommand(new DebugCommand(
             "cam",
-            "Switch camera mode. Usage: cam <mode>  (BaseTest / FollowTarget / FreePerspective / FirstPerson / ThirdPerson)",
+            "Switch camera mode. Usage: cam <CameraMode>. Requests are blocked while a camera override is active.",
             args =>
             {
                 if (args.Length == 0)
@@ -36,8 +36,8 @@ public class AllCameraManager : MonoBehaviour
 
                 if (Enum.TryParse(args[0], true, out CameraMode mode))
                 {
-                    SwitchToCameraMode(mode);
-                    Debug.Log($"Camera switched to {mode}");
+                    if (SwitchCameraMode(mode))
+                        Debug.Log($"Camera switched to {mode}");
                 }
                 else
                 {
@@ -68,7 +68,7 @@ public class AllCameraManager : MonoBehaviour
         allRegisteredCameras.Add(tarCameraBase);
 
         if (currentCameras.Count == 0 && tarCameraBase.CameraMode == defaultCameraMode) { 
-            SwitchToCameraMode(defaultCameraMode);
+            SwitchCameraMode(defaultCameraMode);
         }
 
         Debug.Log($"Camera '{tarCameraBase.name}' registered to AllCameraManager. Total registered cameras: {allRegisteredCameras.Count}");
@@ -86,27 +86,40 @@ public class AllCameraManager : MonoBehaviour
             currentCameras.Remove(tarCameraBase);
             if (currentCameras.Count == 0)
             {
-                SwitchToCameraMode(defaultCameraMode);
+                SwitchCameraMode(defaultCameraMode);
             }
         }
 
         Debug.Log($"Camera '{tarCameraBase.name}' unregistered from AllCameraManager. Total registered cameras: {allRegisteredCameras.Count}");
     }
 
-    public void SwitchToCameraMode(CameraMode tarMode)
+    public bool SwitchCameraMode(CameraMode tarMode)
+    {
+        if (hasCameraOverride)
+        {
+            Debug.LogWarning(
+                $"[{nameof(AllCameraManager)}] Cannot switch to '{tarMode}' while a camera override is active. Current override mode: {currentCameraMode}.",
+                this);
+            return false;
+        }
+
+        return ApplyCameraMode(tarMode);
+    }
+
+    private bool ApplyCameraMode(CameraMode tarMode)
     {
         CleanupNullCameras();
 
         if (tarMode == CameraMode.Empty)
         {
             Debug.LogError($"[{nameof(AllCameraManager)}] Cannot switch to CameraMode.Empty.", this);
-            return;
+            return false;
         }
         List<CameraBase> targetCameras = FindCamerasByMode(tarMode);
         if (targetCameras == null || targetCameras.Count == 0)
         {
             Debug.LogError($"[{nameof(AllCameraManager)}] No registered camera found for mode '{tarMode}'.", this);
-            return;
+            return false;
         }
         for (int i = 0; i < allRegisteredCameras.Count; i++)
         {
@@ -124,6 +137,7 @@ public class AllCameraManager : MonoBehaviour
         currentCameraMode = tarMode;
 
         OnCameraModeSwitched?.Invoke(currentCameraMode);
+        return true;
     }
 
     public bool BeginCameraOverride(CameraMode overrideMode)
@@ -143,15 +157,16 @@ public class AllCameraManager : MonoBehaviour
         CameraMode previousMode = currentCameraMode != CameraMode.Empty ? currentCameraMode : defaultCameraMode;
         CameraMode modeToRestore = previousMode != overrideMode ? previousMode : defaultCameraMode;
 
-        SwitchToCameraMode(overrideMode);
+        cameraModeBeforeOverride = modeToRestore;
+        hasCameraOverride = true;
 
-        if (currentCameraMode != overrideMode)
+        if (!ApplyCameraMode(overrideMode))
         {
+            hasCameraOverride = false;
+            cameraModeBeforeOverride = CameraMode.Empty;
             return false;
         }
 
-        cameraModeBeforeOverride = modeToRestore;
-        hasCameraOverride = true;
         return true;
     }
 
@@ -167,8 +182,7 @@ public class AllCameraManager : MonoBehaviour
         hasCameraOverride = false;
         cameraModeBeforeOverride = CameraMode.Empty;
 
-        SwitchToCameraMode(restoreMode);
-        return currentCameraMode == restoreMode;
+        return ApplyCameraMode(restoreMode);
     }
 
     public List<CameraBase> FindCamerasActivated()
@@ -222,4 +236,6 @@ public enum CameraMode
     FirstPerson = 4,
     ThirdPerson = 5,
     Cutscene = 6,
+    Game_PlayerView = 20,
+    Game_VoyageView = 21,
 }

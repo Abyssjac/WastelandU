@@ -19,6 +19,12 @@ public class FlightVoyageVisualController : MonoBehaviour
     [SerializeField, Min(0f)] private float arrivalDriftStartSpeed = 6f;
     [SerializeField, Min(0.01f)] private float arrivalDriftDuration = 1.2f;
 
+    [Header("Voyage View")]
+    [SerializeField] private KeyCode voyageViewToggleKey = KeyCode.Tab;
+    [SerializeField] private CameraMode voyageViewCameraMode = CameraMode.Game_VoyageView;
+    [SerializeField] private CameraMode playerViewCameraMode = CameraMode.FollowTarget;
+    [SerializeField] private bool lockPlayerMovementInVoyageView = true;
+
     [Header("Debug")]
     [SerializeField] private bool drawDirectionGizmos = true;
     [SerializeField, Min(0.1f)] private float gizmoAxisLength = 25f;
@@ -32,8 +38,59 @@ public class FlightVoyageVisualController : MonoBehaviour
     private int currentTargetRuntimeId = -1;
     private int currentRouteIndex = -1;
     private FlightState previousFlightState = FlightState.Planning;
+    private PlayerAgent movementLockedPlayer;
 
     private Transform ShipAnchor => shipAnchor != null ? shipAnchor : transform;
+    public bool IsVoyageViewActive => AllCameraManager.Instance != null
+        && AllCameraManager.Instance.CurrentCameraMode == voyageViewCameraMode;
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(voyageViewToggleKey))
+            ToggleVoyageView();
+    }
+
+    private void OnDisable()
+    {
+        ReleaseVoyageViewMovementLock();
+    }
+
+    public bool ToggleVoyageView()
+    {
+        return IsVoyageViewActive ? ExitVoyageView() : EnterVoyageView();
+    }
+
+    public bool EnterVoyageView()
+    {
+        AllCameraManager cameraManager = AllCameraManager.Instance;
+        if (cameraManager == null)
+        {
+            Debug.LogWarning($"[{nameof(FlightVoyageVisualController)}] Cannot switch voyage view because no {nameof(AllCameraManager)} exists.", this);
+            return false;
+        }
+
+        if (!cameraManager.SwitchCameraMode(voyageViewCameraMode))
+            return false;
+
+        AcquireVoyageViewMovementLock();
+        return true;
+    }
+
+    public bool ExitVoyageView()
+    {
+        AllCameraManager cameraManager = AllCameraManager.Instance;
+        if (cameraManager == null)
+        {
+            Debug.LogWarning($"[{nameof(FlightVoyageVisualController)}] Cannot switch player view because no {nameof(AllCameraManager)} exists.", this);
+            return false;
+        }
+
+        if (!cameraManager.SwitchCameraMode(playerViewCameraMode))
+            return false;
+
+        ReleaseVoyageViewMovementLock();
+        return true;
+    }
 
     private void LateUpdate()
     {
@@ -223,6 +280,28 @@ public class FlightVoyageVisualController : MonoBehaviour
         arrivalDriftElapsed = 0f;
         currentTargetRuntimeId = -1;
         currentRouteIndex = -1;
+    }
+
+    private void AcquireVoyageViewMovementLock()
+    {
+        if (!lockPlayerMovementInVoyageView || movementLockedPlayer != null)
+            return;
+
+        PlayerManager playerManager = PlayerManager.Instance;
+        if (playerManager == null || !playerManager.TryGetActivePlayer(out PlayerAgent activePlayer))
+            return;
+
+        if (activePlayer.AcquireMovementLock(this) || activePlayer.HasMovementLockOwner(this))
+            movementLockedPlayer = activePlayer;
+    }
+
+    private void ReleaseVoyageViewMovementLock()
+    {
+        if (movementLockedPlayer == null)
+            return;
+
+        movementLockedPlayer.ReleaseMovementLock(this);
+        movementLockedPlayer = null;
     }
 
     private void OnDrawGizmos()

@@ -87,13 +87,13 @@ public class AllCameraManagerDebugWindow : DebugEditorWindow<AllCameraManager>
         Header("Switch Mode");
 
         EditorGUILayout.HelpBox(
-            "Switch buttons call AllCameraManager.SwitchToCameraMode(mode). Buttons are disabled when no registered camera uses that mode.",
+            "Switch buttons call AllCameraManager.SwitchCameraMode(mode). Buttons are disabled when no registered camera uses that mode or a camera override is active.",
             MessageType.None);
 
         if (manager.HasCameraOverride)
         {
             EditorGUILayout.HelpBox(
-                "A camera override is active. Manual switching is still allowed, but End Camera Override will restore the mode recorded before the override began.",
+                "A camera override is active. Manual camera switching is blocked until the override ends, then the recorded mode is restored.",
                 MessageType.Info);
         }
 
@@ -101,17 +101,17 @@ public class AllCameraManagerDebugWindow : DebugEditorWindow<AllCameraManager>
         _selectedMode = (CameraMode)EditorGUILayout.EnumPopup("Selected Mode", _selectedMode);
 
         int selectedCount = CountMode(registeredCameras, _selectedMode);
-        using (new EditorGUI.DisabledScope(_selectedMode == CameraMode.Empty || selectedCount == 0))
+        using (new EditorGUI.DisabledScope(manager.HasCameraOverride || _selectedMode == CameraMode.Empty || selectedCount == 0))
         {
             if (GUILayout.Button("Switch", GUILayout.Width(80)))
-                manager.SwitchToCameraMode(_selectedMode);
+                manager.SwitchCameraMode(_selectedMode);
         }
         EditorGUILayout.EndHorizontal();
 
         if (_selectedMode != CameraMode.Empty && selectedCount == 0)
         {
             EditorGUILayout.HelpBox(
-                $"No registered camera currently has mode {_selectedMode}. Calling SwitchToCameraMode now would leave the manager with no active cameras.",
+                $"No registered camera currently has mode {_selectedMode}. Calling SwitchCameraMode now would leave the manager with no active cameras.",
                 MessageType.Warning);
         }
 
@@ -128,10 +128,10 @@ public class AllCameraManagerDebugWindow : DebugEditorWindow<AllCameraManager>
                 $"{mode}",
                 $"registered: {registeredCount}, Camera.enabled: {activeCount}");
 
-            using (new EditorGUI.DisabledScope(registeredCount == 0))
+            using (new EditorGUI.DisabledScope(manager.HasCameraOverride || registeredCount == 0))
             {
                 if (GUILayout.Button("Switch", GUILayout.Width(80)))
-                    manager.SwitchToCameraMode(mode);
+                    manager.SwitchCameraMode(mode);
             }
 
             EditorGUILayout.EndHorizontal();
@@ -199,10 +199,10 @@ public class AllCameraManagerDebugWindow : DebugEditorWindow<AllCameraManager>
             EditorGUIUtility.PingObject(cameraBase.gameObject);
         }
 
-        using (new EditorGUI.DisabledScope(cameraBase.CameraMode == CameraMode.Empty))
+        using (new EditorGUI.DisabledScope(manager.HasCameraOverride || cameraBase.CameraMode == CameraMode.Empty))
         {
             if (GUILayout.Button("Switch", GUILayout.Width(56)))
-                manager.SwitchToCameraMode(cameraBase.CameraMode);
+                manager.SwitchCameraMode(cameraBase.CameraMode);
         }
 
         EditorGUILayout.EndHorizontal();
