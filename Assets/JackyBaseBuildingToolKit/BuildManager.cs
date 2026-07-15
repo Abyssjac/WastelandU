@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -7,8 +7,8 @@ using JackyUtility;
 /// Central manager for the base-building system.
 /// Owns the BuildGrid3D and orchestrates place / move / remove flow.
 /// Supports layered placement (World �� Platform �� Room) with parent-child relationships.
-/// Optionally bridges with a Container of buildable items so that
-/// selecting a slot triggers placement and confirming a build consumes items.
+/// Resolves buildable ItemDefinitions from InventoryManager so that
+/// confirming a placement consumes the selected inventory item.
 /// </summary>
 public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 {
@@ -21,10 +21,6 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     [Header("Grid Bounds (in cells)")]
     [SerializeField] private Vector3Int gridMin = new Vector3Int(-50, -1, -50);
     [SerializeField] private Vector3Int gridMax = new Vector3Int(50, 10, 50);
-
-    [Header("Container")]
-    [Tooltip("Number of slots in the build container.")]
-    [SerializeField] private int containerSlotCount = 20;
 
     [Header("Remove")]
     [Tooltip("Key to remove the hovered buildable (and its children).")]
@@ -110,17 +106,14 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private int blueprintRotationStep;
 
     // ������ Container Integration ������������������������������������������������������������������������
-    private Container<Key_BuildablePP> container;
     private BuildableDatabase buildableDB;
-
-    /// <summary>The build container holding buildable items available to place. Null if database is missing.</summary>
-    public Container<Key_BuildablePP> BuildableContainer => container;
+    private ItemDefinitionDatabase itemDefinitionDB;
 
     /// <summary>Fired when the current placement or move action is cancelled via <see cref="CancelCurrentAction"/>.</summary>
     public event Action OnActionCancelled;
 
-    // Tracks which buildable key triggered the current placement so we can consume it on confirm.
-    private Key_BuildablePP pendingBuildableKey = Key_BuildablePP.None;
+    // Tracks the source inventory item for the active placement.
+    private Key_ItemDefinitionPP pendingItemKey = Key_ItemDefinitionPP.None;
 
     // debug cache (updated every frame for GUI display)
     private string debugCanPlaceReason = "";
@@ -137,7 +130,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         grid = new BuildGrid3D(gridMin, gridMax);
         grid.Initialize();
 
-        InitContainer();
+        EnsureDatabases();
     }
 
     private void Start()
@@ -269,26 +262,36 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
     // ������������������ Container Init ������������������
 
-    private void InitContainer()
+    private bool EnsureDatabases()
     {
-        var dbManager = PropertyDatabaseManager.Instance;
-        if (dbManager == null) return;
+        if (buildableDB != null && itemDefinitionDB != null)
+            return true;
 
-        buildableDB = dbManager.GetDatabase<BuildableDatabase>();
-        blueprintDB = dbManager.GetDatabase<BuildBlueprintDatabase>();
-
-        if (buildableDB == null)
+        PropertyDatabaseManager databaseManager = PropertyDatabaseManager.Instance;
+        if (databaseManager == null)
         {
-            Debug.LogWarning("[BuildManager] BuildableDatabase not found. Container integration disabled.");
-            return;
+            Debug.LogWarning("[BuildManager] PropertyDatabaseManager is not available.");
+            return false;
         }
 
-        container = new Container<Key_BuildablePP>(containerSlotCount);
+        if (buildableDB == null)
+            buildableDB = databaseManager.GetDatabase<BuildableDatabase>();
+        if (itemDefinitionDB == null)
+            itemDefinitionDB = databaseManager.GetDatabase<ItemDefinitionDatabase>();
+        if (blueprintDB == null)
+            blueprintDB = databaseManager.GetDatabase<BuildBlueprintDatabase>();
+
+        if (buildableDB == null || itemDefinitionDB == null)
+        {
+            Debug.LogWarning("[BuildManager] ItemDefinitionDatabase or BuildableDatabase is not registered.");
+            return false;
+        }
+
+        return true;
     }
 
 
-
-    // ������������������ Build Mode Toggle ������������������
+// ������������������ Build Mode Toggle ������������������
 
     /// <summary>
     /// Activate the build system. Transitions from <see cref="BuildState.Inactive"/> to <see cref="BuildState.Idle"/>.
@@ -350,41 +353,63 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     }
 
     /// <summary>
-    /// Called from <see cref="BuildManagerUI"/> when the player selects a buildable slot.
-    /// Resolves the key to a <see cref="BuildableProperty"/> and enters Placing state.
-    /// On confirm, one item of this key is consumed from the container.
+    /// Called from <see cref="BuildManagerUI"/> when the player selects an item to place.
+    /// Resolves the item's BuildableKey and reserves its source item for placement.
     /// </summary>
-    public bool SelectBuildable(Key_BuildablePP key)
+    public bool SelectBuildableItem(Key_ItemDefinitionPP itemKey)
     {
-        if (buildableDB == null)
+        if (!EnsureDatabases())
+            return false;
+
+        InventoryManager inventoryManager = InventoryManager.Instance;
+        if (inventoryManager == null)
         {
-            Debug.LogWarning("[BuildManager] BuildableDatabase not initialised.");
+            Debug.LogWarning("[BuildManager] InventoryManager is not available.");
             return false;
         }
 
-        BuildableProperty prop = buildableDB.GetByEnum(key);
+        if (!inventoryManager.HasItem(itemKey, 1))
+        {
+            Debug.LogWarning("[BuildManager] Inventory does not contain '" + itemKey + "'.");
+            return false;
+        }
+
+        ItemDefinitionSO item = itemDefinitionDB.GetByEnum(itemKey);
+        if (item == null)
+        {
+            Debug.LogWarning("[BuildManager] No ItemDefinitionSO found for key '" + itemKey + "'.");
+            return false;
+        }
+
+        if (!item.IsBuildable)
+        {
+            Debug.LogWarning("[BuildManager] Item '" + itemKey + "' is not buildable.");
+            return false;
+        }
+
+        BuildableProperty prop = buildableDB.GetByEnum(item.BuildableKey);
         if (prop == null)
         {
-            Debug.LogWarning($"[BuildManager] No BuildableProperty found for key '{key}'.");
+            Debug.LogWarning("[BuildManager] No BuildableProperty found for key '" + item.BuildableKey + "'.");
             return false;
         }
 
         if (prop.prefab == null)
         {
-            Debug.LogWarning($"[BuildManager] BuildableProperty '{key}' has no prefab assigned.");
+            Debug.LogWarning("[BuildManager] BuildableProperty '" + item.BuildableKey + "' has no prefab assigned.");
             return false;
         }
 
         if (CurrentState != BuildState.Idle)
             CancelCurrentAction();
 
-        pendingBuildableKey = key;
+        pendingItemKey = itemKey;
         BeginPlacing(prop);
         return true;
     }
 
     /// <summary>
-    /// Called from UI / hotkey to cancel current operation.
+    /// Called from UI or hotkey to cancel current operation.
     /// </summary>
     public void CancelCurrentAction()
     {
@@ -404,7 +429,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
         selectedProperty = null;
         selectedBlueprint = null;
-        pendingBuildableKey = Key_BuildablePP.None;
+        pendingItemKey = Key_ItemDefinitionPP.None;
         CurrentState = BuildState.Idle;
         AllUIManager.Instance?.SetUIInputEnabled(true);
         previewController.HidePreview();
@@ -1106,12 +1131,12 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
     private void ConfirmPlace(Vector3Int anchor)
     {
-        // ���� If this placement came from a container slot, consume one item ����
-        if (pendingBuildableKey != Key_BuildablePP.None && container != null)
+        if (pendingItemKey != Key_ItemDefinitionPP.None)
         {
-            if (!container.TryRemoveItem(pendingBuildableKey, 1, out string removeReason))
+            InventoryManager inventoryManager = InventoryManager.Instance;
+            if (inventoryManager == null || !inventoryManager.HasItem(pendingItemKey, 1))
             {
-                Debug.LogWarning($"[BuildManager] Failed to consume '{pendingBuildableKey}': {removeReason}");
+                Debug.LogWarning("[BuildManager] The source item is no longer available for placement.");
                 CancelCurrentAction();
                 return;
             }
@@ -1120,8 +1145,19 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         PlacedBuildableData placed = PlaceImmediate(selectedProperty, anchor, currentRotationStep);
         if (placed == null)
         {
-            Debug.LogError($"[BuildManager] PlaceImmediate failed at {anchor} �� should not happen after CanPlace check.");
+            Debug.LogError("[BuildManager] PlaceImmediate failed after a successful placement check.");
             return;
+        }
+
+        if (pendingItemKey != Key_ItemDefinitionPP.None)
+        {
+            if (!InventoryManager.Instance.TryRemoveItem(pendingItemKey, 1, out string removeReason))
+            {
+                Debug.LogWarning("[BuildManager] Failed to consume '" + pendingItemKey + "': " + removeReason);
+                RemoveBuildable(placed);
+                CancelCurrentAction();
+                return;
+            }
         }
 
         previewController.HidePreview();
@@ -1129,7 +1165,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         CurrentState = BuildState.Idle;
         AllUIManager.Instance?.SetUIInputEnabled(true);
         selectedProperty = null;
-        pendingBuildableKey = Key_BuildablePP.None;
+        pendingItemKey = Key_ItemDefinitionPP.None;
         debugCanPlaceReason = "";
 
         if (placed.Property.furnitureTags != FurnitureTag.None)
@@ -1137,7 +1173,6 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         else
             OnGridChanged?.Invoke();
     }
-
     private void ConfirmMove(Vector3Int newAnchor)
     {
         movingData.AnchorCell = newAnchor;

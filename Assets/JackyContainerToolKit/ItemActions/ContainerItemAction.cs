@@ -6,9 +6,8 @@ using UnityEngine;
 /// (buildable, droppable, usable, etc.) and holds only the data
 /// relevant to that capability.
 /// <para>
-/// Attach instances of these ScriptableObjects to
-/// <see cref="ContainerItemProperty.actions"/> to declare what
-/// behaviours a given item supports.
+/// These legacy ScriptableObjects are retained for existing assets.
+/// New item behaviour is configured directly on <see cref="ItemDefinitionSO"/>.
 /// </para>
 /// </summary>
 public abstract class ContainerItemAction : ScriptableObject

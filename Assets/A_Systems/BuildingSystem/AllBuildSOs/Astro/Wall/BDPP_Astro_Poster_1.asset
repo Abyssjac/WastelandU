@@ -22,14 +22,15 @@ MonoBehaviour:
     cells:
     - {x: 0, y: 0, z: 0}
     - {x: 0, y: 0, z: 1}
-    buildLayer: 3
+    buildLayer: 0
     occupancyFacings: 4
-    requiredSurface: 0
+    requiredSurface: 4
     requiredFacing: 0
   surfaceZones: []
   canRotate: 1
   canMove: 1
   iconSprite: {fileID: 21300000, guid: 13cf21bdc4af6e348aa3ab3d1e116775, type: 3}
   displayName: Astro_Poster
+  description: 
   storePrice: 10
   furnitureTags: 0

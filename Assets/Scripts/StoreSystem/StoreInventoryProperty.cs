@@ -1,6 +1,7 @@
 using JackyUtility;
 using UnityEngine;
 using System;
+
 public enum Key_StoreInventory
 {
     None = 0,
@@ -11,6 +12,7 @@ public enum Key_StoreInventory
 public class StoreInventoryProperty : EnumStringKeyedProperty<Key_StoreInventory>
 {
     [SerializeField] private StoreContainer storeContainer = new StoreContainer();
+
     public StoreContainer StoreContainer
     {
         get
@@ -48,7 +50,8 @@ public class StoreInventoryProperty : EnumStringKeyedProperty<Key_StoreInventory
         for (int i = 0; i < storeContainer.MaxSlots; i++)
         {
             StoreSlot source = storeContainer.GetSlotByIndex(i);
-            if (source == null) continue;
+            if (source == null)
+                continue;
 
             runtime.TrySetSlotAtIndex(i, source.ItemEnum, Mathf.Max(0, source.initialStock), out _);
 
@@ -75,21 +78,21 @@ public class StoreInventoryProperty : EnumStringKeyedProperty<Key_StoreInventory
 }
 
 [Serializable]
-public class StoreSlot : Slot<Key_BuildablePP>
+public class StoreSlot : Slot<Key_ItemDefinitionPP>
 {
     public bool isLocked;
     public int initialStock;
-    public override bool IsEmpty => ItemEnum == Key_BuildablePP.None && !isLocked;
+    public override bool IsEmpty => ItemEnum == Key_ItemDefinitionPP.None && !isLocked;
     public override bool ClearWhenCountZero => false;
-
 }
 
 [Serializable]
-public class StoreContainer : SContainer<StoreSlot, Key_BuildablePP>
+public class StoreContainer : SContainer<StoreSlot, Key_ItemDefinitionPP>
 {
     public StoreContainer() : base()
     {
     }
+
     public StoreContainer(int slotCount) : base(slotCount)
     {
     }

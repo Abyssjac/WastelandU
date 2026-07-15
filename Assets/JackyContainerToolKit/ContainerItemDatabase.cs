@@ -1,8 +1,10 @@
-using UnityEngine;
-using JackyUtility;
+using System;
 
-[CreateAssetMenu(fileName = "ContainerItemDB_", menuName = "AllPropertyDatabases/ContainerItemDatabase")]
-public class ContainerItemDatabase : EnumStringKeyedDatabase<ContainerItemProperty, Key_ContainerItemPP>
+/// <summary>
+/// Legacy compatibility type for existing database assets.
+/// New systems use <see cref="ItemDefinitionDatabase"/> directly.
+/// </summary>
+[Obsolete("Use ItemDefinitionDatabase for new item databases.")]
+public class ContainerItemDatabase : ItemDefinitionDatabase
 {
-
 }

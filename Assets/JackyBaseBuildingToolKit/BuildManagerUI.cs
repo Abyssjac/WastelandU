@@ -1,76 +1,80 @@
-﻿using System;
 using UnityEngine;
 using JackyUtility;
 
 /// <summary>
-/// UI counterpart of <see cref="BuildManager"/>.
-/// Owns the <see cref="FilteredContainerView{TEnum}"/> for the build container,
-/// drives <see cref="UI_Container"/> and <see cref="BuildItemInfoPanel"/>,
-/// and forwards slot selections to <see cref="BuildManager.SelectBuildable"/>.
-///
-/// Place on the same GameObject as, or alongside, the Canvas root.
+/// Presents buildable items from the global inventory and forwards selections to BuildManager.
 /// </summary>
 public class BuildManagerUI : MonoBehaviour
 {
-    // ���� Inspector ������������������������������������������������������������������������������������������������
     [Header("References")]
-    [SerializeField] private BuildManager        buildManager;
-    [SerializeField] private UI_Container        uiContainer;
-    [SerializeField] private BuildItemInfoPanel  buildItemInfoPanel;    [Header("Build Mode Buttons")]
-    [Tooltip("Button that requests build mode to open via AllUIManager.")]
+    [SerializeField] private BuildManager buildManager;
+    [SerializeField] private UI_Container uiContainer;
+    [SerializeField] private BuildItemInfoPanel buildItemInfoPanel;
+
+    [Header("Build Mode Buttons")]
     [SerializeField] private UnityEngine.UI.Button enterBuildButton;
-    [Tooltip("Button that requests build mode to close via AllUIManager.")]
     [SerializeField] private UnityEngine.UI.Button exitBuildButton;
 
-    // ���� Runtime ����������������������������������������������������������������������������������������������������
-    private BuildableDatabase                          _db;
-    private ContainerViewSource<Key_BuildablePP>       _source;
-    private FilteredContainerView<Key_BuildablePP>     _view;
+    private ItemDefinitionDatabase itemDatabase;
+    private SContainerViewSource<InventorySlot, Key_ItemDefinitionPP> source;
+    private FilteredContainerView<Key_ItemDefinitionPP> view;
 
-    // ���� Lifecycle ������������������������������������������������������������������������������������������������
     private void Start()
     {
-        var dbManager = PropertyDatabaseManager.Instance;
-        if (dbManager == null)
+        PropertyDatabaseManager databaseManager = PropertyDatabaseManager.Instance;
+        if (databaseManager == null)
         {
             Debug.LogWarning("[BuildManagerUI] PropertyDatabaseManager not found.");
             return;
         }
 
-        _db = dbManager.GetDatabase<BuildableDatabase>();
-        if (_db == null)
+        itemDatabase = databaseManager.GetDatabase<ItemDefinitionDatabase>();
+        if (itemDatabase == null)
         {
-            Debug.LogWarning("[BuildManagerUI] BuildableDatabase not found.");
+            Debug.LogWarning("[BuildManagerUI] ItemDefinitionDatabase not found.");
             return;
         }
 
-        if (buildManager == null || buildManager.BuildableContainer == null)
+        InventoryManager inventoryManager = InventoryManager.Instance;
+        if (inventoryManager == null)
         {
-            Debug.LogWarning("[BuildManagerUI] BuildManager or its BuildableContainer is not ready.");
+            Debug.LogWarning("[BuildManagerUI] InventoryManager not found.");
             return;
         }
 
-        _source = new ContainerViewSource<Key_BuildablePP>(buildManager.BuildableContainer);
-        _view   = new FilteredContainerView<Key_BuildablePP>(_source, key => _db.GetByEnum(key));
+        if (buildManager == null)
+        {
+            Debug.LogWarning("[BuildManagerUI] BuildManager reference is missing.");
+            return;
+        }
 
-        _view.OnViewChanged += RefreshUI;
+        source = new SContainerViewSource<InventorySlot, Key_ItemDefinitionPP>(inventoryManager.Inventory);
+        view = new FilteredContainerView<Key_ItemDefinitionPP>(
+            source,
+            key => itemDatabase.GetByEnum(key),
+            new FurnitureTagFilter(FurnitureTag.None));
+        view.OnViewChanged += RefreshUI;
 
         if (uiContainer != null)
             uiContainer.OnSelectionChanged += OnSlotSelected;
 
         buildManager.OnBuildModeChanged += HandleBuildModeChanged;
-        buildManager.OnActionCancelled  += HandleActionCancelled;
+        buildManager.OnActionCancelled += HandleActionCancelled;
 
-        if (enterBuildButton != null) enterBuildButton.onClick.AddListener(OnEnterBuildButtonClicked);
-        if (exitBuildButton  != null) exitBuildButton.onClick.AddListener(OnExitBuildButtonClicked);
+        if (enterBuildButton != null)
+            enterBuildButton.onClick.AddListener(OnEnterBuildButtonClicked);
+        if (exitBuildButton != null)
+            exitBuildButton.onClick.AddListener(OnExitBuildButtonClicked);
 
         RefreshUI();
     }
 
     private void OnDestroy()
     {
-        _view?.Dispose();
-        _source?.Dispose();
+        if (view != null)
+            view.OnViewChanged -= RefreshUI;
+        view?.Dispose();
+        source?.Dispose();
 
         if (uiContainer != null)
             uiContainer.OnSelectionChanged -= OnSlotSelected;
@@ -78,45 +82,35 @@ public class BuildManagerUI : MonoBehaviour
         if (buildManager != null)
         {
             buildManager.OnBuildModeChanged -= HandleBuildModeChanged;
-            buildManager.OnActionCancelled  -= HandleActionCancelled;
+            buildManager.OnActionCancelled -= HandleActionCancelled;
         }
 
-        if (enterBuildButton != null) enterBuildButton.onClick.RemoveListener(OnEnterBuildButtonClicked);
-        if (exitBuildButton  != null) exitBuildButton.onClick.RemoveListener(OnExitBuildButtonClicked);
+        if (enterBuildButton != null)
+            enterBuildButton.onClick.RemoveListener(OnEnterBuildButtonClicked);
+        if (exitBuildButton != null)
+            exitBuildButton.onClick.RemoveListener(OnExitBuildButtonClicked);
     }
 
-    // ���� Public Filter API ��������������������������������������������������������������������������������
-
-    /// <summary>
-    /// Apply a <see cref="FurnitureTag"/> filter to the container view.
-    /// Pass <see cref="FurnitureTag.None"/> to show all items.
-    /// Wire this to a <see cref="BuildFilterTabUI"/> or call it directly.
-    /// </summary>
     public void ApplyFilter(FurnitureTag tag)
     {
-        _view?.SetFilter(tag == FurnitureTag.None
-            ? null
-            : (IContainerFilter<Key_BuildablePP>) new FurnitureTagFilter(tag));
+        view?.SetFilter(new FurnitureTagFilter(tag));
     }
 
-    /// <summary>Remove any active filter and show all items.</summary>
     public void ClearFilter()
     {
-        _view?.SetFilter(null);
+        view?.SetFilter(new FurnitureTagFilter(FurnitureTag.None));
     }
-
-    // -- Private --
 
     private void OnEnterBuildButtonClicked()
     {
-        if (buildManager == null) return;
-        AllUIManager.Instance?.RequestOpen(buildManager, PanelOpenType.Override);
+        if (buildManager != null)
+            AllUIManager.Instance?.RequestOpen(buildManager, PanelOpenType.Override);
     }
 
     private void OnExitBuildButtonClicked()
     {
-        if (buildManager == null) return;
-        AllUIManager.Instance?.RequestClose(buildManager);
+        if (buildManager != null)
+            AllUIManager.Instance?.RequestClose(buildManager);
     }
 
     private void HandleBuildModeChanged(bool entering)
@@ -125,6 +119,7 @@ public class BuildManagerUI : MonoBehaviour
         {
             uiContainer?.Open();
             buildItemInfoPanel?.Open();
+            RefreshUI();
         }
         else
         {
@@ -147,22 +142,25 @@ public class BuildManagerUI : MonoBehaviour
             return;
         }
 
-        if (buildManager == null || !buildManager.IsBuildModeActive) return;
+        if (buildManager == null || !buildManager.IsBuildModeActive || view == null)
+            return;
 
-        if (_view == null || !_view.TryGetKeyAtIndex(index, out Key_BuildablePP key)) return;
+        if (!view.TryGetKeyAtIndex(index, out Key_ItemDefinitionPP itemKey))
+            return;
 
-        BuildableProperty prop = _db?.GetByEnum(key);
-        if (prop != null)
-            buildItemInfoPanel?.Show(prop);
+        ItemDefinitionSO item = itemDatabase.GetByEnum(itemKey);
+        if (item != null)
+            buildItemInfoPanel?.Show(item);
 
-        buildManager.SelectBuildable(key);
+        buildManager.SelectBuildableItem(itemKey);
     }
 
     private void RefreshUI()
     {
-        if (_view == null || uiContainer == null) return;
+        if (view == null || uiContainer == null)
+            return;
 
-        SlotDisplayData[] data = _view.GetDisplayData();
+        SlotDisplayData[] data = view.GetDisplayData();
         uiContainer.InitSlots(data.Length);
         uiContainer.Refresh(data);
     }

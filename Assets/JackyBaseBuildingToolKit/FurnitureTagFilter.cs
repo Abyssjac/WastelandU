@@ -1,34 +1,37 @@
 using JackyUtility;
 
 /// <summary>
-/// Filters <see cref="Key_BuildablePP"/> items by <see cref="FurnitureTag"/> bit-mask.
-/// An item passes if its <see cref="BuildableProperty.furnitureTags"/> has at least one
-/// flag in common with the required tag.
-///
-/// Usage:
-/// <code>
-///   _view.SetFilter(new FurnitureTagFilter(FurnitureTag.Art));
-/// </code>
+/// Filters inventory items by the FurnitureTag of their linked BuildableProperty.
+/// Items without a BuildableKey never pass.
 /// </summary>
-public class FurnitureTagFilter : IContainerFilter<Key_BuildablePP>
+public class FurnitureTagFilter : IContainerFilter<Key_ItemDefinitionPP>
 {
-    private readonly FurnitureTag _requiredTag;
+    private readonly FurnitureTag requiredTag;
 
     public FurnitureTagFilter(FurnitureTag requiredTag)
     {
-        _requiredTag = requiredTag;
+        this.requiredTag = requiredTag;
     }
 
-    public bool Matches(Key_BuildablePP key)
+    public bool Matches(Key_ItemDefinitionPP itemKey)
     {
-        if (PropertyDatabaseManager.Instance == null) return false;
+        PropertyDatabaseManager databaseManager = PropertyDatabaseManager.Instance;
+        if (databaseManager == null)
+            return false;
 
-        BuildableDatabase db = PropertyDatabaseManager.Instance.GetDatabase<BuildableDatabase>();
-        if (db == null) return false;
+        ItemDefinitionDatabase itemDatabase = databaseManager.GetDatabase<ItemDefinitionDatabase>();
+        BuildableDatabase buildableDatabase = databaseManager.GetDatabase<BuildableDatabase>();
+        if (itemDatabase == null || buildableDatabase == null)
+            return false;
 
-        BuildableProperty prop = db.GetByEnum(key);
-        if (prop == null) return false;
+        ItemDefinitionSO item = itemDatabase.GetByEnum(itemKey);
+        if (item == null || !item.IsBuildable)
+            return false;
 
-        return (prop.furnitureTags & _requiredTag) != 0;
+        if (requiredTag == FurnitureTag.None)
+            return true;
+
+        BuildableProperty buildable = buildableDatabase.GetByEnum(item.BuildableKey);
+        return buildable != null && (buildable.furnitureTags & requiredTag) != 0;
     }
 }

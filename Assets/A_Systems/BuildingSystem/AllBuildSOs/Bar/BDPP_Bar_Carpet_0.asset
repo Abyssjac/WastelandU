@@ -22,7 +22,7 @@ MonoBehaviour:
     - cornerA: {x: 0, y: 0, z: 0}
       cornerB: {x: 1, y: 0, z: 3}
     cells: []
-    buildLayer: 5
+    buildLayer: 0
     occupancyFacings: 64
     requiredSurface: 5
     requiredFacing: 0
@@ -31,5 +31,6 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
   displayName: Bar_Carpet
+  description: 
   storePrice: 15
   furnitureTags: 0

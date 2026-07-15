@@ -4,25 +4,13 @@ using UnityEngine.UI;
 using JackyUtility;
 
 /// <summary>
-/// Central manager for the store system.
-/// Implements <see cref="IGeneralPanelOwner"/> so the store panel participates
-/// in the centralised UI stack managed by <see cref="AllUIManager"/>.
-///
-/// Responsibilities:
-///   - Own the runtime <see cref="StoreContainer"/> copied from <see cref="StoreInventoryProperty"/>.
-///   - Build <see cref="SlotDisplayData"/> arrays that encode item state
-///     (Default / SoldOut / Empty / Locked) for <see cref="UI_StoreContainer"/>.
-///   - Show selected item details without purchasing on click.
-///   - Confirm purchases with Enter and add bought items to the build container.
+/// Sells buildable ItemDefinitions and grants purchased items to InventoryManager.
 /// </summary>
 public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 {
     public static StoreManager Instance { get; private set; }
 
-    // --- Inspector ---
-
     [Header("Data")]
-    [Tooltip("Key used to resolve this store's inventory from StoreInventoryDatabase.")]
     [SerializeField] private Key_StoreInventory inventoryKey = Key_StoreInventory.None;
 
     [Header("References")]
@@ -30,30 +18,22 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     [SerializeField] private StoreItemDetailPanelUI detailPanel;
 
     [Header("Open Button")]
-    [Tooltip("Button in the HUD that requests the store to open via AllUIManager.")]
     [SerializeField] private Button enterStoreButton;
 
     [Header("Currency")]
-    [Tooltip("Currency used for all purchases in this store.")]
     [SerializeField] private CurrencyType purchaseCurrency = CurrencyType.Credits;
 
     [Header("Debug")]
     [SerializeField] private bool debugEnabled;
 
-    // --- Runtime state ---
+    private ItemDefinitionDatabase itemDatabase;
+    private BuildableDatabase buildableDatabase;
+    private StoreInventoryDatabase inventoryDatabase;
+    private StoreInventoryProperty inventoryProperty;
+    private StoreContainer runtimeStoreContainer;
+    private bool isStoreOpen;
 
-    private BuildableDatabase _db;
-    private StoreInventoryDatabase _inventoryDb;
-    private StoreInventoryProperty _inventoryProperty;
-    private StoreContainer _runtimeStoreContainer;
-    private bool _isStoreOpen;
-
-    /// <summary>
-    /// Fired when the store panel opens (true) or closes (false).
-    /// </summary>
     public event Action<bool> OnStoreModeChanged;
-
-    // --- Lifecycle ---
 
     private void Awake()
     {
@@ -62,29 +42,31 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             Destroy(gameObject);
             return;
         }
+
         Instance = this;
     }
 
     private void Start()
     {
-        var dbManager = PropertyDatabaseManager.Instance;
-        if (dbManager != null)
+        PropertyDatabaseManager databaseManager = PropertyDatabaseManager.Instance;
+        if (databaseManager != null)
         {
-            _db = dbManager.GetDatabase<BuildableDatabase>();
-            _inventoryDb = dbManager.GetDatabase<StoreInventoryDatabase>();
+            itemDatabase = databaseManager.GetDatabase<ItemDefinitionDatabase>();
+            buildableDatabase = databaseManager.GetDatabase<BuildableDatabase>();
+            inventoryDatabase = databaseManager.GetDatabase<StoreInventoryDatabase>();
         }
 
-        if (_db == null)
+        if (itemDatabase == null)
+            Debug.LogWarning("[StoreManager] ItemDefinitionDatabase not found via PropertyDatabaseManager.");
+        if (buildableDatabase == null)
             Debug.LogWarning("[StoreManager] BuildableDatabase not found via PropertyDatabaseManager.");
-
-        if (_inventoryDb == null)
+        if (inventoryDatabase == null)
             Debug.LogWarning("[StoreManager] StoreInventoryDatabase not found via PropertyDatabaseManager.");
 
-        InitRuntimeInventory();
+        InitializeRuntimeInventory();
 
         if (uiContainer != null)
             uiContainer.OnSelectionChanged += HandleSlotSelected;
-
         if (enterStoreButton != null)
             enterStoreButton.onClick.AddListener(OnEnterStoreButtonClicked);
 
@@ -93,7 +75,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void Update()
     {
-        if (!_isStoreOpen) return;
+        if (!isStoreOpen)
+            return;
 
         if (Input.GetKeyDown(KeyCode.Return) || Input.GetKeyDown(KeyCode.KeypadEnter))
             ConfirmSelectedPurchase();
@@ -103,200 +86,157 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     {
         if (uiContainer != null)
             uiContainer.OnSelectionChanged -= HandleSlotSelected;
-
         if (enterStoreButton != null)
             enterStoreButton.onClick.RemoveListener(OnEnterStoreButtonClicked);
+        if (Instance == this)
+            Instance = null;
     }
-
-    // --- IGeneralPanelOwner ---
 
     public void OnPanelOpenRequested()
     {
-        _isStoreOpen = true;
-
+        isStoreOpen = true;
         uiContainer?.Open();
-        uiContainer?.InitSlots(_runtimeStoreContainer != null ? _runtimeStoreContainer.MaxSlots : 0);
+        uiContainer?.InitSlots(runtimeStoreContainer != null ? runtimeStoreContainer.MaxSlots : 0);
         RefreshUI();
         SelectFirstPurchasableSlot();
         OnStoreModeChanged?.Invoke(true);
-
-        if (debugEnabled)
-            Debug.Log("[StoreManager] Store opened.");
     }
 
     public void OnPanelCloseRequested()
     {
-        _isStoreOpen = false;
-
+        isStoreOpen = false;
         uiContainer?.ClearSelection();
         detailPanel?.ShowEmpty();
         uiContainer?.Close();
         OnStoreModeChanged?.Invoke(false);
-
-        if (debugEnabled)
-            Debug.Log("[StoreManager] Store closed.");
     }
 
-    // --- Public API ---
-
-    /// <summary>
-    /// Filters are disabled for the current store flow.
-    /// This no-op keeps older filter tab bindings compiling.
-    /// </summary>
     public void ApplyFilter(FurnitureTag tag)
     {
         if (debugEnabled)
-            Debug.Log($"[StoreManager] Store filters are disabled. Ignored filter: {tag}");
+            Debug.Log("[StoreManager] Store filters are disabled. Ignored filter: " + tag);
     }
 
-    /// <summary>
-    /// Attempt to purchase the item in slot <paramref name="slotIndex"/>.
-    /// Deducts the item price from <see cref="EconomyManager"/> and decrements
-    /// the runtime stock.  Returns false if the purchase could not be completed.
-    /// </summary>
     public bool TryPurchase(int slotIndex)
     {
-        if (!TryGetSlotAndProperty(slotIndex, out StoreSlot slot, out BuildableProperty prop))
+        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out BuildableProperty buildable))
             return false;
-
-        if (slot.isLocked)
-        {
-            if (debugEnabled)
-                Debug.Log($"[StoreManager] Slot {slotIndex} is locked.");
+        if (slot.isLocked || slot.ItemCount <= 0)
             return false;
-        }
-
-        if (slot.ItemCount <= 0)
-        {
-            if (debugEnabled)
-                Debug.Log($"[StoreManager] Slot {slotIndex} is sold out.");
-            return false;
-        }
-
         if (EconomyManager.Instance == null)
         {
             Debug.LogWarning("[StoreManager] EconomyManager not found.");
             return false;
         }
 
-        Container<Key_BuildablePP> buildContainer = BuildManager.Instance != null
-            ? BuildManager.Instance.BuildableContainer
-            : null;
-
-        if (!CanAddToBuildContainer(buildContainer, slot.ItemEnum, out string failReason))
+        InventoryManager inventoryManager = InventoryManager.Instance;
+        if (inventoryManager == null)
         {
-            if (debugEnabled)
-                Debug.Log($"[StoreManager] Buildable container cannot accept {slot.ItemEnum}: {failReason}");
+            Debug.LogWarning("[StoreManager] InventoryManager not found.");
             return false;
         }
 
-        float price = prop.storePrice;
+        if (!inventoryManager.CanAddItem(slot.ItemEnum, 1, out string failReason))
+        {
+            if (debugEnabled)
+                Debug.Log("[StoreManager] Inventory cannot accept " + slot.ItemEnum + ": " + failReason);
+            return false;
+        }
+
+        float price = buildable.storePrice;
         if (!EconomyManager.Instance.TrySpend(purchaseCurrency, price))
         {
             if (debugEnabled)
-                Debug.Log($"[StoreManager] Not enough {purchaseCurrency} to buy {prop.displayName} ({price}).");
+                Debug.Log("[StoreManager] Not enough " + purchaseCurrency + " to buy " + item.StringKey + ".");
             return false;
         }
 
-        if (!_runtimeStoreContainer.TryRemoveCountAtIndex(slotIndex, 1, out failReason))
+        if (!runtimeStoreContainer.TryRemoveCountAtIndex(slotIndex, 1, out failReason))
         {
             EconomyManager.Instance.AddCurrency(purchaseCurrency, price);
-
-            if (debugEnabled)
-                Debug.Log($"[StoreManager] Purchase failed at slot {slotIndex}: {failReason}");
             return false;
         }
 
-        if (!buildContainer.TryAddItem(slot.ItemEnum, 1, out failReason))
+        if (!inventoryManager.TryAddItem(slot.ItemEnum, 1, out failReason))
         {
             EconomyManager.Instance.AddCurrency(purchaseCurrency, price);
-            _runtimeStoreContainer.TryAddCountAtIndex(slotIndex, 1, out _);
-
-            Debug.LogWarning($"[StoreManager] Purchased {slot.ItemEnum}, but failed to add it to build container: {failReason}");
+            runtimeStoreContainer.TryAddCountAtIndex(slotIndex, 1, out _);
+            Debug.LogWarning("[StoreManager] Purchased item could not be added to inventory: " + failReason);
             RefreshUI();
             RefreshSelectedDetail();
             return false;
         }
 
         if (debugEnabled)
-            Debug.Log($"[StoreManager] Purchased {prop.displayName}. Stock remaining: {slot.ItemCount}");
+            Debug.Log("[StoreManager] Purchased " + item.StringKey + ". Stock remaining: " + slot.ItemCount);
 
         RefreshUI();
         RefreshSelectedDetail();
         return true;
     }
 
-    // --- Private ---
-
-    private void InitRuntimeInventory()
+    private void InitializeRuntimeInventory()
     {
-        _inventoryProperty = null;
-
-        if (_inventoryDb == null || inventoryKey == Key_StoreInventory.None)
+        inventoryProperty = null;
+        if (inventoryDatabase == null || inventoryKey == Key_StoreInventory.None)
         {
-            _runtimeStoreContainer = new StoreContainer(0);
+            runtimeStoreContainer = new StoreContainer(0);
             return;
         }
 
-        _inventoryProperty = _inventoryDb.GetByEnum(inventoryKey);
-        if (_inventoryProperty == null)
+        inventoryProperty = inventoryDatabase.GetByEnum(inventoryKey);
+        if (inventoryProperty == null)
         {
-            Debug.LogWarning($"[StoreManager] No StoreInventoryProperty found for key {inventoryKey}.");
-            _runtimeStoreContainer = new StoreContainer(0);
+            Debug.LogWarning("[StoreManager] No StoreInventoryProperty found for key " + inventoryKey + ".");
+            runtimeStoreContainer = new StoreContainer(0);
             return;
         }
 
-        _runtimeStoreContainer = _inventoryProperty.CreateRuntimeContainer();
+        runtimeStoreContainer = inventoryProperty.CreateRuntimeContainer();
     }
 
     private void RefreshUI()
     {
-        if (uiContainer == null || _runtimeStoreContainer == null) return;
+        if (uiContainer == null || runtimeStoreContainer == null)
+            return;
 
-        SlotDisplayData[] data = BuildDisplayData();
-        uiContainer.Refresh(data);
+        uiContainer.Refresh(BuildDisplayData());
     }
 
     private SlotDisplayData[] BuildDisplayData()
     {
-        int count = _runtimeStoreContainer != null ? _runtimeStoreContainer.MaxSlots : 0;
-        SlotDisplayData[] result = new SlotDisplayData[count];
+        int count = runtimeStoreContainer != null ? runtimeStoreContainer.MaxSlots : 0;
+        var result = new SlotDisplayData[count];
 
         for (int i = 0; i < count; i++)
         {
-            StoreSlot slot = _runtimeStoreContainer.GetSlotByIndex(i);
-            if (slot == null || slot.ItemEnum == Key_BuildablePP.None)
+            StoreSlot slot = runtimeStoreContainer.GetSlotByIndex(i);
+            if (slot == null || slot.ItemEnum == Key_ItemDefinitionPP.None)
             {
                 result[i] = SlotDisplayData.Empty;
                 continue;
             }
 
-            // Locked slot — always shown as locked regardless of filter
             if (slot.isLocked)
             {
                 result[i] = new SlotDisplayData(null, Color.clear, 0, "", SlotState.Locked);
                 continue;
             }
 
-            BuildableProperty prop = _db?.GetByEnum(slot.ItemEnum);
-            if (prop == null)
+            if (!TryGetSlotAndProperties(i, out _, out ItemDefinitionSO item, out BuildableProperty buildable))
             {
                 result[i] = SlotDisplayData.Empty;
                 continue;
             }
 
-            int stock = slot.ItemCount;
-
-            if (stock > 0)
+            if (slot.ItemCount > 0)
             {
-                // Available: show icon + name + stock count + price as label
-                string priceLabel = $"{prop.storePrice:F0} {purchaseCurrency}";
-                result[i] = new SlotDisplayData(prop.iconSprite, Color.white, stock, priceLabel, SlotState.Default);
+                string priceLabel = buildable.storePrice.ToString("F0") + " " + purchaseCurrency;
+                result[i] = new SlotDisplayData(item.Icon, Color.white, slot.ItemCount, priceLabel, SlotState.Default);
             }
             else
             {
-                // Sold out: show icon + name but state = SoldOut
-                result[i] = new SlotDisplayData(prop.iconSprite, Color.white, 0, prop.displayName, SlotState.SoldOut);
+                result[i] = new SlotDisplayData(item.Icon, Color.white, 0, item.StringKey, SlotState.SoldOut);
             }
         }
 
@@ -310,20 +250,19 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void ConfirmSelectedPurchase()
     {
-        if (uiContainer == null || !uiContainer.HasSelection) return;
-
-        TryPurchase(uiContainer.SelectedSlotIndex);
+        if (uiContainer != null && uiContainer.HasSelection)
+            TryPurchase(uiContainer.SelectedSlotIndex);
     }
 
     private void SelectFirstPurchasableSlot()
     {
-        if (uiContainer == null || _runtimeStoreContainer == null)
+        if (uiContainer == null || runtimeStoreContainer == null)
         {
             detailPanel?.ShowEmpty();
             return;
         }
 
-        for (int i = 0; i < _runtimeStoreContainer.MaxSlots; i++)
+        for (int i = 0; i < runtimeStoreContainer.MaxSlots; i++)
         {
             if (IsPurchasableSlot(i))
             {
@@ -338,21 +277,18 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private bool IsPurchasableSlot(int slotIndex)
     {
-        if (!TryGetSlotAndProperty(slotIndex, out StoreSlot slot, out _))
-            return false;
-
-        return !slot.isLocked && slot.ItemCount > 0;
+        return TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out _, out _) && !slot.isLocked && slot.ItemCount > 0;
     }
 
     private void ShowSlotDetail(int slotIndex)
     {
-        if (!TryGetSlotAndProperty(slotIndex, out StoreSlot slot, out BuildableProperty prop) || slot.isLocked)
+        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out _, out BuildableProperty buildable) || slot.isLocked)
         {
             detailPanel?.ShowEmpty();
             return;
         }
 
-        detailPanel?.Show(prop, purchaseCurrency);
+        detailPanel?.Show(buildable, purchaseCurrency);
     }
 
     private void RefreshSelectedDetail()
@@ -366,55 +302,27 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         ShowSlotDetail(uiContainer.SelectedSlotIndex);
     }
 
-    private bool TryGetSlotAndProperty(int slotIndex, out StoreSlot slot, out BuildableProperty prop)
+    private bool TryGetSlotAndProperties(int slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out BuildableProperty buildable)
     {
         slot = null;
-        prop = null;
+        item = null;
+        buildable = null;
 
-        if (_runtimeStoreContainer == null) return false;
-        if (slotIndex < 0 || slotIndex >= _runtimeStoreContainer.MaxSlots) return false;
-
-        slot = _runtimeStoreContainer.GetSlotByIndex(slotIndex);
-        if (slot == null || slot.ItemEnum == Key_BuildablePP.None) return false;
-
-        prop = _db?.GetByEnum(slot.ItemEnum);
-        if (prop == null)
-        {
-            Debug.LogWarning($"[StoreManager] No BuildableProperty found for key {slot.ItemEnum}.");
+        if (runtimeStoreContainer == null || itemDatabase == null || buildableDatabase == null)
             return false;
-        }
-
-        return true;
-    }
-
-    private bool CanAddToBuildContainer(Container<Key_BuildablePP> buildContainer, Key_BuildablePP itemKey, out string failReason)
-    {
-        failReason = null;
-
-        if (buildContainer == null)
-        {
-            failReason = "BuildableContainer is not ready.";
+        if (slotIndex < 0 || slotIndex >= runtimeStoreContainer.MaxSlots)
             return false;
-        }
 
-        if (itemKey == Key_BuildablePP.None)
-        {
-            failReason = "Item key is None.";
+        slot = runtimeStoreContainer.GetSlotByIndex(slotIndex);
+        if (slot == null || slot.ItemEnum == Key_ItemDefinitionPP.None)
             return false;
-        }
 
-        var slots = buildContainer.Slots;
-        for (int i = 0; i < slots.Count; i++)
-        {
-            if (!slots[i].IsEmpty && slots[i].ItemEnum.Equals(itemKey))
-                return true;
-        }
+        item = itemDatabase.GetByEnum(slot.ItemEnum);
+        if (item == null || !item.IsBuildable)
+            return false;
 
-        if (buildContainer.FreeSlots > 0)
-            return true;
-
-        failReason = "No empty slot or matching stack available.";
-        return false;
+        buildable = buildableDatabase.GetByEnum(item.BuildableKey);
+        return buildable != null;
     }
 
     private void OnEnterStoreButtonClicked()

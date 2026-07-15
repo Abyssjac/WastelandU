@@ -21,7 +21,7 @@ MonoBehaviour:
     boxes: []
     cells:
     - {x: 0, y: 0, z: 0}
-    buildLayer: 5
+    buildLayer: 0
     occupancyFacings: 4
     requiredSurface: 4
     requiredFacing: 2
@@ -30,5 +30,6 @@ MonoBehaviour:
   canMove: 1
   iconSprite: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
   displayName: Bar_Openneonsign
+  description: 
   storePrice: 15
   furnitureTags: 0

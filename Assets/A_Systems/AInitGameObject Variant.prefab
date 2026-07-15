@@ -74,30 +74,34 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: allDatabases.Array.size
-      value: 6
+      value: 7
       objectReference: {fileID: 0}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[0]'
       value: 
-      objectReference: {fileID: 11400000, guid: 4dd807d47892ff94c939a6fece54ed92, type: 2}
+      objectReference: {fileID: 11400000, guid: 31aff700ebdd2d741a13c11eca362233, type: 2}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[1]'
       value: 
-      objectReference: {fileID: 11400000, guid: e735ae0ea5fa9aa49931020c1abff4a6, type: 2}
+      objectReference: {fileID: 11400000, guid: 4dd807d47892ff94c939a6fece54ed92, type: 2}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[2]'
       value: 
-      objectReference: {fileID: 11400000, guid: 2b18c42aab454b841bb6b702b3056dbb, type: 2}
+      objectReference: {fileID: 11400000, guid: e735ae0ea5fa9aa49931020c1abff4a6, type: 2}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[3]'
       value: 
-      objectReference: {fileID: 11400000, guid: f6f05d6099a0d5a42a26b5ca1837a55a, type: 2}
+      objectReference: {fileID: 11400000, guid: 2b18c42aab454b841bb6b702b3056dbb, type: 2}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[4]'
       value: 
-      objectReference: {fileID: 11400000, guid: 931d76ba1cb34484496ca8094f3bf86f, type: 2}
+      objectReference: {fileID: 11400000, guid: f6f05d6099a0d5a42a26b5ca1837a55a, type: 2}
     - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: 'allDatabases.Array.data[5]'
+      value: 
+      objectReference: {fileID: 11400000, guid: 931d76ba1cb34484496ca8094f3bf86f, type: 2}
+    - target: {fileID: 6961653617491484666, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: 'allDatabases.Array.data[6]'
       value: 
       objectReference: {fileID: 11400000, guid: 08216cdf44d5d83428d948ae65d4e1c5, type: 2}
     m_RemovedComponents: []
@@ -107,6 +111,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 233144074376067813, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       insertIndex: -1
       addedObject: {fileID: 9147448536202536906}
+    - targetCorrespondingSourceObject: {fileID: 233144074376067813, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -2570242563102515045}
   m_SourcePrefab: {fileID: 100100000, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
 --- !u!1 &4978210630323172001 stripped
 GameObject:
@@ -125,3 +132,21 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2aa90540a936bc94b8a2f2408856ecfd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::PlayerManager
+--- !u!114 &-2570242563102515045
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4978210630323172001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b076d143a01e3ae49afc753d80c4a5a6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
+  initialSlotCount: 500
+  inventory:
+    maxSlots: 0
+    slots: []
+    useMaxStack: 0
+    maxStackCount: 99
