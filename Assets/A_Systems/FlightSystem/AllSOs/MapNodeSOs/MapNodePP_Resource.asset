@@ -18,3 +18,4 @@ MonoBehaviour:
   description: This is a Resource, U can find a lot good staff over here
   icon: {fileID: 21300000, guid: 4cba20b68f03349ee90938c1f9bf7ca4, type: 3}
   nodeType: 1
+  islandSceneKey: S_ResourceIsland_Mountain

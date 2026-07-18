@@ -377,6 +377,13 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         return flightInfo != null ? flightInfo.GetCurrentTarget() : null;
     }
 
+    public MapNodeRuntime GetCurrentArrivedNode()
+    {
+        return State == FlightState.Arrived && flightInfo != null
+            ? flightInfo.CurrentNode
+            : null;
+    }
+
     public bool HasNextRouteNode()
     {
         return flightInfo != null && flightInfo.HasNextRouteNode;

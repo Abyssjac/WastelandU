@@ -32,4 +32,8 @@ public class MapNodeProperty : EnumStringKeyedProperty<Key_MapNodePP>
 
     [Header("Node")]
     public MapNodeType nodeType = MapNodeType.None;
+
+    [Header("Island Scene")]
+    [Tooltip("Exact Build Settings scene name loaded when the player visits this node. Leave empty for nodes without an enterable island.")]
+    public string islandSceneKey;
 }

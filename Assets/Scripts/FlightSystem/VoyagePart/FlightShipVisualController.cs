@@ -11,8 +11,11 @@ public class FlightShipVisualController : MonoBehaviour
     private Vector3 initialLocalPosition;
     private bool hasInitialLocalPosition;
     private float bobTime;
+    private bool isDocked;
 
     private Transform ShipModel => shipModel != null ? shipModel : transform;
+
+    public bool IsDocked => isDocked;
 
     private void Awake()
     {
@@ -22,6 +25,9 @@ public class FlightShipVisualController : MonoBehaviour
 
     public void Tick(FlightVisualFrameContext frameContext)
     {
+        if (isDocked)
+            return;
+
         Transform model = ShipModel;
         if (frameContext.Forward.sqrMagnitude > Mathf.Epsilon)
         {
@@ -43,5 +49,10 @@ public class FlightShipVisualController : MonoBehaviour
         Vector3 localPosition = initialLocalPosition;
         localPosition.y += Mathf.Sin(bobTime) * bobAmplitude;
         model.localPosition = localPosition;
+    }
+
+    public void SetDocked(bool docked)
+    {
+        isDocked = docked;
     }
 }
