@@ -54,8 +54,8 @@ public class BuildItemInfoPanel : MonoBehaviour
     public void Show(ItemDefinitionSO item)
     {
         if (itemNameText != null)
-            itemNameText.text = item != null && !string.IsNullOrEmpty(item.StringKey)
-                ? item.StringKey
+            itemNameText.text = item != null && !string.IsNullOrEmpty(item.DisplayName)
+                ? item.DisplayName
                 : "Unknown";
 
         if (descriptionText != null)

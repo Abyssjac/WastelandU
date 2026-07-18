@@ -83,7 +83,6 @@ public static class ItemDefinitionBuildableBatchGenerator
         SerializedObject serializedItem = new SerializedObject(itemDefinition);
         serializedItem.FindProperty("enumKey").intValue = (int)itemKey;
         serializedItem.FindProperty("buildableKey").intValue = (int)buildable.EnumKey;
-        serializedItem.FindProperty("icon").objectReferenceValue = buildable.iconSprite;
 
         if (isNew)
         {

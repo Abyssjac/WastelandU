@@ -4,7 +4,7 @@ using UnityEngine.UI;
 using JackyUtility;
 
 /// <summary>
-/// Sells buildable ItemDefinitions and grants purchased items to InventoryManager.
+/// Sells ItemDefinitions and grants purchased items to InventoryManager.
 /// </summary>
 public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 {
@@ -27,7 +27,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     [SerializeField] private bool debugEnabled;
 
     private ItemDefinitionDatabase itemDatabase;
-    private BuildableDatabase buildableDatabase;
+    private SellableDatabase sellableDatabase;
     private StoreInventoryDatabase inventoryDatabase;
     private StoreInventoryProperty inventoryProperty;
     private StoreContainer runtimeStoreContainer;
@@ -52,14 +52,14 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         if (databaseManager != null)
         {
             itemDatabase = databaseManager.GetDatabase<ItemDefinitionDatabase>();
-            buildableDatabase = databaseManager.GetDatabase<BuildableDatabase>();
+            sellableDatabase = databaseManager.GetDatabase<SellableDatabase>();
             inventoryDatabase = databaseManager.GetDatabase<StoreInventoryDatabase>();
         }
 
         if (itemDatabase == null)
             Debug.LogWarning("[StoreManager] ItemDefinitionDatabase not found via PropertyDatabaseManager.");
-        if (buildableDatabase == null)
-            Debug.LogWarning("[StoreManager] BuildableDatabase not found via PropertyDatabaseManager.");
+        if (sellableDatabase == null)
+            Debug.LogWarning("[StoreManager] SellableDatabase not found via PropertyDatabaseManager.");
         if (inventoryDatabase == null)
             Debug.LogWarning("[StoreManager] StoreInventoryDatabase not found via PropertyDatabaseManager.");
 
@@ -119,7 +119,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     public bool TryPurchase(int slotIndex)
     {
-        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out BuildableProperty buildable))
+        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out SellableProperty sellable))
             return false;
         if (slot.isLocked || slot.ItemCount <= 0)
             return false;
@@ -143,11 +143,11 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             return false;
         }
 
-        float price = buildable.storePrice;
+        int price = sellable.Price;
         if (!EconomyManager.Instance.TrySpend(purchaseCurrency, price))
         {
             if (debugEnabled)
-                Debug.Log("[StoreManager] Not enough " + purchaseCurrency + " to buy " + item.StringKey + ".");
+                Debug.Log("[StoreManager] Not enough " + purchaseCurrency + " to buy " + item.DisplayName + ".");
             return false;
         }
 
@@ -168,7 +168,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         }
 
         if (debugEnabled)
-            Debug.Log("[StoreManager] Purchased " + item.StringKey + ". Stock remaining: " + slot.ItemCount);
+            Debug.Log("[StoreManager] Purchased " + item.DisplayName + ". Stock remaining: " + slot.ItemCount);
 
         RefreshUI();
         RefreshSelectedDetail();
@@ -223,7 +223,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
                 continue;
             }
 
-            if (!TryGetSlotAndProperties(i, out _, out ItemDefinitionSO item, out BuildableProperty buildable))
+            if (!TryGetSlotAndProperties(i, out _, out ItemDefinitionSO item, out SellableProperty sellable))
             {
                 result[i] = SlotDisplayData.Empty;
                 continue;
@@ -231,12 +231,12 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
             if (slot.ItemCount > 0)
             {
-                string priceLabel = buildable.storePrice.ToString("F0") + " " + purchaseCurrency;
+                string priceLabel = sellable.Price + " " + purchaseCurrency;
                 result[i] = new SlotDisplayData(item.Icon, Color.white, slot.ItemCount, priceLabel, SlotState.Default);
             }
             else
             {
-                result[i] = new SlotDisplayData(item.Icon, Color.white, 0, item.StringKey, SlotState.SoldOut);
+                result[i] = new SlotDisplayData(item.Icon, Color.white, 0, item.DisplayName, SlotState.SoldOut);
             }
         }
 
@@ -282,13 +282,13 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void ShowSlotDetail(int slotIndex)
     {
-        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out _, out BuildableProperty buildable) || slot.isLocked)
+        if (!TryGetSlotAndProperties(slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out SellableProperty sellable) || slot.isLocked)
         {
             detailPanel?.ShowEmpty();
             return;
         }
 
-        detailPanel?.Show(buildable, purchaseCurrency);
+        detailPanel?.Show(item, sellable, purchaseCurrency);
     }
 
     private void RefreshSelectedDetail()
@@ -302,13 +302,13 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         ShowSlotDetail(uiContainer.SelectedSlotIndex);
     }
 
-    private bool TryGetSlotAndProperties(int slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out BuildableProperty buildable)
+    private bool TryGetSlotAndProperties(int slotIndex, out StoreSlot slot, out ItemDefinitionSO item, out SellableProperty sellable)
     {
         slot = null;
         item = null;
-        buildable = null;
+        sellable = null;
 
-        if (runtimeStoreContainer == null || itemDatabase == null || buildableDatabase == null)
+        if (runtimeStoreContainer == null || itemDatabase == null || sellableDatabase == null)
             return false;
         if (slotIndex < 0 || slotIndex >= runtimeStoreContainer.MaxSlots)
             return false;
@@ -318,11 +318,11 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             return false;
 
         item = itemDatabase.GetByEnum(slot.ItemEnum);
-        if (item == null || !item.IsBuildable)
+        if (item == null || item.SellableKey == Key_SellablePP.None)
             return false;
 
-        buildable = buildableDatabase.GetByEnum(item.BuildableKey);
-        return buildable != null;
+        sellable = sellableDatabase.GetByEnum(item.SellableKey);
+        return sellable != null;
     }
 
     private void OnEnterStoreButtonClicked()

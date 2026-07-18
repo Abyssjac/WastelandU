@@ -1293,7 +1293,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
                     CancelCurrentAction();
 
                 BeginPlacing(prop);
-                Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.displayName})  occZones={prop.occupancyZones.Length}");
+                Debug.Log($"[buildmgr-select] Entering placement mode: {prop.EnumKey} ({prop.StringKey})  occZones={prop.occupancyZones.Length}");
             }
         ));
 
@@ -1487,7 +1487,7 @@ public class BuildManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
                             CurrentState == BuildState.PlacingBlueprint ? "magenta" : "yellow";
         panel.DrawLine($"State: <color={stateColor}><b>{CurrentState}</b></color>");
 
-        string propName = selectedProperty != null ? $"{selectedProperty.EnumKey} ({selectedProperty.displayName})"
+        string propName = selectedProperty != null ? $"{selectedProperty.EnumKey} ({selectedProperty.StringKey})"
                         : selectedBlueprint != null ? $"[BP] {selectedBlueprint.EnumKey} ({selectedBlueprint.displayName})"
                         : movingData != null ? $"{movingData.Property.EnumKey} (moving)"
                         : "None";

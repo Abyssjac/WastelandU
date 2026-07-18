@@ -53,10 +53,9 @@ public class StoreInventoryProperty : EnumStringKeyedProperty<Key_StoreInventory
             if (source == null)
                 continue;
 
-            runtime.TrySetSlotAtIndex(i, source.ItemEnum, Mathf.Max(0, source.initialStock), out _);
+            runtime.TrySetSlotAtIndex(i, source.ItemEnum, Mathf.Max(0, source.ItemCount), out _);
 
             StoreSlot target = runtime.GetSlotByIndex(i);
-            target.initialStock = Mathf.Max(0, source.initialStock);
             target.isLocked = source.isLocked;
         }
 
@@ -81,7 +80,6 @@ public class StoreInventoryProperty : EnumStringKeyedProperty<Key_StoreInventory
 public class StoreSlot : Slot<Key_ItemDefinitionPP>
 {
     public bool isLocked;
-    public int initialStock;
     public override bool IsEmpty => ItemEnum == Key_ItemDefinitionPP.None && !isLocked;
     public override bool ClearWhenCountZero => false;
 }

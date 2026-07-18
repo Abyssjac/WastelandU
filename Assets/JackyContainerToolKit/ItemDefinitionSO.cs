@@ -9,17 +9,24 @@ public class ItemDefinitionSO : EnumStringKeyedProperty<Key_ItemDefinitionPP>, I
     [FormerlySerializedAs("maxStackCount")]
     [SerializeField] private int stackCount = 99;
 
+    [Header("Display")]
+    [SerializeField] private string displayName;
     [SerializeField] private Sprite icon;
+
+    [Header("Links")]
     [SerializeField] private Key_BuildablePP buildableKey = Key_BuildablePP.None;
+    [SerializeField] private Key_SellablePP sellableKey = Key_SellablePP.None;
 
     public int StackCount => Mathf.Max(1, stackCount);
+    public string DisplayName => displayName ?? string.Empty;
     public Sprite Icon => icon;
     public Key_BuildablePP BuildableKey => buildableKey;
+    public Key_SellablePP SellableKey => sellableKey;
     public bool IsBuildable => buildableKey != Key_BuildablePP.None;
 
     public SlotDisplayData ToSlotDisplayData(int itemCount)
     {
-        return new SlotDisplayData(icon, Color.white, itemCount, StringKey);
+        return new SlotDisplayData(icon, Color.white, itemCount, DisplayName);
     }
 }
 

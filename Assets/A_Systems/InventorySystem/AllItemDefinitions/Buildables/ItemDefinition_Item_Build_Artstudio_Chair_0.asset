@@ -15,5 +15,7 @@ MonoBehaviour:
   enumKey: 53
   stringKey: 
   stackCount: 99
+  displayName: Art Studio Chair
   icon: {fileID: 21300000, guid: b87bc476ba8e3b2409a1a663fb17ee6c, type: 3}
   buildableKey: 53
+  sellableKey: 2

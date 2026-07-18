@@ -12,17 +12,17 @@ public class StoreItemDetailPanelUI : MonoBehaviour
     [SerializeField] private string emptyDescription = "";
     [SerializeField] private string emptyPrice = "";
 
-    public void Show(BuildableProperty property, CurrencyType currency)
+    public void Show(ItemDefinitionSO item, SellableProperty sellable, CurrencyType currency)
     {
-        if (property == null)
+        if (item == null || sellable == null)
         {
             ShowEmpty();
             return;
         }
 
-        SetText(displayNameText, property.displayName);
-        SetText(descriptionText, property.description);
-        SetText(priceText, $"{property.storePrice:F0} {currency}");
+        SetText(displayNameText, item.DisplayName);
+        SetText(descriptionText, sellable.DetailDescription);
+        SetText(priceText, $"{sellable.Price} {currency}");
     }
 
     public void ShowEmpty()

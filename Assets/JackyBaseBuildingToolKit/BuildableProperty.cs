@@ -209,7 +209,7 @@ public struct ResolvedSurfaceCell
 }
 
 [CreateAssetMenu(fileName = "BuildablePP_", menuName = "AllProperties/ BuildableProperty")]
-public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>, ISlotDisplayableProperty
+public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_BuildablePP>
 {
     [Header("Keys")]
     [SerializeField] private Key_BuildablePP enumKey;
@@ -244,16 +244,6 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     public bool canRotate = true;
     public bool canMove = true;
 
-    [Header("UI Display")]
-    public Sprite iconSprite;
-    public string displayName;
-    [TextArea]
-    public string description;
-
-    [Header("Store")]
-    [Tooltip("Price displayed in the store. Used by StoreManager when building SlotDisplayData.")]
-    public float storePrice = 0f;
-
     [Header("Furniture Tags")]
     [Tooltip("Functional tags used by the NPC affinity system.\nSupports multi-select (bit-mask).")]
     public FurnitureTag furnitureTags = FurnitureTag.None;
@@ -261,11 +251,6 @@ public class BuildableProperty : ScriptableObject, IEnumStringKeyedEntry<Key_Bui
     //[SerializeField] private List<Vector2Int> occupiedPosition;
 
     // ���� ISlotDisplayableProperty ������������������������������������������������������������������
-    public SlotDisplayData ToSlotDisplayData(int itemCount)
-    {
-        return new SlotDisplayData(iconSprite, Color.white, itemCount, displayName);
-    }
-
     // ������ Cache ������
     private ResolvedOccupancyCell[] cachedOccupancy;
     private ResolvedSurfaceCell[] cachedSurface;
