@@ -90,7 +90,7 @@ public class InteractorTargetDetector : MonoBehaviour
         for (int i = 0; i < hitCount; i++)
         {
             var interactable = _hitBuffer[i].collider.GetComponentInParent<BaseInteractable>();
-            if (interactable != null)
+            if (interactable != null && interactable.CanInteract)
                 return interactable;
         }
         return null;
@@ -166,9 +166,12 @@ public class InteractorTargetDetector : MonoBehaviour
         // Re-scan immediately to decide HasTarget or None
         ScanForTarget();
 
-        // If ScanForTarget didn't already change state, settle to None
+        // Keep the same valid target focused so immediately-repeatable interactions
+        // can be triggered again without moving the player away and back.
         if (CurrentState == InteractState.Interacting)
-            SetState(InteractState.None);
+            SetState(_currentTarget != null && _currentTarget.CanInteract
+                ? InteractState.HasTarget
+                : InteractState.None);
     }
 
     // ─────────────────────────────────────────────────────────────

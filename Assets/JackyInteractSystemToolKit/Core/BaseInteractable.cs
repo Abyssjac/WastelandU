@@ -24,6 +24,12 @@ public abstract class BaseInteractable : MonoBehaviour
 
     private BaseVisualController _visualController;
 
+    /// <summary>
+    /// Whether this object can currently be selected and interacted with.
+    /// Subclasses can override this for temporary or permanent unavailable states.
+    /// </summary>
+    public virtual bool CanInteract => true;
+
     // ─────────────────────────────────────────────────────────────
     // Lifecycle
     // ─────────────────────────────────────────────────────────────

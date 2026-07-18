@@ -146,7 +146,37 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::InventoryManager
   initialSlotCount: 500
   inventory:
-    maxSlots: 0
-    slots: []
+    maxSlots: 15
+    slots:
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
+    - itemEnum: 0
+      itemCount: 0
     useMaxStack: 0
     maxStackCount: 99
