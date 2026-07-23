@@ -8,6 +8,7 @@ public class PlayerControl : MonoBehaviour
     [SerializeField] private InputActionReference move;
     [SerializeField] private InputActionReference interact;
     [SerializeField] private InputActionReference dash;
+    [SerializeField] private InputActionReference jump;
 
     [Header("Optional: Other actions to manage")]
     [Tooltip("���������/У��/���ص� actions������ Look, Jump, Inventory, etc.��")]
@@ -29,6 +30,7 @@ public class PlayerControl : MonoBehaviour
 
     public bool InteractTriggered() => WasTriggered(interact);
     public bool DashTriggered() => WasTriggered(dash);
+    public bool JumpTriggered() => WasTriggered(jump);
 
     /// <summary>Enable/Disable ���� action���ɸ��ⲿϵͳ�ã�</summary>
     public void SetEnabled(InputActionReference actionRef, bool enabled)
@@ -83,6 +85,7 @@ public class PlayerControl : MonoBehaviour
         TryEnable(move);
         TryEnable(interact);
         TryEnable(dash);
+        TryEnable(jump);
 
         // ���� actions Ҳ�����ã���������
         if (extraActions != null)
@@ -96,6 +99,7 @@ public class PlayerControl : MonoBehaviour
         TryDisable(move);
         TryDisable(interact);
         TryDisable(dash);
+        TryDisable(jump);
 
         if (extraActions != null)
         {
@@ -158,6 +162,7 @@ public class PlayerControl : MonoBehaviour
         LogOne("Move", move);
         LogOne("Interact", interact);
         LogOne("Dash", dash);
+        LogOne("Jump", jump);
 
         if (extraActions != null && extraActions.Count > 0)
         {

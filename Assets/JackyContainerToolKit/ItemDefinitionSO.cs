@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.Serialization;
 using JackyUtility;
+using UnityEngine.Assertions.Must;
 
 [CreateAssetMenu(fileName = "ItemDefinition_", menuName = "AllProperties/ItemDefinition")]
 public class ItemDefinitionSO : EnumStringKeyedProperty<Key_ItemDefinitionPP>, ISlotDisplayableProperty
@@ -102,4 +103,9 @@ public enum Key_ItemDefinitionPP
     [InspectorName("Astro/Star 0")] Item_Build_Astro_Star_0 = 89,
     [InspectorName("Astro/Star 1")] Item_Build_Astro_Star_1 = 90,
     [InspectorName("Astro/Window 0")] Item_Build_Astro_Window_0 = 91,
+
+    [InspectorName("Resource/CloudWood 0")] Item_Resource_CloudWood_0 = 200,
+    [InspectorName("Resource/BrassScrap 0")] Item_Resource_BrassScrap_0 = 201,
+    [InspectorName("Resource/Fiber 0")] Item_Resourcce_Fiber_0 = 202,
+    [InspectorName("Resource/Aether 0")] Item_Resource_Aether_0 = 203,
 }

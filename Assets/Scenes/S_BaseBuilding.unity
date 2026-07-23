@@ -6437,9 +6437,13 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
-    - target: {fileID: 5546727237749478505, guid: 4bf7d3d444cffb441aec54498db0785e, type: 3}
-      propertyPath: logMovementLockChanges
-      value: 1
+    - target: {fileID: 1544894403632716782, guid: 4bf7d3d444cffb441aec54498db0785e, type: 3}
+      propertyPath: gravity
+      value: 20
+      objectReference: {fileID: 0}
+    - target: {fileID: 1544894403632716782, guid: 4bf7d3d444cffb441aec54498db0785e, type: 3}
+      propertyPath: groundStickVelocity
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 6855085967333664586, guid: 4bf7d3d444cffb441aec54498db0785e, type: 3}
       propertyPath: m_Name

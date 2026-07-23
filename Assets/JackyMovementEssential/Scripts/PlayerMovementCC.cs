@@ -4,7 +4,7 @@ using UnityEngine.SceneManagement;
 
 
 // CharacterController-based player movement script. Supports top-down and first-person camera modes.
-// Includes WASD movement, facing rotation, gravity, and dash.
+// Includes WASD movement, facing rotation, gravity, dash, and a fixed-height jump.
 // Make sure to set groundMask so ground detection works correctly.
 [RequireComponent(typeof(CharacterController))]
 [DisallowMultipleComponent]
@@ -44,6 +44,14 @@ public class PlayerMovementCC : MonoBehaviour
     [SerializeField] private float fallSpeedMax = 25f;
     [SerializeField] private float groundStickVelocity = 2f;  // Small downward speed while grounded (prevents slope bounce)
     [SerializeField] private float groundRayExtra = 0.15f;    // Extra ray length for ground check
+
+    // ----------------------------
+    // Jump Settings
+    // ----------------------------
+    [Header("Jump")]
+    [Tooltip("Maximum jump height in world units. The initial jump speed is calculated from gravity.")]
+    [Min(0.01f)]
+    [SerializeField] private float jumpHeight = 1.5f;
 
     // ----------------------------
     // Dash Settings
@@ -155,10 +163,11 @@ public class PlayerMovementCC : MonoBehaviour
         }
 
         ReadInput();
+        isGrounded = CheckGrounded();
         UpdateDashState();
+        TryStartJump();
 
         // Ground/Gravity in Update: keep consistent within the same tick (recommended for CharacterController)
-        isGrounded = CheckGrounded();
         ApplyGravity(Time.deltaTime);
 
         // Calculate horizontal velocity
@@ -362,6 +371,20 @@ public class PlayerMovementCC : MonoBehaviour
     }
 
     // ----------------------------
+    // Jump
+    // ----------------------------
+    private void TryStartJump()
+    {
+        // Ground-only jump: pressing Jump in the air is intentionally ignored.
+        if (controls == null || !isGrounded || !controls.JumpTriggered())
+            return;
+
+        // verticalVelocity uses a downward-positive convention because movement applies Vector3.down.
+        verticalVelocity = -Mathf.Sqrt(2f * gravity * jumpHeight);
+        isGrounded = false;
+    }
+
+    // ----------------------------
     // Dash
     // ----------------------------
     private void UpdateDashState()
@@ -394,8 +417,9 @@ public class PlayerMovementCC : MonoBehaviour
         // Lock dash direction
         dashDirWorld = dashLockToFacing ? transform.forward : moveDirWorld.normalized;
 
-        // Clear vertical velocity at dash start to prevent sudden fall/bounce
-        verticalVelocity = groundStickVelocity;
+        // Ground dash sticks to the floor. Air dash keeps the current rise/fall velocity.
+        if (isGrounded)
+            verticalVelocity = groundStickVelocity;
     }
 
     // ----------------------------

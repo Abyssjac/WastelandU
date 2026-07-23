@@ -12,6 +12,10 @@ PrefabInstance:
       propertyPath: dash
       value: 
       objectReference: {fileID: -6413979749406727358, guid: 052faaac586de48259a63d0c4782560b, type: 3}
+    - target: {fileID: -4395286864812738796, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
+      propertyPath: jump
+      value: 
+      objectReference: {fileID: -2099379676528639254, guid: 052faaac586de48259a63d0c4782560b, type: 3}
     - target: {fileID: 1822816250158503910, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
       propertyPath: m_Name
       value: PlayerRootCC_Main
@@ -70,7 +74,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 5987897034721831746, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
       propertyPath: groundMask.m_Bits
-      value: 0
+      value: 4294967295
       objectReference: {fileID: 0}
     - target: {fileID: 5987897034721831746, guid: 2a8ef91c535652d47957c72cba2b99d1, type: 3}
       propertyPath: useCameraRelativeMove

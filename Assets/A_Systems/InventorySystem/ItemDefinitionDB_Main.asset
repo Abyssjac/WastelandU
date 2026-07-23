@@ -74,4 +74,8 @@ MonoBehaviour:
   - {fileID: 11400000, guid: f60b0b73e77e4f88afd2011de0d860c1, type: 2}
   - {fileID: 11400000, guid: 7e325a500a5648998631468872ceb83f, type: 2}
   - {fileID: 11400000, guid: 0f578ca20d654fe3acbd1407e79ba173, type: 2}
+  - {fileID: 11400000, guid: c515022a86723834299f0c574194811a, type: 2}
+  - {fileID: 11400000, guid: b6fa1714e7410844ea07c70e1a1666ef, type: 2}
+  - {fileID: 11400000, guid: 183567df4f801134d834ba21a7a091c1, type: 2}
+  - {fileID: 11400000, guid: d5a9fa8e455b70349955e876e1b78a1f, type: 2}
   scanFolder: A_Systems/InventorySystem/AllItemDefinitions
