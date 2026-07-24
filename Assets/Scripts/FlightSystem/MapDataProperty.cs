@@ -7,6 +7,8 @@ public enum Key_MapDataPP
 {
     None = 0,
     TestMap = 1,
+    SynthesizeMap = 2,
+    TutorialMap = 3,
 }
 
 [CreateAssetMenu(fileName = "MapDataPP_", menuName = "AllProperties/MapDataProperty")]

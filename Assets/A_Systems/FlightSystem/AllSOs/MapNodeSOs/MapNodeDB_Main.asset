@@ -13,8 +13,11 @@ MonoBehaviour:
   m_Name: MapNodeDB_Main
   m_EditorClassIdentifier: Assembly-CSharp::MapNodeDatabase
   entries:
-  - {fileID: 11400000, guid: 537ba112adf991d4dbfb8ab82f5c9fd4, type: 2}
   - {fileID: 11400000, guid: 4a47d017c0e22e140a9ee7ff944a9041, type: 2}
   - {fileID: 11400000, guid: 3a5c39e881235f24aba3701f5789a13f, type: 2}
   - {fileID: 11400000, guid: 928a713599972c8499d8c09090ea6e49, type: 2}
+  - {fileID: 11400000, guid: a4a8e98e37e6fcd45bac9ac7e86ffc64, type: 2}
+  - {fileID: 11400000, guid: 6ade07a847e7dd443be68f72f7e3926f, type: 2}
+  - {fileID: 11400000, guid: 537ba112adf991d4dbfb8ab82f5c9fd4, type: 2}
+  - {fileID: 11400000, guid: 94103492e1640064f905b68bbbd8b14e, type: 2}
   scanFolder: A_Systems/FlightSystem/AllSOs/MapNodeSOs

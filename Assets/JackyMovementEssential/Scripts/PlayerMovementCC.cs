@@ -42,7 +42,7 @@ public class PlayerMovementCC : MonoBehaviour
     [SerializeField] private LayerMask groundMask;
     [SerializeField] private float gravity = 20f;             // Positive value; applied downward in code
     [SerializeField] private float fallSpeedMax = 25f;
-    [SerializeField] private float groundStickVelocity = 2f;  // Small downward speed while grounded (prevents slope bounce)
+    [SerializeField] private float groundStickVelocity = 0f;  // Small downward speed while grounded (prevents slope bounce)
     [SerializeField] private float groundRayExtra = 0.15f;    // Extra ray length for ground check
 
     // ----------------------------

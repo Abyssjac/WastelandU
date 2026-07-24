@@ -10,7 +10,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.size
-      value: 3
+      value: 6
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[1].sceneName
@@ -21,12 +21,36 @@ PrefabInstance:
       value: S_ResourceIsland_Mountain
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[3].sceneName
+      value: S_ResourceIsland_Mine
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[4].sceneName
+      value: S_ResourceIsland_RuinedVillage
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[5].sceneName
+      value: S_MainIsland_Home
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[1].displayName
       value: Game
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[2].displayName
       value: ResourceIsland_Mountain_Additive
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[3].displayName
+      value: ResourceIsland_Mine_Additive
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[4].displayName
+      value: ResourceIsland_RuinedVillage_Additive
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[5].displayName
+      value: MainIsland_Home
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[1].autoLoadAfterEntering

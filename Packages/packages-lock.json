@@ -273,6 +273,13 @@
         "com.unity.modules.imgui": "1.0.0"
       }
     },
+    "dev.yarnspinner.unity": {
+      "version": "https://github.com/YarnSpinnerTool/YarnSpinner-Unity.git",
+      "depth": 0,
+      "source": "git",
+      "dependencies": {},
+      "hash": "4c0c8ef55129c1c93fd3d3419536ca0cc533335f"
+    },
     "com.unity.modules.accessibility": {
       "version": "1.0.0",
       "depth": 0,

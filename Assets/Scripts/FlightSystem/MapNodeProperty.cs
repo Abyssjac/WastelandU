@@ -8,6 +8,11 @@ public enum Key_MapNodePP
     TradeIsland = 2,
     QuestIsland = 3,
     DangerIsland = 4,
+
+    MainIsland_Home = 10,
+    ResourceIsland_RuinedVillage = 20,
+    ResourceIsland_Mountain = 21,
+    ResourceIsland_Mine = 22,
 }
 
 public enum MapNodeType
@@ -17,6 +22,7 @@ public enum MapNodeType
     Trade = 2,
     Quest = 3,
     Danger = 4,
+    Main = 5,
 }
 
 [CreateAssetMenu(fileName = "MapNodePP_", menuName = "AllProperties/MapNodeProperty")]

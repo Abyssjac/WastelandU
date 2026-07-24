@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapDataDatabase
   entries:
   - {fileID: 11400000, guid: 9be977e0f5f4c8f4eb3335dec32763b6, type: 2}
+  - {fileID: 11400000, guid: 0119b91ec3ce80d49810b1ffa358a309, type: 2}
   scanFolder: A_Systems/FlightSystem/AllSOs/MapDataSOs

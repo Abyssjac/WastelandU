@@ -10,15 +10,11 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 99eb7dff84dc6b94fa7e890565132dfb, type: 3}
-  m_Name: MapDataPP_Test
+  m_Name: MapDataPP_Synthesizer
   m_EditorClassIdentifier: Assembly-CSharp::MapDataProperty
-  enumKey: 1
-  stringKey: MapData_TestMap
-  mapNodeCount: 5
-  nodeKeys: 1400000015000000150000000200000016000000
+  enumKey: 3
+  stringKey: 
+  mapNodeCount: 1
+  nodeKeys: 0a000000
   spawnPositions:
-  - {x: 3, y: 7}
-  - {x: 2, y: 3}
-  - {x: 6, y: 1}
-  - {x: 8, y: 2}
-  - {x: 5, y: 5}
+  - {x: 4, y: 5}

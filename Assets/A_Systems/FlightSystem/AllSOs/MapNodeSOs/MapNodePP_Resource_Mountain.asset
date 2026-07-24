@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 56a574ef7953f2a4593cd8f7056c54d5, type: 3}
-  m_Name: MapNodePP_Resource
+  m_Name: MapNodePP_Resource_Mountain
   m_EditorClassIdentifier: Assembly-CSharp::MapNodeProperty
-  enumKey: 1
-  stringKey: MapNode_Resource
+  enumKey: 21
+  stringKey: 
   displayName: Resource Island
-  description: This is a Resource, U can find a lot good staff over here
+  description: 'A Mountain, u can find everything here. '
   icon: {fileID: 21300000, guid: 4cba20b68f03349ee90938c1f9bf7ca4, type: 3}
   nodeType: 1
   islandSceneKey: S_ResourceIsland_Mountain

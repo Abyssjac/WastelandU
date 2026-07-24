@@ -15,8 +15,17 @@ EditorBuildSettings:
     path: Assets/Scenes/S_BaseBuilding.unity
     guid: 4a91c7330b73ae346b778cf0ef5fcd5e
   - enabled: 1
-    path: Assets/Scenes/S_ResourceIsland_Mountain.unity
+    path: Assets/Scenes/Islands/S_ResourceIsland_Mountain.unity
     guid: e22d18dd1688e12429176490f4eb4427
+  - enabled: 1
+    path: Assets/Scenes/Islands/S_ResourceIsland_RuinedVillage.unity
+    guid: 64e751eb000165347be64b8805a15b1b
+  - enabled: 1
+    path: Assets/Scenes/Islands/S_ResourceIsland_Mine.unity
+    guid: 90960478770d2534e8fe09d08abf4a66
+  - enabled: 1
+    path: Assets/Scenes/Islands/S_MainIsland_Home.unity
+    guid: d87647d5c0587c148a1684908c630e41
   m_configObjects:
     com.unity.dt.app-ui: {fileID: 11400000, guid: 1b1c20d82303e4b5781c3ef50ac1449f, type: 2}
     com.unity.input.settings.actions: {fileID: -944628639613478452, guid: 052faaac586de48259a63d0c4782560b, type: 3}
