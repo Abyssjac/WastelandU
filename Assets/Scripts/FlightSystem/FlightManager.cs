@@ -1,3 +1,4 @@
+using System;
 using JackyUtility;
 using UnityEngine;
 using UnityEngine.UI;
@@ -28,6 +29,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private MapDataRuntime currentMap;
     private FlightInfo flightInfo;
     private FlightTimeController flightTime;
+    private Key_MapNodePP currentIslandKey = Key_MapNodePP.None;
 
     public string DebugId => "flightmanager";
     public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
@@ -45,6 +47,14 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     public int CurrentSegmentElapsedTime => flightTime != null ? flightTime.ElapsedTimeUnits : 0;
     public int CurrentSegmentTotalTime => flightTime != null ? flightTime.TotalTimeUnits : 0;
     public float SegmentProgress01 => flightTime != null ? flightTime.Progress01 : 0f;
+    /// <summary>
+    /// Authoritative island key for the player's current location. It is <see cref="Key_MapNodePP.None"/>
+    /// while travelling and before the first arrival.
+    /// </summary>
+    public Key_MapNodePP CurrentIslandKey => currentIslandKey;
+
+    /// <summary>Fired whenever the authoritative current island changes, including changes to None while flying.</summary>
+    public event Action<Key_MapNodePP> OnCurrentIslandChanged;
 
     private void Awake()
     {
@@ -165,12 +175,14 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             currentMap = null;
             flightInfo.ResetForNewMap();
             ResetSegmentProgress();
+            SetCurrentIslandKey(Key_MapNodePP.None);
             DebugLog("No current map key selected. Runtime map cleared.");
             return false;
         }
 
         if (mapDataDatabase == null)
         {
+            SetCurrentIslandKey(Key_MapNodePP.None);
             Debug.LogWarning("[FlightManager] MapDataDatabase not found.");
             return false;
         }
@@ -181,6 +193,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             currentMap = null;
             flightInfo.ResetForNewMap();
             ResetSegmentProgress();
+            SetCurrentIslandKey(Key_MapNodePP.None);
             Debug.LogWarning($"[FlightManager] No MapDataProperty found for key {currentMapKey}.");
             return false;
         }
@@ -188,6 +201,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         currentMap = mapProperty.CreateRuntimeMapData(mapNodeDatabase);
         flightInfo.ResetForNewMap();
         ResetSegmentProgress();
+        SetCurrentIslandKey(Key_MapNodePP.None);
 
         DebugLog($"Runtime map refreshed: {currentMapKey}, nodes: {currentMap.NodeCount}.");
         return true;
@@ -294,6 +308,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         bool result = flightInfo.StartFlight(out failReason);
         if (result)
         {
+            SetCurrentIslandKey(Key_MapNodePP.None);
             StartCurrentSegmentTimer();
             DebugLog("Flight started.");
         }
@@ -313,6 +328,8 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (result)
         {
             CompleteSegmentProgress();
+            MapNodeRuntime arrivedNode = GetCurrentArrivedNode();
+            SetCurrentIslandKey(arrivedNode != null ? arrivedNode.NodeKey : Key_MapNodePP.None);
             DebugLog("Arrived current target.");
         }
 
@@ -331,6 +348,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (result)
         {
             ResetSegmentProgress();
+            SetCurrentIslandKey(Key_MapNodePP.None);
             if (flightInfo.State == FlightState.Flying)
                 StartCurrentSegmentTimer();
 
@@ -382,6 +400,26 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         return State == FlightState.Arrived && flightInfo != null
             ? flightInfo.CurrentNode
             : null;
+    }
+
+    /// <summary>Attempts to resolve the runtime map node represented by <see cref="CurrentIslandKey"/>.</summary>
+    public bool TryGetCurrentIslandNode(out MapNodeRuntime node)
+    {
+        node = null;
+        if (currentIslandKey == Key_MapNodePP.None || currentMap == null)
+            return false;
+
+        for (int i = 0; i < currentMap.Nodes.Count; i++)
+        {
+            MapNodeRuntime candidate = currentMap.Nodes[i];
+            if (candidate != null && candidate.NodeKey == currentIslandKey)
+            {
+                node = candidate;
+                return true;
+            }
+        }
+
+        return false;
     }
 
     public bool HasNextRouteNode()
@@ -466,6 +504,16 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
         if (mapDataDatabase == null)
             mapDataDatabase = dbManager.GetDatabase<MapDataDatabase>();
+    }
+
+    private void SetCurrentIslandKey(Key_MapNodePP newIslandKey)
+    {
+        if (currentIslandKey == newIslandKey)
+            return;
+
+        currentIslandKey = newIslandKey;
+        OnCurrentIslandChanged?.Invoke(currentIslandKey);
+        DebugLog($"Current island changed to {currentIslandKey}.");
     }
 
     private void EnsureFlightTimeController()

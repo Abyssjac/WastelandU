@@ -74,6 +74,33 @@ public class InventoryManager : MonoBehaviour
         return inventory.TryAddItem(itemKey, count, out failReason);
     }
 
+    /// <summary>
+    /// Adds as much of an item as the inventory can hold. Any quantity that cannot fit is returned
+    /// through <paramref name="excess"/>. This is intended for systems such as quest rewards that
+    /// should complete even if an unexpected inventory overflow occurs.
+    /// </summary>
+    public bool TryAddReturnExcess(Key_ItemDefinitionPP itemKey, int count, out int excess, out string failReason)
+    {
+        excess = count;
+
+        if (!TryGetItemDefinition(itemKey, out _, out failReason))
+            return false;
+
+        if (count <= 0)
+        {
+            excess = 0;
+            failReason = "Add count must be greater than zero.";
+            return false;
+        }
+
+        EnsureInventory();
+        bool anyAdded = inventory.AddItemReturnExcess(itemKey, count, out excess);
+        failReason = excess > 0
+            ? $"Inventory overflowed by {excess} item(s)."
+            : string.Empty;
+        return anyAdded;
+    }
+
     public bool TryRemoveItem(Key_ItemDefinitionPP itemKey, int count, out string failReason)
     {
         EnsureInventory();

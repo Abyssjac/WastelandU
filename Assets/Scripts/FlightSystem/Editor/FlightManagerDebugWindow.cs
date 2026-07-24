@@ -79,6 +79,10 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
         ColoredRow("State", info.State.ToString(), GetFlightStateColor(info.State));
         Row("Current Position", info.CurrentPosition.ToString());
         Row("Current Node", info.CurrentNode != null ? FormatNode(info.CurrentNode) : "Start (0, 0)");
+        Row("Current Island Key", mgr.CurrentIslandKey.ToString());
+        Row("Current Island", mgr.TryGetCurrentIslandNode(out MapNodeRuntime islandNode)
+            ? FormatNode(islandNode)
+            : "-");
         Row("Current Target", info.GetCurrentTarget() != null ? FormatNode(info.GetCurrentTarget()) : "-");
         Row("Route Index", info.CurrentRouteIndex.ToString());
         Row("Segment Time", mgr.GetCurrentSegmentTimeUnits().ToString());
