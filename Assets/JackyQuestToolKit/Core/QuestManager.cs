@@ -672,7 +672,7 @@ public class QuestManager : MonoBehaviour
         }
     }
 
-    private void HandleInventoryChanged()
+    private void HandleInventoryChanged(Key_ItemDefinitionPP _, int __)
     {
         if (isSubmitting)
             return;

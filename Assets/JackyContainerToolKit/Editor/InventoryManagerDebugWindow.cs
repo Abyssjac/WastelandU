@@ -34,7 +34,7 @@ public class InventoryManagerDebugWindow : DebugEditorWindow<InventoryManager>
     private string lastResult = "No operation has been run.";
     private MessageType lastResultType = MessageType.None;
 
-    [MenuItem("Wasteland Debug/Inventory Manager")]
+    [MenuItem("Jacky Tools/Inventory Manager")]
     public static void ShowWindow()
     {
         GetWindow<InventoryManagerDebugWindow>("Inventory Manager Debug").Show();
@@ -133,7 +133,7 @@ public class InventoryManagerDebugWindow : DebugEditorWindow<InventoryManager>
         showEmptySlots = EditorGUILayout.ToggleLeft("Show Empty Slots", showEmptySlots);
         EditorGUILayout.HelpBox(
             "Apply writes the selected Item Key and Count into one exact slot. Item Key None or Count 0 clears that slot. " +
-            "The container validates stack limits and sends its normal change event on success.",
+            "These direct slot edits are debug-only and do not emit InventoryManager's detailed item-delta event.",
             MessageType.None);
 
         IReadOnlyList<InventorySlot> slots = container.Slots;

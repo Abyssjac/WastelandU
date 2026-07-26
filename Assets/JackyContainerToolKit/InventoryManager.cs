@@ -17,7 +17,11 @@ public class InventoryManager : MonoBehaviour
 
     public InventoryContainer Inventory => inventory;
     public ItemDefinitionDatabase ItemDatabase => itemDatabase;
-    public event Action OnInventoryChanged;
+    /// <summary>
+    /// Fired once after a successful InventoryManager add or remove operation.
+    /// A positive delta means the item was gained; a negative delta means it was removed.
+    /// </summary>
+    public event Action<Key_ItemDefinitionPP, int> OnInventoryChanged;
 
     private void Awake()
     {
@@ -31,7 +35,6 @@ public class InventoryManager : MonoBehaviour
         DontDestroyOnLoad(gameObject);
 
         EnsureInventory();
-        inventory.OnContainerChanged += HandleInventoryChanged;
     }
 
     private void Start()
@@ -41,9 +44,6 @@ public class InventoryManager : MonoBehaviour
 
     private void OnDestroy()
     {
-        if (inventory != null)
-            inventory.OnContainerChanged -= HandleInventoryChanged;
-
         if (Instance == this)
             Instance = null;
     }
@@ -71,7 +71,11 @@ public class InventoryManager : MonoBehaviour
         if (!TryGetItemDefinition(itemKey, out _, out failReason))
             return false;
 
-        return inventory.TryAddItem(itemKey, count, out failReason);
+        bool added = inventory.TryAddItem(itemKey, count, out failReason);
+        if (added)
+            RaiseInventoryChanged(itemKey, count);
+
+        return added;
     }
 
     /// <summary>
@@ -98,13 +102,22 @@ public class InventoryManager : MonoBehaviour
         failReason = excess > 0
             ? $"Inventory overflowed by {excess} item(s)."
             : string.Empty;
+
+        int actualAdded = count - excess;
+        if (actualAdded > 0)
+            RaiseInventoryChanged(itemKey, actualAdded);
+
         return anyAdded;
     }
 
     public bool TryRemoveItem(Key_ItemDefinitionPP itemKey, int count, out string failReason)
     {
         EnsureInventory();
-        return inventory.TryRemoveItem(itemKey, count, out failReason);
+        bool removed = inventory.TryRemoveItem(itemKey, count, out failReason);
+        if (removed)
+            RaiseInventoryChanged(itemKey, -count);
+
+        return removed;
     }
 
     public bool TryGetItemDefinition(Key_ItemDefinitionPP itemKey, out ItemDefinitionSO item, out string failReason)
@@ -166,9 +179,12 @@ public class InventoryManager : MonoBehaviour
         return true;
     }
 
-    private void HandleInventoryChanged()
+    private void RaiseInventoryChanged(Key_ItemDefinitionPP itemKey, int delta)
     {
-        OnInventoryChanged?.Invoke();
+        if (itemKey == Key_ItemDefinitionPP.None || delta == 0)
+            return;
+
+        OnInventoryChanged?.Invoke(itemKey, delta);
     }
 
     private void LogMissingDatabase(string reason)
