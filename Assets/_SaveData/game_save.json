@@ -1,6 +1,6 @@
 {
     "saveVersion": 1,
-    "savedAt": "2026-07-25 00:31:53",
+    "savedAt": "2026-07-29 16:55:06",
     "sections": [
         {
             "key": "build",
@@ -10,7 +10,7 @@
         {
             "key": "quests",
             "version": 1,
-            "json": "{\n    \"entries\": [\n        {\n            \"questKey\": 10,\n            \"state\": 2,\n            \"arrivedRequiredIslands\": []\n        },\n        {\n            \"questKey\": 11,\n            \"state\": 0,\n            \"arrivedRequiredIslands\": []\n        }\n    ]\n}"
+            "json": "{\n    \"entries\": []\n}"
         }
     ]
 }

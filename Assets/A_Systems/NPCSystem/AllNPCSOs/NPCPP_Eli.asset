@@ -1,0 +1,23 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0c516366afc6fbc47a801be61c069127, type: 3}
+  m_Name: NPCPP_Eli
+  m_EditorClassIdentifier: 
+  enumKey: 10
+  stringKey: NPCPP_Eli_Guide
+  prefab: {fileID: 2630481644761170012, guid: d48876a4278f0d54ab531400564ddca1, type: 3}
+  displayName: Eli
+  portrait: {fileID: 21300000, guid: 38c5cd5ac4be1964f84fd485648bb262, type: 3}
+  maxEnvAffinity: 100
+  tagWeights:
+  - tag: 1
+    weight: 5

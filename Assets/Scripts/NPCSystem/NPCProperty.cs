@@ -49,4 +49,9 @@ public enum Key_NPC
     Botanist = 2,   // ֲ��ѧ��
     Athlete = 3,   // �˶�Ա
     Engineer = 4,
+
+    Eli_Guide = 10,
+    Nara_Captain = 11,
+    Silas_Merchant = 12,
+    Ivo_Engineer = 13
 }

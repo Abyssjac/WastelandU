@@ -1,99 +1,36 @@
-﻿// title: Elder_Start
-// ---
-// <<if $elder_met>>
-//     <<jump Elder_Menu>>
-// <<else>>
-//     <<jump Elder_FirstMeeting>>
-// <<endif>>
-// ===
-
-// title: Elder_FirstMeeting
-// ---
-// 长老: 初次见面，旅行者。
-
-// <<set $elder_met = true>>
-
-// 长老: 我是灰岩镇的长老。有什么想问的吗？
-
-// <<jump Elder_Menu>>
-// ===
-
-// title: Elder_Menu
-// ---
-// 长老: 你还想知道什么？
-
-// -> 这个镇子发生了什么？
-//     长老: 最近北方遗迹附近出现了奇怪的光。
-//     <<jump Elder_Menu>>
-
-// -> 讲讲北方遗迹。
-//     <<detour Elder_Lore>>
-//     <<jump Elder_Menu>>
-
-// -> 你需要帮助吗？ <<if not $elder_quest_started>>
-//     <<jump Elder_QuestOffer>>
-
-// -> 我已经找回徽章了。 <<if $has_mayor_badge>>
-//     <<jump Elder_TurnInQuest>>
-
-// -> 再见。
-//     长老: 愿火焰指引你的道路。
-//     <<stop>>
-// ===
-
-// title: Elder_Lore
-// ---
-// 长老: 北方遗迹在旧王国时期曾是一座观测塔。
-// 长老: 不要独自进入那里。
-
-// <<return>>
-// ===
-
-// title: Elder_QuestOffer
-// ---
-// 长老: 镇长的徽章遗失在北方遗迹。
-
-// -> 我愿意帮忙。
-//     <<set $elder_quest_started = true>>
-//     长老: 谢谢你。找到后带回来。
-//     <<jump Elder_Menu>>
-
-// -> 我之后再来。
-//     长老: 没关系，准备好了再来。
-//     <<jump Elder_Menu>>
-// ===
-
-// title: Elder_TurnInQuest
-// ---
-// 长老: 你真的找到了徽章！
-
-// <<set $has_mayor_badge = false>>
-// <<set $elder_quest_complete = true>>
-
-// 长老: 镇子欠你一份人情。
-
-// -> 不必客气。
-//     <<jump Elder_Menu>>
-
-// -> 再见。
-//     <<stop>>
-// ===
-
-
-title: Tutorial_Resource_Start
-position: -272,-113
+﻿title: Tutorial_Resource_Start
+position: 316,9
 ---
 
 -> 交谈
-    <<jump Tutorial_Resource_Talk>>
+    <<jump Tutorial_Resource_FirstChoice>>
 -> 离开
     <<stop>>
 ===
 
-title: Tutorial_Resource_Talk
-position: 318,-107
+title: Tutorial_Resource_FirstChoice
+position: -15,10
 ---
-Eli: 我们的飞船似乎是损毁了，我们需要一些新的材料
-Eli: Aether, BrassScrap和CloudWood是我们需要的, 去附近看看, 我们应该能找到这些素材
-<<jump Tutorial_Resource_Start>>
+<<if !is_quest_accepted("Quest_Tutorial_CollectResource")>>
+    Eli: 我们的飞船似乎是损毁了，我们需要一些新的材料 #portrait:Eli_Guide
+    Eli: Aether, BrassScrap和CloudWood是我们需要的, 去附近看看, 我们应该能找到这些素材 #portrait:Eli_Guide
+    <<accept_quest "Quest_Tutorial_CollectResource">>
+    <<jump Tutorial_Resource_Start>>
+<<else>>
+    <<jump Tutorial_Resource_HowToFind>>
+<<endif>>
+===
+
+title: Tutorial_Resource_HowToFind
+position: 0,-332
+---
+->如何找到Aether?
+    Eli: Aether是浮空用的矿石, 一般会在山洞中出现 #portrait:Eli_Guide
+    <<jump Tutorial_Resource_Start>>
+->如何找到BrassScrap?
+    Eli: 这个城镇看样子是废弃了, Brass是家中常见的材料, 附近的村落中或许还有 #portrait:Eli_Guide
+    <<jump Tutorial_Resource_Start>>
+->如何找到CloudWood? 
+    Eli: 树木的话直接往山上走走, 或者路上应该也能找到 #portrait:Eli_Guide
+    <<jump Tutorial_Resource_Start>>
 ===

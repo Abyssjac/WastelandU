@@ -16,4 +16,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 5a2a7f49f43ab504b9d668b008f5121a, type: 2}
   - {fileID: 11400000, guid: ba87d07870f91ea40a27657068c86c61, type: 2}
   - {fileID: 11400000, guid: e9b083d0a9787f44dbaab017edd23f3d, type: 2}
+  - {fileID: 11400000, guid: 4a5c90f58b0a1ab4cbe1f68cf5c2286c, type: 2}
+  - {fileID: 11400000, guid: bfe7c8d2cd0fc1445b84c82292e81e32, type: 2}
+  - {fileID: 11400000, guid: 75d6d858ae48f404f8d2e9192c51164a, type: 2}
   scanFolder: A_Systems/NPCSystem/AllNPCSOs
