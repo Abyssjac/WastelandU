@@ -5,7 +5,7 @@ using UnityEngine;
 
 /// <summary>
 /// Manages NPC ? Room assignments and the interactive room-selection highlight system.
-/// Singleton ¡ª attach to any scene GameObject (does NOT need DontDestroyOnLoad).
+/// Singleton â€” attach to any scene GameObject (does NOT need DontDestroyOnLoad).
 ///
 /// Workflow:
 ///   1. Call <see cref="EnterSelectRoomMode"/> to begin selecting a room for an NPC.
@@ -14,21 +14,21 @@ using UnityEngine;
 /// </summary>
 public class NPCRoomAssignmentManager : MonoBehaviour
 {
-    // ©¤©¤ Singleton ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Singleton â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     public static NPCRoomAssignmentManager Instance { get; private set; }
 
-    // ©¤©¤ Inspector ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Inspector â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     [Header("References")]
     [SerializeField] private BuildPositionProvider positionProvider;
 
     [Header("Highlight Materials")]
-    [Tooltip("Color A ¡ª current / pending selected room.")]
+    [Tooltip("Color A â€” current / pending selected room.")]
     [SerializeField] private Material materialA;
-    [Tooltip("Color B ¡ª available (empty) rooms.")]
+    [Tooltip("Color B â€” available (empty) rooms.")]
     [SerializeField] private Material materialB;
-    [Tooltip("Color C ¡ª rooms occupied by a different NPC.")]
+    [Tooltip("Color C â€” rooms occupied by a different NPC.")]
     [SerializeField] private Material materialC;
-    [Tooltip("Color D ¡ª room currently hovered by the mouse.")]
+    [Tooltip("Color D â€” room currently hovered by the mouse.")]
     [SerializeField] private Material materialD;
 
     [Header("Highlight Cube")]
@@ -37,7 +37,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     [Tooltip("Scale multiplier applied to the cell size when sizing each highlight cube.")]
     [SerializeField] [Range(0.1f, 1f)] private float cubeScaleMultiplier = 0.9f;
 
-    // ©¤©¤ Events ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Events â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     /// <summary>Fired when selection mode is entered. Argument is the NPC being assigned.</summary>
     public event Action<Key_NPC> OnSelectionModeEntered;
 
@@ -50,7 +50,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     /// <summary>Fired after an NPC's room assignment is removed.</summary>
     public event Action<Key_NPC> OnRoomUnassigned;
 
-    // ©¤©¤ Internal state ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Internal state â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private enum SelectionState { Idle, Selecting }
     private SelectionState _state = SelectionState.Idle;
 
@@ -79,7 +79,46 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     private Vector3Int _hoveredRoomStableId;
     private bool       _hasHoveredRoom;
 
-    // ©¤©¤ Lifecycle ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    /// <summary>
+    /// Rebuilds the room-assignment lookup tables from persistent NPC save data.
+    /// It deliberately does not enter selection mode or create any highlights.
+    /// </summary>
+    public void RestoreAssignments(IReadOnlyList<NPCRoomAssignmentSnapshot> assignments)
+    {
+        if (_state == SelectionState.Selecting)
+            CancelSelectRoomMode();
+
+        _npcToRoom.Clear();
+        _roomToNPC.Clear();
+
+        if (assignments == null)
+            return;
+
+        foreach (NPCRoomAssignmentSnapshot assignment in assignments)
+        {
+            if (assignment.npcKey == Key_NPC.None)
+                continue;
+
+            if (_npcToRoom.ContainsKey(assignment.npcKey))
+                continue;
+
+            if (_roomToNPC.ContainsKey(assignment.roomStableId))
+            {
+                Debug.LogWarning(
+                    $"[{nameof(NPCRoomAssignmentManager)}] Save data assigned room {assignment.roomStableId} to more than one NPC. " +
+                    $"Keeping the first assignment and skipping '{assignment.npcKey}'.",
+                    this);
+                continue;
+            }
+
+            _npcToRoom.Add(assignment.npcKey, assignment.roomStableId);
+            _roomToNPC.Add(assignment.roomStableId, assignment.npcKey);
+            UpdateNPCBehaviourRoom(assignment.npcKey, true, assignment.roomStableId);
+            OnRoomAssigned?.Invoke(assignment.npcKey, assignment.roomStableId);
+        }
+    }
+
+    // â”€â”€ Lifecycle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
     private void Awake()
     {
         if (Instance != null && Instance != this)
@@ -105,7 +144,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
             HandleRoomClick();
     }
 
-    // ©¤©¤ Public API ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Public API â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Enter room-selection mode for <paramref name="npcKey"/>.
@@ -235,7 +274,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     /// <summary>Returns true if any NPC is currently assigned to this room.</summary>
     public bool IsRoomOccupied(Vector3Int stableId) => _roomToNPC.ContainsKey(stableId);
 
-    // ©¤©¤ Private: click & hover ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Private: click & hover â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void HandleRoomClick()
     {
@@ -244,11 +283,11 @@ public class NPCRoomAssignmentManager : MonoBehaviour
 
         Vector3Int stableId = room.StableId;
 
-        // Color C ¡ª occupied by a DIFFERENT NPC: ignore.
+        // Color C â€” occupied by a DIFFERENT NPC: ignore.
         if (_roomToNPC.TryGetValue(stableId, out Key_NPC occupant) && occupant != _selectedNPC)
             return;
 
-        // Color A ¡ª clicking the current pending room cancels the pending assignment.
+        // Color A â€” clicking the current pending room cancels the pending assignment.
         if (_hasPendingRoom && stableId == _pendingRoomStableId)
         {
             _hasPendingRoom = false;
@@ -259,7 +298,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
             return;
         }
 
-        // Color B ¡ª clicking an available room: make it the new pending.
+        // Color B â€” clicking an available room: make it the new pending.
         Vector3Int prevPending = _pendingRoomStableId;
         bool       hadPending  = _hasPendingRoom;
 
@@ -286,7 +325,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
         Vector3Int newStableId = newRoom != null ? newRoom.StableId : Vector3Int.zero;
         bool       newHasHover = newRoom != null;
 
-        // No change ¡ª skip.
+        // No change â€” skip.
         if (newHasHover == _hasHoveredRoom
          && (!newHasHover || newStableId == _hoveredRoomStableId))
             return;
@@ -312,7 +351,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
         return GridRoomManager.Instance?.GetRoomAtCell(positionProvider.CurrentCell);
     }
 
-    // ©¤©¤ Private: highlight cubes ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Private: highlight cubes â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void SpawnHighlightCubes()
     {
@@ -363,15 +402,15 @@ public class NPCRoomAssignmentManager : MonoBehaviour
 
     private Material DetermineBaseMaterial(Vector3Int stableId)
     {
-        // Color A ¡ª the current pending room.
+        // Color A â€” the current pending room.
         if (_hasPendingRoom && stableId == _pendingRoomStableId)
             return materialA;
 
-        // Color C ¡ª occupied by a different NPC.
+        // Color C â€” occupied by a different NPC.
         if (_roomToNPC.TryGetValue(stableId, out Key_NPC occupant) && occupant != _selectedNPC)
             return materialC;
 
-        // Color B ¡ª available.
+        // Color B â€” available.
         return materialB;
     }
 
@@ -389,7 +428,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
         if (r != null) r.material = mat;
     }
 
-    // ©¤©¤ Private: NPCBehaviour write-back ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Private: NPCBehaviour write-back â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private static void UpdateNPCBehaviourRoom(Key_NPC npcKey, bool hasRoom, Vector3Int stableId)
     {
@@ -401,5 +440,18 @@ public class NPCRoomAssignmentManager : MonoBehaviour
         NPCBehaviour behaviour = go.GetComponent<NPCBehaviour>();
         if (behaviour != null)
             behaviour.SetRoomAssignment(hasRoom, stableId);
+    }
+}
+
+/// <summary>Non-serialized transfer object used while restoring saved NPC room assignments.</summary>
+public readonly struct NPCRoomAssignmentSnapshot
+{
+    public readonly Key_NPC npcKey;
+    public readonly Vector3Int roomStableId;
+
+    public NPCRoomAssignmentSnapshot(Key_NPC npcKey, Vector3Int roomStableId)
+    {
+        this.npcKey = npcKey;
+        this.roomStableId = roomStableId;
     }
 }

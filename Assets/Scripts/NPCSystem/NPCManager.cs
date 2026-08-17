@@ -44,8 +44,33 @@ public class NPCManager : MonoBehaviour, IDebuggable
     private readonly Dictionary<Key_NPC, GameObject> _spawnedNPCs =
         new Dictionary<Key_NPC, GameObject>();
 
+    // Long-term player progress. This is intentionally separate from
+    // _spawnedNPCs: a scene object can disappear while its recruitment and
+    // interaction progress must survive scene transitions and save/load.
+    private readonly Dictionary<Key_NPC, NPCProgressRuntimeState> _npcProgress =
+        new Dictionary<Key_NPC, NPCProgressRuntimeState>();
+
+    private NPCInteractionDatabase _interactionDatabase;
+
+    private sealed class NPCProgressRuntimeState
+    {
+        public NPCStatus Status = NPCStatus.Unrecruited;
+        public readonly HashSet<NPCInteractionType> UnlockedInteractions =
+            new HashSet<NPCInteractionType>();
+        public readonly HashSet<NPCInteractionType> LockedInteractions =
+            new HashSet<NPCInteractionType>();
+        public bool HasPersistentRuntimeData;
+        public NPCPersistentRuntimeData PersistentRuntimeData;
+    }
+
     /// <summary>Read-only view of all currently spawned NPCs keyed by <see cref="Key_NPC"/>.</summary>
     public IReadOnlyDictionary<Key_NPC, GameObject> SpawnedNPCs => _spawnedNPCs;
+
+    /// <summary>Fired whenever an NPC's persistent recruitment status changes.</summary>
+    public event Action<Key_NPC, NPCStatus> OnNPCStatusChanged;
+
+    /// <summary>Fired when a runtime interaction override changes.</summary>
+    public event Action<Key_NPC, NPCInteractionType, bool> OnNPCInteractionAvailabilityChanged;
 
     // ���� Lifecycle ��������������������������������������������������������������������������������������������������������������������������
     private void Awake()
@@ -172,6 +197,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
         go.name = $"NPC_{key}";
 
         _spawnedNPCs[key] = go;
+        ApplyPersistentRuntimeData(key, go);
 
         if (debugEnabled)
             Debug.Log($"[NPCManager] Spawned '{key}' at {position}. Total spawned: {_spawnedNPCs.Count}");
@@ -191,6 +217,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
             return false;
         }
 
+        CapturePersistentRuntimeData(key, go);
         _spawnedNPCs.Remove(key);
 
         if (go != null)
@@ -214,6 +241,211 @@ public class NPCManager : MonoBehaviour, IDebuggable
         return go;
     }
 
+    // ���� NPC Progress / Interaction Availability ������������������������������������������������������������������������������������
+
+    /// <summary>Returns long-term status, independent of whether the NPC is currently spawned.</summary>
+    public NPCStatus GetNPCStatus(Key_NPC key)
+    {
+        if (key == Key_NPC.None)
+            return NPCStatus.Unrecruited;
+
+        return _npcProgress.TryGetValue(key, out NPCProgressRuntimeState state)
+            ? state.Status
+            : NPCStatus.Unrecruited;
+    }
+
+    public bool IsNPCRecruited(Key_NPC key) => GetNPCStatus(key) == NPCStatus.Recruited;
+
+    /// <summary>
+    /// Sets persistent NPC status. Other systems, including Yarn commands and
+    /// quest events, should use this instead of coupling recruitment to spawn state.
+    /// </summary>
+    public bool SetNPCStatus(Key_NPC key, NPCStatus status)
+    {
+        if (key == Key_NPC.None)
+        {
+            Debug.LogWarning($"[{nameof(NPCManager)}] Cannot set status for NPC key None.", this);
+            return false;
+        }
+
+        NPCProgressRuntimeState state = GetOrCreateProgressState(key);
+        if (state.Status == status)
+            return false;
+
+        state.Status = status;
+        OnNPCStatusChanged?.Invoke(key, status);
+        return true;
+    }
+
+    /// <summary>
+    /// Makes an authored interaction visible regardless of its authored default.
+    /// NPC Panel still requires the NPC to be recruited.
+    /// </summary>
+    public bool UnlockInteraction(Key_NPC key, NPCInteractionType interactionType)
+    {
+        if (!CanOverrideInteraction(key, interactionType))
+            return false;
+
+        NPCProgressRuntimeState state = GetOrCreateProgressState(key);
+        bool changed = state.LockedInteractions.Remove(interactionType);
+        changed |= state.UnlockedInteractions.Add(interactionType);
+
+        if (changed)
+            OnNPCInteractionAvailabilityChanged?.Invoke(key, interactionType, IsInteractionAvailable(key, interactionType));
+
+        return changed;
+    }
+
+    /// <summary>
+    /// Hides an authored interaction until it is unlocked again. This is a
+    /// persistent override and does not mutate any ScriptableObject.
+    /// </summary>
+    public bool LockInteraction(Key_NPC key, NPCInteractionType interactionType)
+    {
+        if (!CanOverrideInteraction(key, interactionType))
+            return false;
+
+        NPCProgressRuntimeState state = GetOrCreateProgressState(key);
+        bool changed = state.UnlockedInteractions.Remove(interactionType);
+        changed |= state.LockedInteractions.Add(interactionType);
+
+        if (changed)
+            OnNPCInteractionAvailabilityChanged?.Invoke(key, interactionType, false);
+
+        return changed;
+    }
+
+    /// <summary>Returns the static interaction configuration for this NPC, if registered.</summary>
+    public NPCInteractionProperty GetInteractionProperty(Key_NPC key)
+    {
+        if (key == Key_NPC.None)
+            return null;
+
+        NPCInteractionDatabase database = GetNPCInteractionDatabase();
+        return database != null ? database.GetByEnum(key) : null;
+    }
+
+    /// <summary>
+    /// Determines whether the interaction should be shown in the NPC option menu.
+    /// Hidden interactions are never exposed as disabled menu entries.
+    /// </summary>
+    public bool IsInteractionAvailable(Key_NPC key, NPCInteractionType interactionType)
+    {
+        if (!IsInteractionAuthored(key, interactionType))
+            return false;
+
+        if (interactionType == NPCInteractionType.OpenNPCPanel && !IsNPCRecruited(key))
+            return false;
+
+        if (_npcProgress.TryGetValue(key, out NPCProgressRuntimeState state))
+        {
+            if (state.LockedInteractions.Contains(interactionType))
+                return false;
+
+            if (state.UnlockedInteractions.Contains(interactionType))
+                return true;
+        }
+
+        return IsInteractionInitiallyUnlocked(key, interactionType);
+    }
+
+    /// <summary>Builds the current visible menu actions in their fixed first-version order.</summary>
+    public List<NPCInteractionType> GetAvailableInteractions(Key_NPC key)
+    {
+        var result = new List<NPCInteractionType>(3);
+
+        if (IsInteractionAvailable(key, NPCInteractionType.Talk))
+            result.Add(NPCInteractionType.Talk);
+        if (IsInteractionAvailable(key, NPCInteractionType.OpenStore))
+            result.Add(NPCInteractionType.OpenStore);
+        if (IsInteractionAvailable(key, NPCInteractionType.OpenNPCPanel))
+            result.Add(NPCInteractionType.OpenNPCPanel);
+
+        return result;
+    }
+
+    /// <summary>
+    /// Allocation-free availability query intended for hot paths such as
+    /// <see cref="BaseInteractable.CanInteract"/>.
+    /// </summary>
+    public bool HasAnyAvailableInteraction(Key_NPC key)
+    {
+        return IsInteractionAvailable(key, NPCInteractionType.Talk)
+            || IsInteractionAvailable(key, NPCInteractionType.OpenStore)
+            || IsInteractionAvailable(key, NPCInteractionType.OpenNPCPanel);
+    }
+
+    /// <summary>Captures only persistent NPC progress; never scene GameObject references.</summary>
+    public List<NPCSaveEntry> CaptureSaveEntries()
+    {
+        CaptureAllSpawnedPersistentRuntimeData();
+
+        var entries = new List<NPCSaveEntry>(_npcProgress.Count);
+
+        foreach (var pair in _npcProgress)
+        {
+            NPCProgressRuntimeState state = pair.Value;
+            if (state == null)
+                continue;
+
+            var entry = new NPCSaveEntry
+            {
+                npcKey = pair.Key,
+                npcStatus = state.Status
+            };
+
+            entry.unlockedInteractions.AddRange(state.UnlockedInteractions);
+            entry.lockedInteractions.AddRange(state.LockedInteractions);
+            entry.unlockedInteractions.Sort();
+            entry.lockedInteractions.Sort();
+
+            entry.hasRuntimeData = state.HasPersistentRuntimeData;
+            if (state.HasPersistentRuntimeData)
+                entry.runtimeData = CopyPersistentRuntimeData(state.PersistentRuntimeData);
+
+            entries.Add(entry);
+        }
+
+        entries.Sort((left, right) => left.npcKey.CompareTo(right.npcKey));
+        return entries;
+    }
+
+    /// <summary>Restores persistent progress while leaving spawned scene objects untouched.</summary>
+    public void RestoreSaveEntries(List<NPCSaveEntry> entries)
+    {
+        _npcProgress.Clear();
+
+        if (entries == null)
+        {
+            RestoreRoomAssignmentsFromProgress();
+            return;
+        }
+
+        foreach (NPCSaveEntry entry in entries)
+        {
+            if (entry == null || entry.npcKey == Key_NPC.None)
+                continue;
+
+            NPCProgressRuntimeState state = GetOrCreateProgressState(entry.npcKey);
+            state.Status = entry.npcStatus;
+
+            AddValidInteractionOverrides(state.UnlockedInteractions, entry.unlockedInteractions);
+            AddValidInteractionOverrides(state.LockedInteractions, entry.lockedInteractions);
+
+            if (entry.hasRuntimeData && entry.runtimeData != null)
+            {
+                state.PersistentRuntimeData = CopyPersistentRuntimeData(entry.runtimeData);
+                state.HasPersistentRuntimeData = true;
+            }
+
+            // A saved locked state takes precedence if an old save contains both.
+            state.UnlockedInteractions.ExceptWith(state.LockedInteractions);
+        }
+
+        ApplyPersistentRuntimeDataToSpawnedNPCs();
+        RestoreRoomAssignmentsFromProgress();
+    }
+
     // ���� Private helpers ��������������������������������������������������������������������������������������������������������������
 
     private NPCProperty ResolveProperty(Key_NPC key)
@@ -226,6 +458,178 @@ public class NPCManager : MonoBehaviour, IDebuggable
             Debug.LogError($"[NPCManager] No NPCProperty found for key '{key}' in NPCDatabase.");
 
         return property;
+    }
+
+    private NPCInteractionDatabase GetNPCInteractionDatabase()
+    {
+        if (_interactionDatabase != null)
+            return _interactionDatabase;
+
+        var databaseManager = PropertyDatabaseManager.Instance;
+        if (databaseManager != null)
+            _interactionDatabase = databaseManager.GetDatabase<NPCInteractionDatabase>();
+
+        return _interactionDatabase;
+    }
+
+    private NPCProgressRuntimeState GetOrCreateProgressState(Key_NPC key)
+    {
+        if (!_npcProgress.TryGetValue(key, out NPCProgressRuntimeState state))
+        {
+            state = new NPCProgressRuntimeState();
+            _npcProgress.Add(key, state);
+        }
+
+        return state;
+    }
+
+    private bool CanOverrideInteraction(Key_NPC key, NPCInteractionType interactionType)
+    {
+        if (key == Key_NPC.None || interactionType == NPCInteractionType.None)
+        {
+            Debug.LogWarning($"[{nameof(NPCManager)}] A valid NPC key and interaction type are required.", this);
+            return false;
+        }
+
+        if (!IsInteractionAuthored(key, interactionType))
+        {
+            Debug.LogWarning($"[{nameof(NPCManager)}] '{interactionType}' is not authored for NPC '{key}'.", this);
+            return false;
+        }
+
+        return true;
+    }
+
+    private bool IsInteractionAuthored(Key_NPC key, NPCInteractionType interactionType)
+    {
+        NPCInteractionProperty interactionProperty = GetInteractionProperty(key);
+
+        switch (interactionType)
+        {
+            case NPCInteractionType.Talk:
+                return interactionProperty != null && interactionProperty.TalkEnabled;
+
+            case NPCInteractionType.OpenStore:
+                return interactionProperty != null && interactionProperty.StoreInventoryProperty != null;
+
+            case NPCInteractionType.OpenNPCPanel:
+                // NPC Panel is a universal feature for recruited NPCs, not an
+                // option that must be copied into every interaction asset.
+                return true;
+
+            default:
+                return false;
+        }
+    }
+
+    private bool IsInteractionInitiallyUnlocked(Key_NPC key, NPCInteractionType interactionType)
+    {
+        switch (interactionType)
+        {
+            case NPCInteractionType.Talk:
+            case NPCInteractionType.OpenNPCPanel:
+                return true;
+
+            case NPCInteractionType.OpenStore:
+            {
+                NPCInteractionProperty interactionProperty = GetInteractionProperty(key);
+                return interactionProperty != null && interactionProperty.StoreInitiallyUnlocked;
+            }
+
+            default:
+                return false;
+        }
+    }
+
+    private static void AddValidInteractionOverrides(
+        HashSet<NPCInteractionType> target,
+        List<NPCInteractionType> source)
+    {
+        if (source == null)
+            return;
+
+        foreach (NPCInteractionType interactionType in source)
+        {
+            if (interactionType != NPCInteractionType.None)
+                target.Add(interactionType);
+        }
+    }
+
+    private void CaptureAllSpawnedPersistentRuntimeData()
+    {
+        foreach (var pair in _spawnedNPCs)
+            CapturePersistentRuntimeData(pair.Key, pair.Value);
+    }
+
+    private void CapturePersistentRuntimeData(Key_NPC key, GameObject npcGameObject)
+    {
+        if (key == Key_NPC.None || npcGameObject == null)
+            return;
+
+        NPCBehaviour behaviour = npcGameObject.GetComponent<NPCBehaviour>();
+        if (behaviour == null)
+            return;
+
+        NPCProgressRuntimeState state = GetOrCreateProgressState(key);
+        state.PersistentRuntimeData = behaviour.CapturePersistentRuntimeData();
+        state.HasPersistentRuntimeData = true;
+    }
+
+    private void ApplyPersistentRuntimeDataToSpawnedNPCs()
+    {
+        foreach (var pair in _spawnedNPCs)
+            ApplyPersistentRuntimeData(pair.Key, pair.Value);
+    }
+
+    private void ApplyPersistentRuntimeData(Key_NPC key, GameObject npcGameObject)
+    {
+        if (npcGameObject == null
+            || !_npcProgress.TryGetValue(key, out NPCProgressRuntimeState state)
+            || !state.HasPersistentRuntimeData
+            || state.PersistentRuntimeData == null)
+            return;
+
+        NPCBehaviour behaviour = npcGameObject.GetComponent<NPCBehaviour>();
+        behaviour?.RestorePersistentRuntimeData(state.PersistentRuntimeData);
+    }
+
+    private void RestoreRoomAssignmentsFromProgress()
+    {
+        if (NPCRoomAssignmentManager.Instance == null)
+            return;
+
+        var assignments = new List<NPCRoomAssignmentSnapshot>();
+        foreach (var pair in _npcProgress)
+        {
+            NPCProgressRuntimeState state = pair.Value;
+            if (state == null
+                || !state.HasPersistentRuntimeData
+                || state.PersistentRuntimeData == null
+                || !state.PersistentRuntimeData.hasRoom)
+                continue;
+
+            assignments.Add(new NPCRoomAssignmentSnapshot(
+                pair.Key,
+                state.PersistentRuntimeData.assignedRoomStableId));
+        }
+
+        NPCRoomAssignmentManager.Instance.RestoreAssignments(assignments);
+    }
+
+    private static NPCPersistentRuntimeData CopyPersistentRuntimeData(NPCPersistentRuntimeData source)
+    {
+        if (source == null)
+            return new NPCPersistentRuntimeData();
+
+        return new NPCPersistentRuntimeData
+        {
+            dailyInteractionAffinity = source.dailyInteractionAffinity,
+            familiarityAffinity = source.familiarityAffinity,
+            lastInteractionDay = source.lastInteractionDay,
+            interactedToday = source.interactedToday,
+            hasRoom = source.hasRoom,
+            assignedRoomStableId = source.assignedRoomStableId
+        };
     }
 
     private NPCProperty ResolvePropertyByString(string stringKey)

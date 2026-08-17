@@ -1,7 +1,7 @@
 /// <summary>
 /// Runtime mutable state for a single NPC.
-/// Owned and updated by <see cref="NPCBehaviour"/>.
-/// Not serialized ¡ª rebuilt fresh each play session.
+/// Owned and updated by <see cref="NPCBehaviour"/>. The NPC save adapter
+/// captures its persistent fields through <see cref="NPCPersistentRuntimeData"/>.
 /// </summary>
 public class NPCRuntimeData
 {
@@ -18,11 +18,11 @@ public class NPCRuntimeData
         DailyInteractionAffinity = dailyInteractionAffinity;
         FamiliarityAffinity      = familiarityAffinity;
     }   
-    // ©¤©¤ Affinity dimensions ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Affinity dimensions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     /// <summary>
     /// Computed from room furniture tags.
-    /// Formula: Min(maxEnvAffinity, ¦² tagWeight ¡Á tagCount)
+    /// Formula: Min(maxEnvAffinity, Î£ tagWeight Ã— tagCount)
     /// </summary>
     public float LivingEnvironmentAffinity { get; set; }
 
@@ -41,7 +41,7 @@ public class NPCRuntimeData
     /// </summary>
     public bool InteractedToday { get; set; } = false;
 
-    /// <summary>Placeholder ¡ª driven by gifting. Does not decay. Not yet implemented.</summary>
+    /// <summary>Placeholder â€” driven by gifting. Does not decay. Not yet implemented.</summary>
     public float FamiliarityAffinity { get; set; }
 
     /// <summary>Sum of all three affinity dimensions.</summary>

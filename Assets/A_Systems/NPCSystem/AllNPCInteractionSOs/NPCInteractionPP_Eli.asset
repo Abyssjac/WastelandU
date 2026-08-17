@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1d6c0f2f9fbe4981b5c8a52d74cb64d1, type: 3}
+  m_Name: NPCInteractionPP_Eli
+  m_EditorClassIdentifier: Assembly-CSharp::NPCInteractionProperty
+  enumKey: 10
+  stringKey: 
+  directExecuteWhenSingleOption: 0
+  talkEnabled: 1
+  yarnStartNode: Tutorial_Resource_Start
+  storeInventoryProperty: {fileID: 11400000, guid: bb04951b76d8d7549a0140d811e9e084, type: 2}
+  storeInitiallyUnlocked: 1

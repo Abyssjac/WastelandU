@@ -10,6 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 7030995507424837923}
   - component: {fileID: 3949217203491111353}
+  - component: {fileID: 7030995507424837924}
   - component: {fileID: 1400658634634333455}
   m_Layer: 0
   m_Name: NPCMgr
@@ -47,6 +48,19 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   defaultSpawnPoint: {fileID: 7030995507424837923}
   debugEnabled: 0
+--- !u!114 &7030995507424837924
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1320742856722632441}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 8bf0af5d57334d10863ec5cc88cb88f7, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  npcManager: {fileID: 3949217203491111353}
 --- !u!114 &1400658634634333455
 MonoBehaviour:
   m_ObjectHideFlags: 0

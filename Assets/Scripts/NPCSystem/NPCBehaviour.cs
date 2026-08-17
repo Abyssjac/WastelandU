@@ -1,4 +1,4 @@
-﻿using JackyUtility;
+using JackyUtility;
 using UnityEngine;
 
 /// <summary>
@@ -205,6 +205,47 @@ public class NPCBehaviour : MonoBehaviour
     {
         this.hasRoom             = hasRoom;
         this.assignedRoomStableId = stableId;
+        RecalculateEnvironmentAffinity();
+    }
+
+    // ─────────────────────────────────────────────────────────────
+    // Persistent state bridge
+    // ─────────────────────────────────────────────────────────────
+
+    /// <summary>
+    /// Captures mutable NPC state that must survive scene transitions and saves.
+    /// Living-environment affinity is intentionally excluded because furniture
+    /// state is the authoritative input and is recalculated after restore.
+    /// </summary>
+    public NPCPersistentRuntimeData CapturePersistentRuntimeData()
+    {
+        return new NPCPersistentRuntimeData
+        {
+            dailyInteractionAffinity = _runtimeData != null ? _runtimeData.DailyInteractionAffinity : 0f,
+            familiarityAffinity = _runtimeData != null ? _runtimeData.FamiliarityAffinity : 0f,
+            lastInteractionDay = _runtimeData != null ? _runtimeData.LastInteractionDay : -1,
+            interactedToday = _runtimeData != null && _runtimeData.InteractedToday,
+            hasRoom = hasRoom,
+            assignedRoomStableId = assignedRoomStableId
+        };
+    }
+
+    /// <summary>Restores persistent NPC state without writing into any static property asset.</summary>
+    public void RestorePersistentRuntimeData(NPCPersistentRuntimeData data)
+    {
+        if (data == null)
+            return;
+
+        if (_runtimeData == null)
+            _runtimeData = new NPCRuntimeData();
+
+        _runtimeData.DailyInteractionAffinity = Mathf.Clamp(data.dailyInteractionAffinity, 0f, maxOtherAffinityRuntime);
+        _runtimeData.FamiliarityAffinity = Mathf.Clamp(data.familiarityAffinity, 0f, maxOtherAffinityRuntime);
+        _runtimeData.LastInteractionDay = data.lastInteractionDay;
+        _runtimeData.InteractedToday = data.interactedToday;
+
+        hasRoom = data.hasRoom;
+        assignedRoomStableId = data.assignedRoomStableId;
         RecalculateEnvironmentAffinity();
     }
 

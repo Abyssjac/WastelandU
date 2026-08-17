@@ -20,14 +20,17 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
     {
         NPCManager mgr = Target;
 
-        // ©¤©¤ Spawn / Despawn ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        // â”€â”€ Spawn / Despawn â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         DrawSpawnSection(mgr);
 
-        // ©¤©¤ Overview ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        // â”€â”€ Overview â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Header("Overview");
         Row("Total Spawned NPCs", mgr.SpawnedNPCs.Count.ToString());
 
-        // ©¤©¤ Spawned NPC list ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        // â”€â”€ Persistent NPC progress â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+        DrawNPCProgressSection(mgr);
+
+        // â”€â”€ Spawned NPC list â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Header("Currently Spawned");
         if (mgr.SpawnedNPCs.Count == 0)
         {
@@ -42,7 +45,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
             }
         }
 
-        // ©¤©¤ Property query ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+        // â”€â”€ Property query â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
         Header("Query NPCProperty");
 
         EditorGUILayout.BeginHorizontal();
@@ -57,7 +60,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
 
         DrawSeparator();
 
-        // Resolve the property ¡ª string key takes precedence if filled in.
+        // Resolve the property â€” string key takes precedence if filled in.
         NPCProperty prop = null;
         var dbMgr = PropertyDatabaseManager.Instance;
         if (dbMgr != null)
@@ -84,7 +87,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
         }
     }
 
-    // ©¤©¤ Drawing helpers ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+    // â”€â”€ Drawing helpers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
     private void DrawSpawnSection(NPCManager mgr)
     {
@@ -108,7 +111,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
         bool isSpawned = keyValid && mgr.IsSpawned(_selectedEnumKey);
 
         ColoredRow("Status",
-            !keyValid ? "¡ª" : isSpawned ? "Spawned" : "Not Spawned",
+            !keyValid ? "â€”" : isSpawned ? "Spawned" : "Not Spawned",
             !keyValid ? Color.gray : isSpawned ? Color.green : Color.gray);
 
         EditorGUILayout.Space(4);
@@ -133,7 +136,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
 
     private void DrawNPCProperty(NPCProperty prop, NPCManager mgr)
     {
-        Header($"NPCProperty  ¡ª  {prop.EnumKey}");
+        Header($"NPCProperty  â€”  {prop.EnumKey}");
 
         Row("Enum Key",      prop.EnumKey.ToString());
         Row("String Key",    prop.StringKey);
@@ -164,7 +167,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
             if (go != null)
                 Row("Position", go.transform.position.ToString());
 
-            // ©¤©¤ Runtime affinity ©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤©¤
+            // â”€â”€ Runtime affinity â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
             NPCBehaviour behaviour = go != null ? go.GetComponent<NPCBehaviour>() : null;
             if (behaviour != null && behaviour.RuntimeData != null)
             {
@@ -185,5 +188,76 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
                 EditorGUILayout.HelpBox("NPCBehaviour not found on this GameObject.", MessageType.Warning);
             }
         }
+    }
+
+    private void DrawNPCProgressSection(NPCManager mgr)
+    {
+        Header("NPC Progress / Interactions");
+
+        if (_selectedEnumKey == Key_NPC.None)
+        {
+            EditorGUILayout.HelpBox("Select an NPC Enum Key to inspect or edit persistent NPC progress.", MessageType.None);
+            return;
+        }
+
+        NPCStatus currentStatus = mgr.GetNPCStatus(_selectedEnumKey);
+        EditorGUI.BeginChangeCheck();
+        NPCStatus selectedStatus = (NPCStatus)EditorGUILayout.EnumPopup("NPC Status", currentStatus);
+        if (EditorGUI.EndChangeCheck())
+            mgr.SetNPCStatus(_selectedEnumKey, selectedStatus);
+
+        ColoredRow(
+            "Recruited",
+            mgr.IsNPCRecruited(_selectedEnumKey) ? "Yes" : "No",
+            mgr.IsNPCRecruited(_selectedEnumKey) ? Color.green : Color.gray);
+
+        NPCInteractionProperty interactionProperty = mgr.GetInteractionProperty(_selectedEnumKey);
+        if (interactionProperty == null)
+        {
+            EditorGUILayout.HelpBox(
+                "No NPCInteractionProperty is registered for this NPC. Talk and Store cannot be configured until it is added to NPCInteractionDatabase.",
+                MessageType.Warning);
+        }
+        else
+        {
+            Row("Direct Execute Single", interactionProperty.DirectExecuteWhenSingleOption ? "Yes" : "No");
+            Row("Talk Node", interactionProperty.TalkEnabled ? interactionProperty.YarnStartNode : "<disabled>");
+            Row("Store", interactionProperty.StoreInventoryProperty != null
+                ? interactionProperty.StoreInventoryProperty.EnumKey.ToString()
+                : "<none>");
+        }
+
+        EditorGUILayout.Space(4);
+        EditorGUILayout.LabelField("Runtime Interaction Overrides", EditorStyles.miniBoldLabel);
+
+        DrawInteractionOverrideRow(mgr, NPCInteractionType.Talk,
+            interactionProperty != null && interactionProperty.TalkEnabled);
+        DrawInteractionOverrideRow(mgr, NPCInteractionType.OpenStore,
+            interactionProperty != null && interactionProperty.StoreInventoryProperty != null);
+        DrawInteractionOverrideRow(mgr, NPCInteractionType.OpenNPCPanel, true);
+    }
+
+    private void DrawInteractionOverrideRow(NPCManager mgr, NPCInteractionType interactionType, bool authored)
+    {
+        bool available = mgr.IsInteractionAvailable(_selectedEnumKey, interactionType);
+        string state = available ? "Visible" : authored ? "Hidden" : "Not Authored";
+        Color stateColor = available ? Color.green : authored ? new Color(1f, 0.75f, 0.2f) : Color.gray;
+
+        EditorGUILayout.BeginHorizontal();
+        EditorGUILayout.LabelField(interactionType.ToString(), GUILayout.Width(125));
+
+        Color previousColor = GUI.color;
+        GUI.color = stateColor;
+        EditorGUILayout.LabelField(state, GUILayout.Width(90));
+        GUI.color = previousColor;
+
+        GUI.enabled = authored;
+        if (GUILayout.Button("Unlock", GUILayout.Width(68)))
+            mgr.UnlockInteraction(_selectedEnumKey, interactionType);
+        if (GUILayout.Button("Lock", GUILayout.Width(68)))
+            mgr.LockInteraction(_selectedEnumKey, interactionType);
+        GUI.enabled = true;
+
+        EditorGUILayout.EndHorizontal();
     }
 }

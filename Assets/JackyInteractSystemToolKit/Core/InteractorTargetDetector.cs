@@ -29,6 +29,10 @@ public class InteractorTargetDetector : MonoBehaviour
     [Tooltip("Key used to trigger an interaction.")]
     [SerializeField] private KeyCode interactKey = KeyCode.E;
 
+    [Header("Movement Lock")]
+    [Tooltip("Acquire one PlayerManager movement lock for the whole Interacting state, then release it only when that state ends.")]
+    [SerializeField] private bool lockPlayerMovementWhileInteracting = true;
+
     [Header("Debug")]
     [SerializeField] private bool debugDrawCast = true;
 
@@ -54,6 +58,8 @@ public class InteractorTargetDetector : MonoBehaviour
     // Cached for the capsule cast
     private readonly RaycastHit[] _hitBuffer = new RaycastHit[8];
 
+    private PlayerAgent _movementLockedPlayer;
+
     // ─────────────────────────────────────────────────────────────
     // Unity
     // ─────────────────────────────────────────────────────────────
@@ -67,6 +73,16 @@ public class InteractorTargetDetector : MonoBehaviour
 
         if (CurrentState == InteractState.HasTarget && Input.GetKeyDown(interactKey))
             TriggerInteract();
+    }
+
+    private void OnDisable()
+    {
+        ReleaseInteractionMovementLock();
+    }
+
+    private void OnDestroy()
+    {
+        ReleaseInteractionMovementLock();
     }
 
     // ─────────────────────────────────────────────────────────────
@@ -183,7 +199,47 @@ public class InteractorTargetDetector : MonoBehaviour
         if (newState == CurrentState) return;
         var prev = CurrentState;
         CurrentState = newState;
+
+        UpdateInteractionMovementLock(prev, newState);
         OnStateChanged?.Invoke(prev, newState);
+    }
+
+    private void UpdateInteractionMovementLock(InteractState previousState, InteractState nextState)
+    {
+        if (!lockPlayerMovementWhileInteracting)
+        {
+            ReleaseInteractionMovementLock();
+            return;
+        }
+
+        if (previousState != InteractState.Interacting && nextState == InteractState.Interacting)
+            AcquireInteractionMovementLock();
+        else if (previousState == InteractState.Interacting && nextState != InteractState.Interacting)
+            ReleaseInteractionMovementLock();
+    }
+
+    private void AcquireInteractionMovementLock()
+    {
+        if (_movementLockedPlayer != null)
+            return;
+
+        if (PlayerManager.Instance == null || !PlayerManager.Instance.TryGetActivePlayer(out PlayerAgent player))
+        {
+            Debug.LogWarning($"[{nameof(InteractorTargetDetector)}] Cannot lock movement because {nameof(PlayerManager)} has no active player.", this);
+            return;
+        }
+
+        if (player.AcquireMovementLock(this))
+            _movementLockedPlayer = player;
+    }
+
+    private void ReleaseInteractionMovementLock()
+    {
+        if (_movementLockedPlayer == null)
+            return;
+
+        _movementLockedPlayer.ReleaseMovementLock(this);
+        _movementLockedPlayer = null;
     }
 
     // ─────────────────────────────────────────────────────────────

@@ -14,7 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   enumKey: 10
   stringKey: NPCPP_Eli_Guide
-  prefab: {fileID: 2630481644761170012, guid: d48876a4278f0d54ab531400564ddca1, type: 3}
+  prefab: {fileID: 2176530421879130396, guid: 579cfce35b8e746498c4aa129fb4149a, type: 3}
   displayName: Eli
   portrait: {fileID: 21300000, guid: 38c5cd5ac4be1964f84fd485648bb262, type: 3}
   maxEnvAffinity: 100

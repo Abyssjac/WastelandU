@@ -34,6 +34,65 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     private bool isStoreOpen;
 
     public event Action<bool> OnStoreModeChanged;
+    /// <summary>
+    /// Fired once when a currently open store is fully closed. NPC interactions
+    /// use this to release their owning Interact session.
+    /// </summary>
+    public event Action OnStoreClosed;
+
+    /// <summary>
+    /// Opens a store selected by an NPC interaction. The inventory property
+    /// remains static; only its enum key is used to build this manager's runtime
+    /// container for the current store session.
+    /// </summary>
+    public bool OpenStore(StoreInventoryProperty storeInventoryProperty)
+    {
+        if (storeInventoryProperty == null)
+        {
+            Debug.LogWarning($"[{nameof(StoreManager)}] Cannot open a null {nameof(StoreInventoryProperty)}.", this);
+            return false;
+        }
+
+        return OpenStore(storeInventoryProperty.EnumKey);
+    }
+
+    /// <summary>Opens the configured UI with the requested inventory.</summary>
+    public bool OpenStore(Key_StoreInventory storeInventoryKey)
+    {
+        if (storeInventoryKey == Key_StoreInventory.None)
+        {
+            Debug.LogWarning($"[{nameof(StoreManager)}] Cannot open store key None.", this);
+            return false;
+        }
+
+        if (inventoryDatabase == null && PropertyDatabaseManager.Instance != null)
+            inventoryDatabase = PropertyDatabaseManager.Instance.GetDatabase<StoreInventoryDatabase>();
+
+        if (inventoryDatabase == null || inventoryDatabase.GetByEnum(storeInventoryKey) == null)
+        {
+            Debug.LogWarning($"[{nameof(StoreManager)}] Store inventory '{storeInventoryKey}' is not registered.", this);
+            return false;
+        }
+
+        inventoryKey = storeInventoryKey;
+        InitializeRuntimeInventory();
+
+        if (AllUIManager.Instance != null)
+            AllUIManager.Instance.RequestOpen(this, PanelOpenType.Override);
+        else
+            OnPanelOpenRequested();
+
+        return true;
+    }
+
+    /// <summary>Closes the currently open store without changing its static inventory configuration.</summary>
+    public void CloseStore()
+    {
+        if (AllUIManager.Instance != null)
+            AllUIManager.Instance.RequestClose(this);
+        else if (isStoreOpen)
+            OnPanelCloseRequested();
+    }
 
     private void Awake()
     {
@@ -104,11 +163,15 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     public void OnPanelCloseRequested()
     {
+        bool wasStoreOpen = isStoreOpen;
         isStoreOpen = false;
         uiContainer?.ClearSelection();
         detailPanel?.ShowEmpty();
         uiContainer?.Close();
         OnStoreModeChanged?.Invoke(false);
+
+        if (wasStoreOpen)
+            OnStoreClosed?.Invoke();
     }
 
     public void ApplyFilter(FurnitureTag tag)
@@ -327,6 +390,6 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void OnEnterStoreButtonClicked()
     {
-        AllUIManager.Instance?.RequestOpen(this, PanelOpenType.Override);
+        OpenStore(inventoryKey);
     }
 }

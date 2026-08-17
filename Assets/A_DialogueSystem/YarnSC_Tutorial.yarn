@@ -34,3 +34,12 @@ position: 0,-332
     Eli: 树木的话直接往山上走走, 或者路上应该也能找到 #portrait:Eli_Guide
     <<jump Tutorial_Resource_Start>>
 ===
+
+
+title: NPC_Eli_Start
+---
+
+Eli: 嘿，发生什么事情了？
+Eli: 我不要住在这种地方，至少，给我一个房间吧，没有人愿意住在一艘快要报废的飞船上面————
+
+===
