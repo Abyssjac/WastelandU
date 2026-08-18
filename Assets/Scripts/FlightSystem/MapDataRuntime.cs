@@ -44,18 +44,19 @@ public sealed class MapDataRuntime
 
 public sealed class MapNodeRuntime
 {
-    public MapNodeRuntime(int runtimeId, Key_MapNodePP nodeKey, MapNodeProperty property, Vector2Int gridPosition)
+    public MapNodeRuntime(int runtimeId, Key_MapNodePP nodeKey, MapNodeProperty property, Vector2Int mapPosition)
     {
         RuntimeId = runtimeId;
         NodeKey = nodeKey;
         Property = property;
-        GridPosition = gridPosition;
+        MapPosition = mapPosition;
     }
 
     public int RuntimeId { get; }
     public Key_MapNodePP NodeKey { get; }
     public MapNodeProperty Property { get; }
-    public Vector2Int GridPosition { get; }
+    /// <summary>Authored local position in the unscaled map content.</summary>
+    public Vector2Int MapPosition { get; }
 
     public string DisplayName
     {

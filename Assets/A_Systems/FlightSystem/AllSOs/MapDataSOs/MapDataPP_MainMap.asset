@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 99eb7dff84dc6b94fa7e890565132dfb, type: 3}
+  m_Name: MapDataPP_MainMap
+  m_EditorClassIdentifier: Assembly-CSharp::MapDataProperty
+  enumKey: 4
+  stringKey: MapData_MainMap
+  mapNodeCount: 7
+  isStableMap: 1
+  nodeKeys: 1400000015000000150000000a000000160000001600000014000000
+  mapPositions:
+  - {x: -350, y: -350}
+  - {x: -550, y: -550}
+  - {x: -750, y: -100}
+  - {x: 0, y: 0}
+  - {x: 750, y: 100}
+  - {x: 550, y: 550}
+  - {x: 350, y: 350}

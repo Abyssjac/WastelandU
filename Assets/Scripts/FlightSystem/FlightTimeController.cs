@@ -3,7 +3,7 @@ using UnityEngine;
 [System.Serializable]
 public class FlightTimeController
 {
-    [SerializeField, Min(1)] private int timePerGrid = 1;
+    [SerializeField, Min(1)] private int timePerTravelUnit = 1;
 
     private float elapsedTimeUnits;
     private int totalTimeUnits;
@@ -13,15 +13,15 @@ public class FlightTimeController
     {
     }
 
-    public FlightTimeController(int timePerGrid)
+    public FlightTimeController(int timePerTravelUnit)
     {
-        this.timePerGrid = Mathf.Max(1, timePerGrid);
+        this.timePerTravelUnit = Mathf.Max(1, timePerTravelUnit);
     }
 
-    public int TimePerGrid
+    public int TimePerTravelUnit
     {
-        get => timePerGrid;
-        set => timePerGrid = Mathf.Max(1, value);
+        get => timePerTravelUnit;
+        set => timePerTravelUnit = Mathf.Max(1, value);
     }
 
     public int ElapsedTimeUnits => Mathf.FloorToInt(elapsedTimeUnits);
@@ -33,21 +33,16 @@ public class FlightTimeController
         ? Mathf.Clamp01((float)elapsedTimeUnits / totalTimeUnits)
         : 0f;
 
-    public float GetEuclideanDistance(Vector2Int from, Vector2Int to)
+    public int CalculateTimeUnits(float travelDistance)
     {
-        return Vector2Int.Distance(from, to);
+        return Mathf.CeilToInt(Mathf.Max(0f, travelDistance) * timePerTravelUnit);
     }
 
-    public int CalculateTimeUnits(Vector2Int from, Vector2Int to)
+    public void StartSegment(float travelDistance, float progress01 = 0f)
     {
-        return Mathf.CeilToInt(GetEuclideanDistance(from, to) * timePerGrid);
-    }
-
-    public void StartSegment(Vector2Int from, Vector2Int to)
-    {
-        totalTimeUnits = Mathf.Max(0, CalculateTimeUnits(from, to));
-        elapsedTimeUnits = 0;
-        isRunning = totalTimeUnits > 0;
+        totalTimeUnits = Mathf.Max(0, CalculateTimeUnits(travelDistance));
+        elapsedTimeUnits = totalTimeUnits * Mathf.Clamp01(progress01);
+        isRunning = totalTimeUnits > 0 && elapsedTimeUnits < totalTimeUnits;
     }
 
     public void Advance(float timeUnits)

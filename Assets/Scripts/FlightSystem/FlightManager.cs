@@ -1,7 +1,9 @@
 using System;
+using System.Collections.Generic;
 using JackyUtility;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.Serialization;
 
 public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 {
@@ -9,11 +11,16 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
     [Header("Map")]
     [SerializeField] private Key_MapDataPP currentMapKey = Key_MapDataPP.None;
+    [Tooltip("Used only when no Flight save exists or when a map is explicitly refreshed.")]
+    [SerializeField] private Key_MapNodePP initialIslandKey = Key_MapNodePP.MainIsland_Home;
     [SerializeField, Min(1)] private int maxRouteNodeCount = 1;
     [SerializeField] private bool refreshMapOnStart = true;
 
     [Header("Time")]
-    [SerializeField, Min(1)] private int timePerGrid = 1;
+    [FormerlySerializedAs("timePerGrid")]
+    [SerializeField, Min(1)] private int timePerTravelUnit = 1;
+    [Tooltip("How many authored MapContent UI units equal one logical travel unit.")]
+    [SerializeField, Min(0.0001f)] private float uiUnitsPerTravelUnit = 200f;
     [SerializeField, Min(1)] private int gameTimePerProgressUnit = 1;
 
     [Header("UI")]
@@ -30,6 +37,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private FlightInfo flightInfo;
     private FlightTimeController flightTime;
     private Key_MapNodePP currentIslandKey = Key_MapNodePP.None;
+    private bool hasRestoredSave;
 
     public string DebugId => "flightmanager";
     public bool DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
@@ -39,7 +47,9 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     public int EffectiveMaxRouteNodeCount => currentMap != null
         ? Mathf.Min(maxRouteNodeCount, currentMap.NodeCount)
         : maxRouteNodeCount;
-    public int TimePerGrid => timePerGrid;
+    public Key_MapNodePP InitialIslandKey => initialIslandKey;
+    public int TimePerTravelUnit => timePerTravelUnit;
+    public float UiUnitsPerTravelUnit => uiUnitsPerTravelUnit;
     public int GameTimePerProgressUnit => gameTimePerProgressUnit;
     public MapDataRuntime CurrentMap => currentMap;
     public FlightInfo FlightInfo => flightInfo;
@@ -47,14 +57,25 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     public int CurrentSegmentElapsedTime => flightTime != null ? flightTime.ElapsedTimeUnits : 0;
     public int CurrentSegmentTotalTime => flightTime != null ? flightTime.TotalTimeUnits : 0;
     public float SegmentProgress01 => flightTime != null ? flightTime.Progress01 : 0f;
+    public Vector2Int CurrentMapPosition => flightInfo != null ? flightInfo.CurrentPosition : Vector2Int.zero;
     /// <summary>
-    /// Authoritative island key for the player's current location. It is <see cref="Key_MapNodePP.None"/>
-    /// while travelling and before the first arrival.
+    /// Authoritative island key for the player's docked location. It is <see cref="Key_MapNodePP.None"/>
+    /// only while travelling or when no valid initial island exists.
     /// </summary>
     public Key_MapNodePP CurrentIslandKey => currentIslandKey;
 
     /// <summary>Fired whenever the authoritative current island changes, including changes to None while flying.</summary>
     public event Action<Key_MapNodePP> OnCurrentIslandChanged;
+
+    /// <summary>
+    /// Fired after a segment has reached an island and the docked location has been recorded.
+    /// This is intentionally independent from <see cref="State"/>, because a final arrival can
+    /// immediately return to route planning while its docked presentation remains active.
+    /// </summary>
+    public event Action<MapNodeRuntime> OnIslandDocked;
+
+    /// <summary>Fired before the runtime map/flight data is replaced, so dependent presentation can clear stale data.</summary>
+    public event Action OnFlightRuntimeReset;
 
     private void Awake()
     {
@@ -66,7 +87,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
         Instance = this;
         flightInfo = new FlightInfo();
-        flightTime = new FlightTimeController(timePerGrid);
+        flightTime = new FlightTimeController(timePerTravelUnit);
 
         if (openMapButton != null)
             openMapButton.onClick.AddListener(RequestOpenPanel);
@@ -76,7 +97,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     {
         ResolveDatabases();
 
-        if (refreshMapOnStart)
+        if (refreshMapOnStart && !hasRestoredSave)
             RefreshMap();
     }
 
@@ -85,8 +106,11 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (maxRouteNodeCount < 1)
             maxRouteNodeCount = 1;
 
-        if (timePerGrid < 1)
-            timePerGrid = 1;
+        if (timePerTravelUnit < 1)
+            timePerTravelUnit = 1;
+
+        if (uiUnitsPerTravelUnit < 0.0001f)
+            uiUnitsPerTravelUnit = 0.0001f;
 
         if (gameTimePerProgressUnit < 1)
             gameTimePerProgressUnit = 1;
@@ -165,6 +189,8 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
 
     public bool RefreshMap()
     {
+        OnFlightRuntimeReset?.Invoke();
+        hasRestoredSave = false;
         ResolveDatabases();
 
         if (flightInfo == null)
@@ -173,7 +199,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (currentMapKey == Key_MapDataPP.None)
         {
             currentMap = null;
-            flightInfo.ResetForNewMap();
+            flightInfo.ResetForNewMap(null);
             ResetSegmentProgress();
             SetCurrentIslandKey(Key_MapNodePP.None);
             DebugLog("No current map key selected. Runtime map cleared.");
@@ -191,7 +217,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (mapProperty == null)
         {
             currentMap = null;
-            flightInfo.ResetForNewMap();
+            flightInfo.ResetForNewMap(null);
             ResetSegmentProgress();
             SetCurrentIslandKey(Key_MapNodePP.None);
             Debug.LogWarning($"[FlightManager] No MapDataProperty found for key {currentMapKey}.");
@@ -199,11 +225,128 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         }
 
         currentMap = mapProperty.CreateRuntimeMapData(mapNodeDatabase);
-        flightInfo.ResetForNewMap();
+        MapNodeRuntime initialNode = FindNodeByKey(initialIslandKey);
+        if (initialNode == null)
+            Debug.LogWarning($"[FlightManager] Initial island '{initialIslandKey}' does not exist on map '{currentMapKey}'.", this);
+
+        flightInfo.ResetForNewMap(initialNode);
         ResetSegmentProgress();
-        SetCurrentIslandKey(Key_MapNodePP.None);
+        SetCurrentIslandKey(initialNode != null ? initialNode.NodeKey : Key_MapNodePP.None);
 
         DebugLog($"Runtime map refreshed: {currentMapKey}, nodes: {currentMap.NodeCount}.");
+        return true;
+    }
+
+    /// <summary>Restores the authored default map and places the player at <see cref="InitialIslandKey"/>.</summary>
+    public void RestoreDefaultState()
+    {
+        hasRestoredSave = false;
+        RefreshMap();
+    }
+
+    /// <summary>Captures only runtime flight progress. Authored map data is rebuilt from MapDataPP on load.</summary>
+    public FlightSaveData CaptureSaveData()
+    {
+        FlightSaveData data = new FlightSaveData
+        {
+            currentMapKey = currentMapKey,
+            currentIslandKey = currentIslandKey,
+            state = State,
+            currentMapPosition = CurrentMapPosition,
+            currentRouteIndex = flightInfo != null ? flightInfo.CurrentRouteIndex : 0,
+            segmentProgress01 = State == FlightState.Flying ? SegmentProgress01 : 0f,
+        };
+
+        if (flightInfo != null)
+        {
+            for (int i = 0; i < flightInfo.RouteNodes.Count; i++)
+            {
+                MapNodeRuntime node = flightInfo.RouteNodes[i];
+                if (node != null && node.NodeKey != Key_MapNodePP.None)
+                    data.routeNodeKeys.Add(node.NodeKey);
+            }
+        }
+
+        return data;
+    }
+
+    /// <summary>Restores a saved fixed-map flight state, including an in-progress route segment.</summary>
+    public bool RestoreFromSaveData(FlightSaveData data)
+    {
+        if (data == null || data.currentMapKey == Key_MapDataPP.None)
+        {
+            Debug.LogWarning("[FlightManager] Flight save does not contain a valid map key.", this);
+            return false;
+        }
+
+        ResolveDatabases();
+        if (mapDataDatabase == null)
+        {
+            Debug.LogWarning("[FlightManager] MapDataDatabase is unavailable during Flight restore.", this);
+            return false;
+        }
+
+        MapDataProperty mapProperty = mapDataDatabase.GetByEnum(data.currentMapKey);
+        if (mapProperty == null)
+        {
+            Debug.LogWarning($"[FlightManager] Saved map '{data.currentMapKey}' no longer exists.", this);
+            return false;
+        }
+
+        OnFlightRuntimeReset?.Invoke();
+        currentMapKey = data.currentMapKey;
+        currentMap = mapProperty.CreateRuntimeMapData(mapNodeDatabase);
+
+        var savedRouteNodes = new List<MapNodeRuntime>();
+        if (data.routeNodeKeys != null)
+        {
+            for (int i = 0; i < data.routeNodeKeys.Count; i++)
+            {
+                Key_MapNodePP routeKey = data.routeNodeKeys[i];
+                MapNodeRuntime routeNode = FindNodeByKey(routeKey);
+                if (routeNode == null)
+                {
+                    Debug.LogWarning($"[FlightManager] Saved route node '{routeKey}' does not exist on map '{currentMapKey}'.", this);
+                    return false;
+                }
+
+                savedRouteNodes.Add(routeNode);
+            }
+        }
+
+        MapNodeRuntime savedCurrentNode = data.state == FlightState.Flying
+            ? null
+            : FindNodeByKey(data.currentIslandKey);
+
+        if (data.state != FlightState.Flying && savedCurrentNode == null)
+        {
+            Debug.LogWarning($"[FlightManager] Saved current island '{data.currentIslandKey}' does not exist on map '{currentMapKey}'.", this);
+            return false;
+        }
+
+        if (flightInfo == null)
+            flightInfo = new FlightInfo();
+
+        if (!flightInfo.RestoreFromSave(
+                data.currentMapPosition,
+                savedCurrentNode,
+                savedRouteNodes,
+                data.currentRouteIndex,
+                data.state,
+                out string failReason))
+        {
+            Debug.LogWarning($"[FlightManager] Flight restore failed: {failReason}", this);
+            return false;
+        }
+
+        ResetSegmentProgress();
+        SetCurrentIslandKey(data.state == FlightState.Flying ? Key_MapNodePP.None : data.currentIslandKey);
+
+        if (data.state == FlightState.Flying)
+            StartCurrentSegmentTimer(data.segmentProgress01);
+
+        hasRestoredSave = true;
+        DebugLog($"Flight save restored: map={currentMapKey}, state={State}, island={currentIslandKey}.");
         return true;
     }
 
@@ -286,6 +429,25 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         return result;
     }
 
+    /// <summary>
+    /// Clears a completed route and returns to planning without moving the player away from
+    /// their current island. A route cannot be replaced while the player is travelling.
+    /// </summary>
+    public bool BeginNewRoutePlanning(out string failReason)
+    {
+        if (flightInfo == null)
+        {
+            failReason = "FlightInfo is null.";
+            return false;
+        }
+
+        bool result = flightInfo.BeginNewRoutePlanning(out failReason);
+        if (result)
+            ResetSegmentProgress();
+
+        return result;
+    }
+
     public bool CanConfirmRoute(out string failReason)
     {
         if (flightInfo == null)
@@ -330,6 +492,17 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             CompleteSegmentProgress();
             MapNodeRuntime arrivedNode = GetCurrentArrivedNode();
             SetCurrentIslandKey(arrivedNode != null ? arrivedNode.NodeKey : Key_MapNodePP.None);
+
+            // Notify presentation and island-entry systems before a final arrival returns to
+            // Planning. Docking is a location fact, not an Arrived-state-only fact.
+            if (arrivedNode != null)
+                OnIslandDocked?.Invoke(arrivedNode);
+
+            // Once the final destination is reached, return to an empty planning state at
+            // the island just reached. The next route therefore begins from that island.
+            if (!flightInfo.HasNextRouteNode)
+                BeginNewRoutePlanning(out _);
+
             DebugLog("Arrived current target.");
         }
 
@@ -402,6 +575,14 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             : null;
     }
 
+    /// <summary>Returns the island where the player is currently docked, or null while flying.</summary>
+    public MapNodeRuntime GetCurrentLocationNode()
+    {
+        return flightInfo != null && State != FlightState.Flying
+            ? flightInfo.CurrentNode
+            : null;
+    }
+
     /// <summary>Attempts to resolve the runtime map node represented by <see cref="CurrentIslandKey"/>.</summary>
     public bool TryGetCurrentIslandNode(out MapNodeRuntime node)
     {
@@ -441,8 +622,7 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
         if (flightInfo == null)
             return 0;
 
-        EnsureFlightTimeController();
-        return flightTime.CalculateTimeUnits(
+        return CalculateTimeUnits(
             flightInfo.GetCurrentSegmentStartPosition(),
             flightInfo.GetCurrentSegmentTargetPosition());
     }
@@ -450,13 +630,13 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     public int CalculateTimeUnits(Vector2Int from, Vector2Int to)
     {
         EnsureFlightTimeController();
-        return flightTime.CalculateTimeUnits(from, to);
+        return flightTime.CalculateTimeUnits(CalculateRouteDistance(from, to));
     }
 
+    /// <summary>Converts authored MapContent coordinates into logical travel units.</summary>
     public float CalculateRouteDistance(Vector2Int from, Vector2Int to)
     {
-        EnsureFlightTimeController();
-        return flightTime.GetEuclideanDistance(from, to);
+        return Vector2Int.Distance(from, to) / Mathf.Max(0.0001f, uiUnitsPerTravelUnit);
     }
 
     public void AdvanceTravelByGameTime(float gameTimeAmount)
@@ -506,6 +686,21 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             mapDataDatabase = dbManager.GetDatabase<MapDataDatabase>();
     }
 
+    private MapNodeRuntime FindNodeByKey(Key_MapNodePP nodeKey)
+    {
+        if (nodeKey == Key_MapNodePP.None || currentMap == null)
+            return null;
+
+        for (int i = 0; i < currentMap.Nodes.Count; i++)
+        {
+            MapNodeRuntime node = currentMap.Nodes[i];
+            if (node != null && node.NodeKey == nodeKey)
+                return node;
+        }
+
+        return null;
+    }
+
     private void SetCurrentIslandKey(Key_MapNodePP newIslandKey)
     {
         if (currentIslandKey == newIslandKey)
@@ -519,20 +714,22 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
     private void EnsureFlightTimeController()
     {
         if (flightTime == null)
-            flightTime = new FlightTimeController(timePerGrid);
+            flightTime = new FlightTimeController(timePerTravelUnit);
 
-        flightTime.TimePerGrid = timePerGrid;
+        flightTime.TimePerTravelUnit = timePerTravelUnit;
     }
 
-    private void StartCurrentSegmentTimer()
+    private void StartCurrentSegmentTimer(float progress01 = 0f)
     {
         if (flightInfo == null)
             return;
 
         EnsureFlightTimeController();
         flightTime.StartSegment(
-            flightInfo.GetCurrentSegmentStartPosition(),
-            flightInfo.GetCurrentSegmentTargetPosition());
+            CalculateRouteDistance(
+                flightInfo.GetCurrentSegmentStartPosition(),
+                flightInfo.GetCurrentSegmentTargetPosition()),
+            progress01);
         TryAutoArriveWhenSegmentFinished();
     }
 
@@ -550,7 +747,9 @@ public class FlightManager : MonoBehaviour, IDebuggable, IGeneralPanelOwner
             return false;
 
         EnsureFlightTimeController();
-        if (!flightTime.IsFinished)
+        if (flightTime.TotalTimeUnits > 0 &&
+            !flightTime.IsFinished &&
+            flightTime.Progress01 < 1f)
             return false;
 
         flightTime.Stop();

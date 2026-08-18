@@ -5,7 +5,6 @@ public sealed class FlightInfo
 {
     private readonly List<MapNodeRuntime> routeNodes = new List<MapNodeRuntime>();
 
-    public Vector2Int StartPosition { get; } = Vector2Int.zero;
     public Vector2Int CurrentPosition { get; private set; } = Vector2Int.zero;
     public MapNodeRuntime CurrentNode { get; private set; }
     public IReadOnlyList<MapNodeRuntime> RouteNodes => routeNodes;
@@ -16,13 +15,30 @@ public sealed class FlightInfo
     public bool HasRoute => routeNodes.Count > 0;
     public bool HasNextRouteNode => State == FlightState.Arrived && CurrentRouteIndex < routeNodes.Count - 1;
 
-    public void ResetForNewMap()
+    /// <summary>Resets flight progress while keeping the player at the authored initial island.</summary>
+    public void ResetForNewMap(MapNodeRuntime initialNode)
     {
         routeNodes.Clear();
         CurrentRouteIndex = 0;
-        CurrentPosition = StartPosition;
-        CurrentNode = null;
+        CurrentNode = initialNode;
+        CurrentPosition = initialNode != null ? initialNode.MapPosition : Vector2Int.zero;
         State = FlightState.Planning;
+    }
+
+    /// <summary>Clears a completed route without moving the player away from the island they reached.</summary>
+    public bool BeginNewRoutePlanning(out string failReason)
+    {
+        if (State == FlightState.Flying)
+        {
+            failReason = "Cannot create a new route while flying.";
+            return false;
+        }
+
+        routeNodes.Clear();
+        CurrentRouteIndex = 0;
+        State = FlightState.Planning;
+        failReason = string.Empty;
+        return true;
     }
 
     public bool CanAddNode(MapNodeRuntime node, out string failReason)
@@ -36,6 +52,12 @@ public sealed class FlightInfo
         if (node == null)
         {
             failReason = "Node is null.";
+            return false;
+        }
+
+        if (CurrentNode != null && CurrentNode.RuntimeId == node.RuntimeId)
+        {
+            failReason = "Cannot route to the island where the player is already located.";
             return false;
         }
 
@@ -115,7 +137,6 @@ public sealed class FlightInfo
 
         CurrentRouteIndex = 0;
         CurrentNode = null;
-        CurrentPosition = StartPosition;
         State = FlightState.Flying;
         return true;
     }
@@ -136,7 +157,7 @@ public sealed class FlightInfo
         }
 
         CurrentNode = target;
-        CurrentPosition = target.GridPosition;
+        CurrentPosition = target.MapPosition;
         State = FlightState.Arrived;
         failReason = string.Empty;
         return true;
@@ -157,6 +178,7 @@ public sealed class FlightInfo
         }
 
         CurrentRouteIndex++;
+        CurrentNode = null;
         State = FlightState.Flying;
         failReason = string.Empty;
         return true;
@@ -178,7 +200,7 @@ public sealed class FlightInfo
         if (routeNodes.Count == 0)
             return CurrentPosition;
 
-        return routeNodes[routeNodes.Count - 1].GridPosition;
+        return routeNodes[routeNodes.Count - 1].MapPosition;
     }
 
     public Vector2Int GetCurrentSegmentStartPosition()
@@ -187,15 +209,55 @@ public sealed class FlightInfo
             return CurrentPosition;
 
         if (CurrentRouteIndex <= 0)
-            return StartPosition;
+            return CurrentPosition;
 
-        return routeNodes[CurrentRouteIndex - 1].GridPosition;
+        return routeNodes[CurrentRouteIndex - 1].MapPosition;
     }
 
     public Vector2Int GetCurrentSegmentTargetPosition()
     {
         MapNodeRuntime target = GetCurrentTarget();
-        return target != null ? target.GridPosition : CurrentPosition;
+        return target != null ? target.MapPosition : CurrentPosition;
+    }
+
+    public bool RestoreFromSave(
+        Vector2Int savedCurrentPosition,
+        MapNodeRuntime savedCurrentNode,
+        IReadOnlyList<MapNodeRuntime> savedRouteNodes,
+        int savedRouteIndex,
+        FlightState savedState,
+        out string failReason)
+    {
+        routeNodes.Clear();
+
+        if (savedRouteNodes != null)
+        {
+            for (int i = 0; i < savedRouteNodes.Count; i++)
+            {
+                if (savedRouteNodes[i] != null)
+                    routeNodes.Add(savedRouteNodes[i]);
+            }
+        }
+
+        if (savedState == FlightState.Flying &&
+            (routeNodes.Count == 0 || savedRouteIndex < 0 || savedRouteIndex >= routeNodes.Count))
+        {
+            failReason = "Saved flight has no valid active route segment.";
+            return false;
+        }
+
+        CurrentRouteIndex = routeNodes.Count > 0
+            ? Mathf.Clamp(savedRouteIndex, 0, routeNodes.Count - 1)
+            : 0;
+        CurrentPosition = savedCurrentPosition;
+        CurrentNode = savedState == FlightState.Flying ? null : savedCurrentNode;
+
+        if (CurrentNode != null)
+            CurrentPosition = CurrentNode.MapPosition;
+
+        State = savedState;
+        failReason = string.Empty;
+        return true;
     }
 
     public bool ContainsNode(MapNodeRuntime node)

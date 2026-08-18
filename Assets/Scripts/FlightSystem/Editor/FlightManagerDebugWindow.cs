@@ -59,7 +59,8 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
         Row("Runtime Nodes", mgr.CurrentMap != null ? mgr.CurrentMap.NodeCount.ToString() : "0");
         Row("Max Route Nodes", mgr.MaxRouteNodeCount.ToString());
         Row("Effective Max", mgr.EffectiveMaxRouteNodeCount.ToString());
-        Row("Time Per Grid", mgr.TimePerGrid.ToString());
+        Row("Time Per Travel Unit", mgr.TimePerTravelUnit.ToString());
+        Row("UI Units Per Travel Unit", mgr.UiUnitsPerTravelUnit.ToString("0.##"));
 
         if (!string.IsNullOrEmpty(lastResult))
             EditorGUILayout.HelpBox(lastResult, MessageType.None);
@@ -78,7 +79,7 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
 
         ColoredRow("State", info.State.ToString(), GetFlightStateColor(info.State));
         Row("Current Position", info.CurrentPosition.ToString());
-        Row("Current Node", info.CurrentNode != null ? FormatNode(info.CurrentNode) : "Start (0, 0)");
+        Row("Current Node", info.CurrentNode != null ? FormatNode(info.CurrentNode) : "- (travelling)");
         Row("Current Island Key", mgr.CurrentIslandKey.ToString());
         Row("Current Island", mgr.TryGetCurrentIslandNode(out MapNodeRuntime islandNode)
             ? FormatNode(islandNode)
@@ -107,7 +108,7 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
 
             EditorGUILayout.BeginHorizontal();
             EditorGUILayout.LabelField(
-                $"{node.RuntimeId} | {node.NodeKey} | {node.GridPosition} | {nodeState}",
+                $"{node.RuntimeId} | {node.NodeKey} | {node.MapPosition} | {nodeState}",
                 GUILayout.MinWidth(260));
 
             GUI.enabled = mgr.FlightInfo != null && mgr.FlightInfo.State == FlightState.Planning;
@@ -149,6 +150,9 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
 
         if (GUILayout.Button("Clear Route", GUILayout.Height(22)))
             SetResult(mgr.ClearRoute(out string failReason), failReason);
+
+        if (GUILayout.Button("New Route Plan", GUILayout.Height(22)))
+            SetResult(mgr.BeginNewRoutePlanning(out string failReason), failReason);
 
         EditorGUILayout.EndHorizontal();
 
@@ -207,7 +211,7 @@ public class FlightManagerDebugWindow : DebugEditorWindow<FlightManager>
         if (node == null)
             return "-";
 
-        return $"{node.RuntimeId}: {node.DisplayName} ({node.NodeKey}) {node.GridPosition}";
+        return $"{node.RuntimeId}: {node.DisplayName} ({node.NodeKey}) {node.MapPosition}";
     }
 
     private static Color GetFlightStateColor(FlightState state)

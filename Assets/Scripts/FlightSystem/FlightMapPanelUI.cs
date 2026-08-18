@@ -79,7 +79,7 @@ public class FlightMapPanelUI : MonoBehaviour
 
         UIMode = FlightUIMode.Preview;
         RenderCurrentMap();
-        ShowStartDetail();
+        ShowCurrentLocationDetail();
         RefreshAll();
     }
 
@@ -103,7 +103,7 @@ public class FlightMapPanelUI : MonoBehaviour
     public void ExitRoutePlanningMode()
     {
         UIMode = FlightUIMode.Preview;
-        ShowStartDetail();
+        ShowCurrentLocationDetail();
         RefreshAll();
     }
 
@@ -157,7 +157,7 @@ public class FlightMapPanelUI : MonoBehaviour
             if (flightManager.State == FlightState.Flying)
                 ShowNodeDetail(flightManager.GetCurrentTargetNode());
             else
-                ShowStartDetail();
+                ShowCurrentLocationDetail();
         }
 
         RefreshAll();
@@ -201,7 +201,7 @@ public class FlightMapPanelUI : MonoBehaviour
 
     private void HandleStartClicked()
     {
-        ShowStartDetail();
+        ShowCurrentLocationDetail();
     }
 
     private void ShowRouteTailDetail()
@@ -210,12 +210,17 @@ public class FlightMapPanelUI : MonoBehaviour
         if (tail != null)
             ShowNodeDetail(tail);
         else
-            ShowStartDetail();
+            ShowCurrentLocationDetail();
     }
 
-    private void ShowStartDetail()
+    private void ShowCurrentLocationDetail()
     {
-        detailPanel?.ShowStartLocation();
+        MapNodeRuntime currentNode = flightManager != null
+            ? flightManager.GetCurrentLocationNode()
+            : null;
+
+        if (currentNode != null)
+            detailPanel?.ShowNode(currentNode);
     }
 
     private void ShowNodeDetail(MapNodeRuntime node)
@@ -289,10 +294,10 @@ public class FlightMapPanelUI : MonoBehaviour
         if (routeNodes.Count == 0)
             return;
 
-        Vector2 previous = mapView.GridToAnchoredPosition(Vector2Int.zero);
+        Vector2 previous = mapView.MapToAnchoredPosition(flightManager.CurrentMapPosition);
         for (int i = 0; i < routeNodes.Count; i++)
         {
-            Vector2 next = mapView.GridToAnchoredPosition(routeNodes[i].GridPosition);
+            Vector2 next = mapView.MapToAnchoredPosition(routeNodes[i].MapPosition);
             CreateRouteLine(previous, next);
             previous = next;
         }

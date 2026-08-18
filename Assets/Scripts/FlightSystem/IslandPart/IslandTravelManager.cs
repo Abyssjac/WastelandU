@@ -65,7 +65,12 @@ public class IslandTravelManager : MonoBehaviour
             Instance = null;
     }
 
-    public bool CanEnterCurrentArrivedIsland(out string failReason)
+    /// <summary>
+    /// Returns whether the player can enter the island currently docked beside the ship.
+    /// Route planning is allowed while docked, so this deliberately does not require
+    /// <see cref="FlightState.Arrived"/>.
+    /// </summary>
+    public bool CanEnterCurrentDockedIsland(out string failReason)
     {
         failReason = string.Empty;
 
@@ -94,16 +99,15 @@ public class IslandTravelManager : MonoBehaviour
         }
 
         FlightManager flightManager = FlightManager.Instance;
-        MapNodeRuntime arrivedNode = flightManager != null ? flightManager.GetCurrentArrivedNode() : null;
-        if (arrivedNode == null)
+        if (flightManager == null || !flightManager.TryGetCurrentIslandNode(out MapNodeRuntime dockedNode))
         {
-            failReason = "No arrived flight node is available.";
+            failReason = "No docked island is available.";
             return false;
         }
 
-        if (arrivedNode.Property == null || string.IsNullOrWhiteSpace(arrivedNode.Property.islandSceneKey))
+        if (dockedNode.Property == null || string.IsNullOrWhiteSpace(dockedNode.Property.islandSceneKey))
         {
-            failReason = $"Map node '{arrivedNode.DisplayName}' has no Island Scene Key.";
+            failReason = $"Map node '{dockedNode.DisplayName}' has no Island Scene Key.";
             return false;
         }
 
@@ -113,13 +117,22 @@ public class IslandTravelManager : MonoBehaviour
             return false;
         }
 
-        if (MySceneManager.Instance.IsSceneLoaded(arrivedNode.Property.islandSceneKey))
+        if (MySceneManager.Instance.IsSceneLoaded(dockedNode.Property.islandSceneKey))
         {
-            failReason = $"Island scene '{arrivedNode.Property.islandSceneKey}' is already loaded.";
+            failReason = $"Island scene '{dockedNode.Property.islandSceneKey}' is already loaded.";
             return false;
         }
 
         return TryGetActivePlayerMovement(out _, out _, out failReason);
+    }
+
+    /// <summary>
+    /// Legacy entry point retained for callers compiled against the former API.
+    /// Its meaning is now the currently docked island, regardless of route-planning state.
+    /// </summary>
+    public bool CanEnterCurrentArrivedIsland(out string failReason)
+    {
+        return CanEnterCurrentDockedIsland(out failReason);
     }
 
     public bool CanReturnToMainWorld(out string failReason)
@@ -149,13 +162,18 @@ public class IslandTravelManager : MonoBehaviour
 
     public bool RequestEnterCurrentIsland()
     {
-        if (!CanEnterCurrentArrivedIsland(out string failReason))
+        if (!CanEnterCurrentDockedIsland(out string failReason))
         {
             Debug.LogWarning($"[{nameof(IslandTravelManager)}] Cannot enter island: {failReason}", this);
             return false;
         }
 
-        MapNodeRuntime node = FlightManager.Instance.GetCurrentArrivedNode();
+        if (!FlightManager.Instance.TryGetCurrentIslandNode(out MapNodeRuntime node))
+        {
+            Debug.LogWarning($"[{nameof(IslandTravelManager)}] Cannot enter island: No docked island is available.", this);
+            return false;
+        }
+
         isTransitioning = true;
         StartCoroutine(EnterIslandRoutine(node, node.Property.islandSceneKey));
         return true;

@@ -10,11 +10,8 @@ public class FlightMapView : MonoBehaviour
     [SerializeField] private RectTransform nodeParent;
     [SerializeField] private FlightMapNodeUI nodePrefab;
 
-    [Header("Grid Range")]
-    [SerializeField] private Vector2Int gridMin = Vector2Int.zero;
-    [SerializeField] private Vector2Int gridMax = new Vector2Int(10, 10);
-
-    [Header("Start Marker")]
+    [Header("Legacy Start Marker")]
+    [Tooltip("The map now represents the current location with the corresponding map node. This legacy marker is hidden at runtime.")]
     [SerializeField] private RectTransform startMarker;
     [SerializeField] private Button startMarkerButton;
 
@@ -47,7 +44,7 @@ public class FlightMapView : MonoBehaviour
     public void Render(MapDataRuntime map)
     {
         ClearNodes();
-        PlaceStartMarker();
+        HideLegacyStartMarker();
 
         if (map == null || nodePrefab == null)
             return;
@@ -66,7 +63,7 @@ public class FlightMapView : MonoBehaviour
 
             RectTransform rect = nodeUI.transform as RectTransform;
             if (rect != null)
-                rect.anchoredPosition = GridToAnchoredPosition(node.GridPosition);
+                rect.anchoredPosition = MapToAnchoredPosition(node.MapPosition);
 
             nodeUIs.Add(nodeUI);
             nodeUIsByRuntimeId[node.RuntimeId] = nodeUI;
@@ -105,18 +102,13 @@ public class FlightMapView : MonoBehaviour
             : null;
     }
 
-    public Vector2 GridToAnchoredPosition(Vector2Int gridPosition)
+    /// <summary>
+    /// Map positions are authored directly in the unscaled MapContent coordinate space.
+    /// Keep nodeParent, route lines, map artwork and location markers under that same content transform.
+    /// </summary>
+    public Vector2 MapToAnchoredPosition(Vector2Int mapPosition)
     {
-        Rect rect = mapRect != null ? mapRect.rect : new Rect(0f, 0f, 1f, 1f);
-        float width = Mathf.Max(1f, gridMax.x - gridMin.x);
-        float height = Mathf.Max(1f, gridMax.y - gridMin.y);
-
-        float normalizedX = Mathf.Clamp01((gridPosition.x - gridMin.x) / width);
-        float normalizedY = Mathf.Clamp01((gridPosition.y - gridMin.y) / height);
-
-        float x = (normalizedX - 0.5f) * rect.width;
-        float y = (normalizedY - 0.5f) * rect.height;
-        return new Vector2(x, y);
+        return mapPosition;
     }
 
     private void ClearNodes()
@@ -131,10 +123,10 @@ public class FlightMapView : MonoBehaviour
         nodeUIsByRuntimeId.Clear();
     }
 
-    private void PlaceStartMarker()
+    private void HideLegacyStartMarker()
     {
         if (startMarker != null)
-            startMarker.anchoredPosition = GridToAnchoredPosition(Vector2Int.zero);
+            startMarker.gameObject.SetActive(false);
     }
 
     private void HandleNodeClicked(int runtimeId)

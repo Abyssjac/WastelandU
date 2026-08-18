@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 public class FlightVoyageVisualController : MonoBehaviour
 {
@@ -10,7 +11,8 @@ public class FlightVoyageVisualController : MonoBehaviour
     [SerializeField] private FlightShipVisualController shipVisualController;
 
     [Header("Visual Distance")]
-    [SerializeField, Min(1f)] private float visualUnitsPerGrid = 300f;
+    [FormerlySerializedAs("visualUnitsPerGrid")]
+    [SerializeField, Min(1f)] private float visualUnitsPerTravelUnit = 300f;
     [SerializeField] private AnimationCurve visualProgressCurve = new AnimationCurve(
         new Keyframe(0f, 0f, 0f, 1.1f),
         new Keyframe(1f, 1f, 0.25f, 0f));
@@ -37,7 +39,8 @@ public class FlightVoyageVisualController : MonoBehaviour
     private float arrivalDriftElapsed;
     private int currentTargetRuntimeId = -1;
     private int currentRouteIndex = -1;
-    private FlightState previousFlightState = FlightState.Planning;
+    private bool hasDockedPresentation;
+    private FlightManager subscribedFlightManager;
     private PlayerAgent movementLockedPlayer;
 
     private Transform ShipAnchor => shipAnchor != null ? shipAnchor : transform;
@@ -52,6 +55,7 @@ public class FlightVoyageVisualController : MonoBehaviour
 
     private void OnDisable()
     {
+        UnbindFlightManager();
         ReleaseVoyageViewMovementLock();
     }
 
@@ -95,26 +99,20 @@ public class FlightVoyageVisualController : MonoBehaviour
     private void LateUpdate()
     {
         FlightManager flightManager = FlightManager.Instance;
+        BindFlightManager(flightManager);
         if (flightManager == null)
             return;
 
-        switch (flightManager.State)
+        if (flightManager.State == FlightState.Flying)
         {
-            case FlightState.Flying:
-                TickFlying(flightManager);
-                break;
-
-            case FlightState.Arrived:
-                TickArrived(flightManager);
-                break;
-
-            case FlightState.Planning:
-                if (previousFlightState != FlightState.Planning)
-                    ResetVisualState();
-                break;
+            TickFlying(flightManager);
+            return;
         }
 
-        previousFlightState = flightManager.State;
+        // Planning is valid while docked. Preserve the completed arrival presentation until
+        // another flight begins or the runtime map is explicitly reset.
+        TryCompleteDockedPresentation(flightManager);
+        TickDockedPresentation();
     }
 
     private void TickFlying(FlightManager flightManager)
@@ -148,13 +146,10 @@ public class FlightVoyageVisualController : MonoBehaviour
         shipVisualController?.Tick(frameContext);
     }
 
-    private void TickArrived(FlightManager flightManager)
+    private void TickDockedPresentation()
     {
-        if (currentSegment == null)
+        if (!hasDockedPresentation || currentSegment == null)
             return;
-
-        if (previousFlightState != FlightState.Arrived)
-            CompleteArrival();
 
         if (arrivalDriftElapsed >= arrivalDriftDuration || arrivalDriftVelocity <= 0f)
             return;
@@ -184,7 +179,7 @@ public class FlightVoyageVisualController : MonoBehaviour
         Vector3 forward = directionMapper.GetWorldForward(startPosition, targetPosition);
         Vector3 right = directionMapper.GetWorldRight(forward);
         float mapDistance = flightManager.CalculateRouteDistance(startPosition, targetPosition);
-        float visualDistance = mapDistance * visualUnitsPerGrid;
+        float visualDistance = mapDistance * visualUnitsPerTravelUnit;
         int randomSeed = targetNode.RuntimeId * 397 ^ flightInfo.CurrentRouteIndex;
 
         currentSegment = new FlightVisualSegmentContext(
@@ -201,6 +196,7 @@ public class FlightVoyageVisualController : MonoBehaviour
         currentTargetRuntimeId = targetNode.RuntimeId;
         currentRouteIndex = flightInfo.CurrentRouteIndex;
         previousVisualDistance = currentSegment.VisualDistance * EvaluateVisualProgress(flightManager.SegmentProgress01);
+        hasDockedPresentation = false;
         arrivalDriftVelocity = 0f;
         arrivalDriftElapsed = 0f;
 
@@ -210,6 +206,9 @@ public class FlightVoyageVisualController : MonoBehaviour
 
     private void CompleteArrival()
     {
+        if (currentSegment == null || hasDockedPresentation)
+            return;
+
         float finalVisualDistance = currentSegment.VisualDistance;
         float finalScrollDelta = Mathf.Max(0f, finalVisualDistance - previousVisualDistance);
         previousVisualDistance = finalVisualDistance;
@@ -231,6 +230,33 @@ public class FlightVoyageVisualController : MonoBehaviour
             : 0f;
         arrivalDriftVelocity = Mathf.Max(arrivalDriftStartSpeed, lastFrameSpeed);
         arrivalDriftElapsed = 0f;
+        hasDockedPresentation = true;
+    }
+
+    private void TryCompleteDockedPresentation(FlightManager flightManager)
+    {
+        if (hasDockedPresentation || currentSegment == null || flightManager == null)
+            return;
+
+        MapNodeRuntime dockedNode = flightManager.GetCurrentLocationNode();
+        if (!IsCurrentSegmentTarget(dockedNode))
+            return;
+
+        CompleteArrival();
+    }
+
+    private void HandleIslandDocked(MapNodeRuntime dockedNode)
+    {
+        if (IsCurrentSegmentTarget(dockedNode))
+            CompleteArrival();
+    }
+
+    private bool IsCurrentSegmentTarget(MapNodeRuntime node)
+    {
+        return node != null
+            && currentSegment != null
+            && currentSegment.TargetNode != null
+            && currentSegment.TargetNode.RuntimeId == node.RuntimeId;
     }
 
     private FlightVisualFrameContext CreateFrameContext(
@@ -276,10 +302,35 @@ public class FlightVoyageVisualController : MonoBehaviour
         targetIslandController?.ReleaseAll();
         currentSegment = null;
         previousVisualDistance = 0f;
+        hasDockedPresentation = false;
         arrivalDriftVelocity = 0f;
         arrivalDriftElapsed = 0f;
         currentTargetRuntimeId = -1;
         currentRouteIndex = -1;
+    }
+
+    private void BindFlightManager(FlightManager flightManager)
+    {
+        if (subscribedFlightManager == flightManager)
+            return;
+
+        UnbindFlightManager();
+        subscribedFlightManager = flightManager;
+        if (subscribedFlightManager == null)
+            return;
+
+        subscribedFlightManager.OnIslandDocked += HandleIslandDocked;
+        subscribedFlightManager.OnFlightRuntimeReset += ResetVisualState;
+    }
+
+    private void UnbindFlightManager()
+    {
+        if (subscribedFlightManager == null)
+            return;
+
+        subscribedFlightManager.OnIslandDocked -= HandleIslandDocked;
+        subscribedFlightManager.OnFlightRuntimeReset -= ResetVisualState;
+        subscribedFlightManager = null;
     }
 
     private void AcquireVoyageViewMovementLock()

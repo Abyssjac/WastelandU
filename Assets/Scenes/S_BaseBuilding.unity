@@ -2415,6 +2415,9 @@ GameObject:
   m_Component:
   - component: {fileID: 399422834}
   - component: {fileID: 399422835}
+  - component: {fileID: 399422836}
+  - component: {fileID: 399422838}
+  - component: {fileID: 399422837}
   m_Layer: 5
   m_Name: Mask_MapViewPort
   m_TagString: Untagged
@@ -2456,6 +2459,63 @@ MonoBehaviour:
   m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.RectMask2D
   m_Padding: {x: 0, y: 25, z: 0, w: 25}
   m_Softness: {x: 0, y: 0}
+--- !u!114 &399422836
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 399422833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 940f1f9a465e2e444bc8edd3a5f65a13, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::FlightMapNavigationController
+  viewport: {fileID: 399422834}
+  content: {fileID: 2058110616}
+  minZoom: 0.25
+  maxZoom: 1.2
+  zoomStep: 0.15
+  dragButton: 2
+  clampToViewport: 1
+--- !u!114 &399422837
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 399422833}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: UnityEngine.UI::UnityEngine.UI.Image
+  m_Material: {fileID: 0}
+  m_Color: {r: 1, g: 0, b: 0, a: 1}
+  m_RaycastTarget: 1
+  m_RaycastPadding: {x: 0, y: 0, z: 0, w: 0}
+  m_Maskable: 1
+  m_OnCullStateChanged:
+    m_PersistentCalls:
+      m_Calls: []
+  m_Sprite: {fileID: 0}
+  m_Type: 0
+  m_PreserveAspect: 0
+  m_FillCenter: 1
+  m_FillMethod: 4
+  m_FillAmount: 1
+  m_FillClockwise: 1
+  m_FillOrigin: 0
+  m_UseSpriteMesh: 0
+  m_PixelsPerUnitMultiplier: 1
+--- !u!222 &399422838
+CanvasRenderer:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 399422833}
+  m_CullTransparentMesh: 1
 --- !u!1 &410087039
 GameObject:
   m_ObjectHideFlags: 0
@@ -2688,8 +2748,6 @@ MonoBehaviour:
   mapRect: {fileID: 934777304}
   nodeParent: {fileID: 934777304}
   nodePrefab: {fileID: 2177572435554223974, guid: 3c600479ae0b5464daad979b16b95d25, type: 3}
-  gridMin: {x: 0, y: 0}
-  gridMax: {x: 10, y: 10}
   startMarker: {fileID: 30469328}
   startMarkerButton: {fileID: 30469329}
 --- !u!114 &490643576
@@ -3327,8 +3385,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1226335195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 1, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -9090,10 +9148,10 @@ RectTransform:
   - {fileID: 934777304}
   m_Father: {fileID: 399422834}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMin: {x: 0.5, y: 0.5}
+  m_AnchorMax: {x: 0.5, y: 0.5}
   m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_SizeDelta: {x: 2400, y: 1800}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1001 &2101412890
 PrefabInstance:
@@ -9275,7 +9333,7 @@ RectTransform:
   m_Father: {fileID: 1139690471}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 1, y: 1}
+  m_AnchorMax: {x: 0, y: 0}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -9448,7 +9506,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!222 &1091751053589301400
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -9734,7 +9792,7 @@ PrefabInstance:
       objectReference: {fileID: 5846863942818832922}
     - target: {fileID: 7383726642301415286, guid: 05a9a72e88144724189530b33a7a9587, type: 3}
       propertyPath: currentMapKey
-      value: 1
+      value: 4
       objectReference: {fileID: 0}
     - target: {fileID: 7383726642301415286, guid: 05a9a72e88144724189530b33a7a9587, type: 3}
       propertyPath: openMapButton

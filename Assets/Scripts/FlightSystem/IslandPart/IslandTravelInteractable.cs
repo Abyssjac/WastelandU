@@ -20,7 +20,7 @@ public class IslandTravelInteractable : BaseInteractable
                 return false;
 
             return travelAction == IslandTravelAction.EnterCurrentIsland
-                ? manager.CanEnterCurrentArrivedIsland(out _)
+                ? manager.CanEnterCurrentDockedIsland(out _)
                 : manager.CanReturnToMainWorld(out _);
         }
     }

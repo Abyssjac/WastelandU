@@ -3,8 +3,8 @@ using UnityEngine;
 public sealed class FlightVisualSegmentContext
 {
     public FlightVisualSegmentContext(
-        Vector2Int startGridPosition,
-        Vector2Int targetGridPosition,
+        Vector2Int startMapPosition,
+        Vector2Int targetMapPosition,
         MapNodeRuntime targetNode,
         int routeIndex,
         float mapDistance,
@@ -13,8 +13,8 @@ public sealed class FlightVisualSegmentContext
         Vector3 right,
         int randomSeed)
     {
-        StartGridPosition = startGridPosition;
-        TargetGridPosition = targetGridPosition;
+        StartMapPosition = startMapPosition;
+        TargetMapPosition = targetMapPosition;
         TargetNode = targetNode;
         RouteIndex = routeIndex;
         MapDistance = mapDistance;
@@ -25,8 +25,8 @@ public sealed class FlightVisualSegmentContext
         RandomSeed = randomSeed;
     }
 
-    public Vector2Int StartGridPosition { get; }
-    public Vector2Int TargetGridPosition { get; }
+    public Vector2Int StartMapPosition { get; }
+    public Vector2Int TargetMapPosition { get; }
     public MapNodeRuntime TargetNode { get; }
     public int RouteIndex { get; }
     public float MapDistance { get; }
