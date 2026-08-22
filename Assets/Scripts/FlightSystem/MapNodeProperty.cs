@@ -10,6 +10,10 @@ public enum Key_MapNodePP
     DangerIsland = 4,
 
     MainIsland_Home = 10,
+    MainIsland_FairwindDock = 11,
+    MainIsland_BrassbellPort = 12,
+    MainIsland_MistweilMarket = 13,
+    MainIsland_OldAnchor = 14,
     ResourceIsland_RuinedVillage = 20,
     ResourceIsland_Mountain = 21,
     ResourceIsland_Mine = 22,

@@ -2317,12 +2317,12 @@ RectTransform:
   - {fileID: 1868101696}
   - {fileID: 1722545025}
   - {fileID: 1206616146}
-  m_Father: {fileID: 1820784162}
+  m_Father: {fileID: 692472643}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 80.00003}
-  m_SizeDelta: {x: -700, y: 0}
+  m_SizeDelta: {x: -700, y: 236.82}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &371157186
 MonoBehaviour:
@@ -3565,6 +3565,44 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 670302850}
   m_CullTransparentMesh: 1
+--- !u!1 &692472642
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 692472643}
+  m_Layer: 0
+  m_Name: Root_DialoguePresenter
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 0
+--- !u!224 &692472643
+RectTransform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 692472642}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children:
+  - {fileID: 371157185}
+  - {fileID: 1003898264}
+  - {fileID: 732634447}
+  m_Father: {fileID: 1820784162}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+  m_AnchorMin: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
+  m_AnchoredPosition: {x: 0, y: 0}
+  m_SizeDelta: {x: 0, y: 0}
+  m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &697699722
 GameObject:
   m_ObjectHideFlags: 0
@@ -3743,13 +3781,13 @@ RectTransform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 732634446}
-  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 1442059822}
-  m_Father: {fileID: 1820784162}
+  m_Father: {fileID: 692472643}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0.5}
   m_AnchorMax: {x: 0.5, y: 0.5}
@@ -4633,6 +4671,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: Root_NPCInteractionMenu
       objectReference: {fileID: 0}
+    - target: {fileID: 300001, guid: f30c57a0e9944d05a1b2a5c848194a71, type: 3}
+      propertyPath: m_IsActive
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 300002, guid: f30c57a0e9944d05a1b2a5c848194a71, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -4785,12 +4827,12 @@ RectTransform:
   m_Children:
   - {fileID: 607169079}
   - {fileID: 1239216905}
-  m_Father: {fileID: 1820784162}
+  m_Father: {fileID: 692472643}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 0}
   m_AnchoredPosition: {x: 0, y: 80.00003}
-  m_SizeDelta: {x: -700, y: 0}
+  m_SizeDelta: {x: -700, y: 56}
   m_Pivot: {x: 0.5, y: 0}
 --- !u!114 &1003898265
 MonoBehaviour:
@@ -7614,10 +7656,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 371157185}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 610, y: -148.815}
+  m_SizeDelta: {x: 1140, y: 112.01}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1722545026
 MonoBehaviour:
@@ -8063,9 +8105,7 @@ RectTransform:
   m_LocalScale: {x: 0, y: 0, z: 0}
   m_ConstrainProportionsScale: 0
   m_Children:
-  - {fileID: 371157185}
-  - {fileID: 1003898264}
-  - {fileID: 732634447}
+  - {fileID: 692472643}
   - {fileID: 964757060}
   m_Father: {fileID: 1836655827}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
@@ -8135,7 +8175,7 @@ Canvas:
   m_AdditionalShaderChannelsFlag: 25
   m_UpdateRectTransformForStandalone: 0
   m_SortingLayerID: 0
-  m_SortingOrder: 0
+  m_SortingOrder: -2
   m_TargetDisplay: 0
 --- !u!224 &1832584703 stripped
 RectTransform:
@@ -8153,6 +8193,7 @@ GameObject:
   - component: {fileID: 1836655827}
   - component: {fileID: 1836655828}
   - component: {fileID: 1836655829}
+  - component: {fileID: 1836655830}
   m_Layer: 0
   m_Name: MyDialogueSystem
   m_TagString: Untagged
@@ -8209,10 +8250,34 @@ MonoBehaviour:
       m_Calls: []
   onDialogueStart:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1836655830}
+        m_TargetAssemblyTypeName: DialogueUIController, Assembly-CSharp
+        m_MethodName: ShowDialoguePresentation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onDialogueComplete:
     m_PersistentCalls:
-      m_Calls: []
+      m_Calls:
+      - m_Target: {fileID: 1836655830}
+        m_TargetAssemblyTypeName: DialogueUIController, Assembly-CSharp
+        m_MethodName: HideDialoguePresentation
+        m_Mode: 1
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
   onUnhandledCommand:
     m_PersistentCalls:
       m_Calls: []
@@ -8228,6 +8293,20 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: ddb8654a90f5ae547bf776256641bea0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::DialogueCommandRegister
+--- !u!114 &1836655830
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1836655826}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7178abca94dca4468c583423d2ca632, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::DialogueUIController
+  _dialoguePresentationRoot: {fileID: 692472642}
+  _hideOnAwake: 1
 --- !u!1 &1854806906
 GameObject:
   m_ObjectHideFlags: 0
@@ -8449,10 +8528,10 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 371157185}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0, y: 0}
-  m_SizeDelta: {x: 0, y: 0}
+  m_AnchorMin: {x: 0, y: 1}
+  m_AnchorMax: {x: 0, y: 1}
+  m_AnchoredPosition: {x: 610, y: -46.405}
+  m_SizeDelta: {x: 1140, y: 44.81}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1868101697
 MonoBehaviour:

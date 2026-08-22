@@ -14,14 +14,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::MapDataProperty
   enumKey: 4
   stringKey: MapData_MainMap
-  mapNodeCount: 7
+  mapNodeCount: 5
   isStableMap: 1
-  nodeKeys: 1400000015000000150000000a000000160000001600000014000000
+  nodeKeys: 0a0000000e0000000b0000000c0000000d000000
   mapPositions:
-  - {x: -350, y: -350}
-  - {x: -550, y: -550}
-  - {x: -750, y: -100}
-  - {x: 0, y: 0}
-  - {x: 750, y: 100}
-  - {x: 550, y: 550}
-  - {x: 350, y: 350}
+  - {x: 63, y: -96}
+  - {x: 261, y: -182}
+  - {x: 35, y: 133}
+  - {x: -292, y: 30}
+  - {x: -130, y: -224}
