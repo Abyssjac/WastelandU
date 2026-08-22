@@ -33,6 +33,10 @@ position: 0,-332
 ->如何找到CloudWood? 
     Eli: 树木的话直接往山上走走, 或者路上应该也能找到 #portrait:Eli_Guide
     <<jump Tutorial_Resource_Start>>
+-> 递交修理材料 <<if can_submit_quest("Quest_Tutorial_CollectResource")>>
+    <<submit_quest "Quest_Tutorial_CollectResource">>
+    Eli: 太好了，材料足够了。 #portrait:Eli_Guide
+    <<stop>>
 ===
 
 

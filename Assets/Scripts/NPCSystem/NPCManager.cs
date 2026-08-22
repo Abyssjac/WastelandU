@@ -4,12 +4,11 @@ using JackyUtility;
 using UnityEngine;
 
 /// <summary>
-/// Runtime manager for all spawned NPCs.
+/// Runtime manager for all NPCs currently registered in the loaded game world.
 /// Singleton �� place on a DontDestroyOnLoad GameObject.
 ///
-/// All NPCs must be created via <see cref="SpawnNPC(Key_NPC)"/> or
-/// <see cref="SpawnNPC(Key_NPC, Vector3)"/>. Direct Instantiation is
-/// blocked by the injection guard in <see cref="NPCBehaviour"/>.
+/// NPCs may be spawned dynamically or placed directly in a scene. Scene NPCs
+/// register through <see cref="NPCRegister"/> while they are enabled.
 /// </summary>
 public class NPCManager : MonoBehaviour, IDebuggable
 {
@@ -41,11 +40,11 @@ public class NPCManager : MonoBehaviour, IDebuggable
     public bool   DebugEnabled { get => debugEnabled; set => debugEnabled = value; }
 
     // ���� State ����������������������������������������������������������������������������������������������������������������������������������
-    private readonly Dictionary<Key_NPC, GameObject> _spawnedNPCs =
+    private readonly Dictionary<Key_NPC, GameObject> _registeredNPCs =
         new Dictionary<Key_NPC, GameObject>();
 
     // Long-term player progress. This is intentionally separate from
-    // _spawnedNPCs: a scene object can disappear while its recruitment and
+    // _registeredNPCs: a scene object can disappear while its recruitment and
     // interaction progress must survive scene transitions and save/load.
     private readonly Dictionary<Key_NPC, NPCProgressRuntimeState> _npcProgress =
         new Dictionary<Key_NPC, NPCProgressRuntimeState>();
@@ -63,8 +62,15 @@ public class NPCManager : MonoBehaviour, IDebuggable
         public NPCPersistentRuntimeData PersistentRuntimeData;
     }
 
-    /// <summary>Read-only view of all currently spawned NPCs keyed by <see cref="Key_NPC"/>.</summary>
-    public IReadOnlyDictionary<Key_NPC, GameObject> SpawnedNPCs => _spawnedNPCs;
+    /// <summary>Read-only view of all currently registered NPCs keyed by <see cref="Key_NPC"/>.</summary>
+    public IReadOnlyDictionary<Key_NPC, GameObject> RegisteredNPCs => _registeredNPCs;
+
+    /// <summary>
+    /// Compatibility alias for older callers. New code should use
+    /// <see cref="RegisteredNPCs"/> because scene NPCs are registered too.
+    /// </summary>
+    [Obsolete("Use RegisteredNPCs instead.")]
+    public IReadOnlyDictionary<Key_NPC, GameObject> SpawnedNPCs => RegisteredNPCs;
 
     /// <summary>Fired whenever an NPC's persistent recruitment status changes.</summary>
     public event Action<Key_NPC, NPCStatus> OnNPCStatusChanged;
@@ -174,7 +180,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
             return null;
         }
 
-        if (_spawnedNPCs.ContainsKey(key))
+        if (IsRegistered(key))
         {
             Debug.LogWarning($"[NPCManager] NPC '{key}' is already spawned. Call DespawnNPC first.");
             return null;
@@ -196,11 +202,20 @@ public class NPCManager : MonoBehaviour, IDebuggable
         GameObject go = Instantiate(property.prefab, position, rotation);
         go.name = $"NPC_{key}";
 
-        _spawnedNPCs[key] = go;
-        ApplyPersistentRuntimeData(key, go);
+        NPCBehaviour behaviour = go.GetComponent<NPCBehaviour>();
+        if (behaviour == null || behaviour.NpcKey != key)
+        {
+            Debug.LogError($"[{nameof(NPCManager)}] Prefab '{property.prefab.name}' for '{key}' must contain an {nameof(NPCBehaviour)} with the same NPC key.", this);
+            if (behaviour != null)
+                UnregisterNPC(behaviour);
+            Destroy(go);
+            return null;
+        }
+
+        RegisterNPC(behaviour);
 
         if (debugEnabled)
-            Debug.Log($"[NPCManager] Spawned '{key}' at {position}. Total spawned: {_spawnedNPCs.Count}");
+            Debug.Log($"[NPCManager] Spawned '{key}' at {position}. Total registered: {_registeredNPCs.Count}");
 
         return go;
     }
@@ -211,35 +226,117 @@ public class NPCManager : MonoBehaviour, IDebuggable
     /// </summary>
     public bool DespawnNPC(Key_NPC key)
     {
-        if (!_spawnedNPCs.TryGetValue(key, out GameObject go))
+        if (!_registeredNPCs.TryGetValue(key, out GameObject go))
         {
             Debug.LogWarning($"[NPCManager] Cannot despawn '{key}': not currently spawned.");
             return false;
         }
 
         CapturePersistentRuntimeData(key, go);
-        _spawnedNPCs.Remove(key);
+        _registeredNPCs.Remove(key);
 
         if (go != null)
             Destroy(go);
 
         if (debugEnabled)
-            Debug.Log($"[NPCManager] Despawned '{key}'. Total spawned: {_spawnedNPCs.Count}");
+            Debug.Log($"[NPCManager] Despawned '{key}'. Total registered: {_registeredNPCs.Count}");
 
         return true;
     }
 
-    /// <summary>Returns whether the given NPC key is currently spawned in the scene.</summary>
-    public bool IsSpawned(Key_NPC key) => _spawnedNPCs.ContainsKey(key);
+    /// <summary>Registers a scene or dynamically spawned NPC under its authored key.</summary>
+    public bool RegisterNPC(NPCBehaviour behaviour)
+    {
+        if (behaviour == null)
+            return false;
+
+        return RegisterNPC(behaviour.NpcKey, behaviour.gameObject);
+    }
 
     /// <summary>
-    /// Returns the spawned GameObject for the given key, or <c>null</c> if not spawned.
+    /// Registers an NPC GameObject. Re-registering the same object is safe;
+    /// a different object with the same NPC key is rejected.
     /// </summary>
-    public GameObject GetSpawnedNPC(Key_NPC key)
+    public bool RegisterNPC(Key_NPC key, GameObject npcGameObject)
     {
-        _spawnedNPCs.TryGetValue(key, out GameObject go);
+        if (key == Key_NPC.None || npcGameObject == null)
+        {
+            Debug.LogWarning($"[{nameof(NPCManager)}] Cannot register an NPC without a valid key and GameObject.", this);
+            return false;
+        }
+
+        NPCBehaviour behaviour = npcGameObject.GetComponent<NPCBehaviour>();
+        if (behaviour == null || behaviour.NpcKey != key)
+        {
+            Debug.LogError($"[{nameof(NPCManager)}] '{npcGameObject.name}' cannot register as '{key}' because its {nameof(NPCBehaviour)} is missing or uses a different key.", this);
+            return false;
+        }
+
+        if (_registeredNPCs.TryGetValue(key, out GameObject existing))
+        {
+            if (existing == npcGameObject)
+            {
+                ApplyPersistentRuntimeData(key, npcGameObject);
+                return true;
+            }
+
+            if (existing == null)
+            {
+                _registeredNPCs.Remove(key);
+            }
+            else
+            {
+                Debug.LogError($"[{nameof(NPCManager)}] Cannot register '{key}' on '{npcGameObject.name}': it is already registered by '{existing.name}'.", this);
+                return false;
+            }
+        }
+
+        _registeredNPCs.Add(key, npcGameObject);
+        ApplyPersistentRuntimeData(key, npcGameObject);
+        return true;
+    }
+
+    /// <summary>Captures data from and removes a registered NPC if it is the current owner of the key.</summary>
+    public bool UnregisterNPC(NPCBehaviour behaviour)
+    {
+        if (behaviour == null)
+            return false;
+
+        return UnregisterNPC(behaviour.NpcKey, behaviour.gameObject);
+    }
+
+    public bool UnregisterNPC(Key_NPC key, GameObject npcGameObject)
+    {
+        if (key == Key_NPC.None
+            || npcGameObject == null
+            || !_registeredNPCs.TryGetValue(key, out GameObject registeredObject)
+            || registeredObject != npcGameObject)
+        {
+            return false;
+        }
+
+        CapturePersistentRuntimeData(key, npcGameObject);
+        _registeredNPCs.Remove(key);
+        return true;
+    }
+
+    /// <summary>Returns whether the given NPC key is currently registered in a loaded scene.</summary>
+    public bool IsRegistered(Key_NPC key) => _registeredNPCs.ContainsKey(key);
+
+    /// <summary>
+    /// Returns the registered GameObject for the given key, or <c>null</c> if it is not loaded.
+    /// </summary>
+    public GameObject GetRegisteredNPC(Key_NPC key)
+    {
+        _registeredNPCs.TryGetValue(key, out GameObject go);
         return go;
     }
+
+    [Obsolete("Use IsRegistered instead.")]
+    public bool IsSpawned(Key_NPC key) => IsRegistered(key);
+
+    [Obsolete("Use GetRegisteredNPC instead.")]
+    public GameObject GetSpawnedNPC(Key_NPC key) => GetRegisteredNPC(key);
 
     // ���� NPC Progress / Interaction Availability ������������������������������������������������������������������������������������
 
@@ -378,7 +475,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
     /// <summary>Captures only persistent NPC progress; never scene GameObject references.</summary>
     public List<NPCSaveEntry> CaptureSaveEntries()
     {
-        CaptureAllSpawnedPersistentRuntimeData();
+        CaptureAllRegisteredPersistentRuntimeData();
 
         var entries = new List<NPCSaveEntry>(_npcProgress.Count);
 
@@ -442,7 +539,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
             state.UnlockedInteractions.ExceptWith(state.LockedInteractions);
         }
 
-        ApplyPersistentRuntimeDataToSpawnedNPCs();
+        ApplyPersistentRuntimeDataToRegisteredNPCs();
         RestoreRoomAssignmentsFromProgress();
     }
 
@@ -555,9 +652,9 @@ public class NPCManager : MonoBehaviour, IDebuggable
         }
     }
 
-    private void CaptureAllSpawnedPersistentRuntimeData()
+    private void CaptureAllRegisteredPersistentRuntimeData()
     {
-        foreach (var pair in _spawnedNPCs)
+        foreach (var pair in _registeredNPCs)
             CapturePersistentRuntimeData(pair.Key, pair.Value);
     }
 
@@ -575,9 +672,9 @@ public class NPCManager : MonoBehaviour, IDebuggable
         state.HasPersistentRuntimeData = true;
     }
 
-    private void ApplyPersistentRuntimeDataToSpawnedNPCs()
+    private void ApplyPersistentRuntimeDataToRegisteredNPCs()
     {
-        foreach (var pair in _spawnedNPCs)
+        foreach (var pair in _registeredNPCs)
             ApplyPersistentRuntimeData(pair.Key, pair.Value);
     }
 
@@ -671,7 +768,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
             EconomyManager.Instance.AddCurrency(CurrencyType.Credits, total);
 
             if (debugEnabled)
-                Debug.Log($"[NPCManager] Day {day} income collected: {total:F1} Credits from {_spawnedNPCs.Count} NPC(s).");
+                Debug.Log($"[NPCManager] Day {day} income collected: {total:F1} Credits from {_registeredNPCs.Count} NPC(s).");
         }
         else
         {
@@ -686,7 +783,7 @@ public class NPCManager : MonoBehaviour, IDebuggable
     {
         float total = 0f;
 
-        foreach (var pair in _spawnedNPCs)
+        foreach (var pair in _registeredNPCs)
         {
             if (pair.Value == null) continue;
 

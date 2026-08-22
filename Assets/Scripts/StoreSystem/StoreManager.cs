@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 using JackyUtility;
@@ -32,6 +33,17 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
     private StoreInventoryProperty inventoryProperty;
     private StoreContainer runtimeStoreContainer;
     private bool isStoreOpen;
+
+    // StoreInventoryProperty is immutable authored data. This dictionary holds
+    // only the values that change while playing and are therefore saveable.
+    private readonly Dictionary<Key_StoreInventory, Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState>> _storeRuntimeStates =
+        new Dictionary<Key_StoreInventory, Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState>>();
+
+    private sealed class StoreItemRuntimeState
+    {
+        public int RemainingCount;
+        public bool IsLocked;
+    }
 
     public event Action<bool> OnStoreModeChanged;
     /// <summary>
@@ -73,6 +85,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             Debug.LogWarning($"[{nameof(StoreManager)}] Store inventory '{storeInventoryKey}' is not registered.", this);
             return false;
         }
+
+        SynchronizeCurrentStoreRuntimeState();
 
         inventoryKey = storeInventoryKey;
         InitializeRuntimeInventory();
@@ -143,6 +157,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
     private void OnDestroy()
     {
+        SynchronizeCurrentStoreRuntimeState();
+
         if (uiContainer != null)
             uiContainer.OnSelectionChanged -= HandleSlotSelected;
         if (enterStoreButton != null)
@@ -206,7 +222,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             return false;
         }
 
-        int price = sellable.Price;
+        int price = ResolvePrice(slot, sellable);
         if (!EconomyManager.Instance.TrySpend(purchaseCurrency, price))
         {
             if (debugEnabled)
@@ -233,9 +249,82 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         if (debugEnabled)
             Debug.Log("[StoreManager] Purchased " + item.DisplayName + ". Stock remaining: " + slot.ItemCount);
 
+        SynchronizeCurrentStoreRuntimeState();
         RefreshUI();
         RefreshSelectedDetail();
         return true;
+    }
+
+    /// <summary>
+    /// Captures all mutable inventory state. Static slot content and prices
+    /// remain authored in StoreInventoryProperty and are intentionally omitted.
+    /// </summary>
+    public List<StoreSaveEntry> CaptureSaveEntries()
+    {
+        SynchronizeCurrentStoreRuntimeState();
+
+        var entries = new List<StoreSaveEntry>(_storeRuntimeStates.Count);
+        foreach (KeyValuePair<Key_StoreInventory, Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState>> storePair in _storeRuntimeStates)
+        {
+            if (storePair.Key == Key_StoreInventory.None || storePair.Value == null)
+                continue;
+
+            var entry = new StoreSaveEntry { storeKey = storePair.Key };
+            foreach (KeyValuePair<Key_ItemDefinitionPP, StoreItemRuntimeState> itemPair in storePair.Value)
+            {
+                if (itemPair.Key == Key_ItemDefinitionPP.None || itemPair.Value == null)
+                    continue;
+
+                entry.items.Add(new StoreItemSaveEntry
+                {
+                    itemKey = itemPair.Key,
+                    remainingCount = Mathf.Max(0, itemPair.Value.RemainingCount),
+                    isLocked = itemPair.Value.IsLocked
+                });
+            }
+
+            entry.items.Sort((left, right) => left.itemKey.CompareTo(right.itemKey));
+            entries.Add(entry);
+        }
+
+        entries.Sort((left, right) => left.storeKey.CompareTo(right.storeKey));
+        return entries;
+    }
+
+    /// <summary>
+    /// Restores mutable store state without opening any store UI. The authored
+    /// inventory is used automatically for stores absent from this save data.
+    /// </summary>
+    public void RestoreSaveEntries(List<StoreSaveEntry> entries)
+    {
+        _storeRuntimeStates.Clear();
+
+        if (entries == null)
+        {
+            ApplyRuntimeStateToCurrentStore();
+            return;
+        }
+
+        foreach (StoreSaveEntry entry in entries)
+        {
+            if (entry == null || entry.storeKey == Key_StoreInventory.None || entry.items == null)
+                continue;
+
+            Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState> itemStates = GetOrCreateStoreRuntimeState(entry.storeKey);
+            foreach (StoreItemSaveEntry itemEntry in entry.items)
+            {
+                if (itemEntry == null || itemEntry.itemKey == Key_ItemDefinitionPP.None)
+                    continue;
+
+                itemStates[itemEntry.itemKey] = new StoreItemRuntimeState
+                {
+                    RemainingCount = Mathf.Max(0, itemEntry.remainingCount),
+                    IsLocked = itemEntry.isLocked
+                };
+            }
+        }
+
+        ApplyRuntimeStateToCurrentStore();
     }
 
     private void InitializeRuntimeInventory()
@@ -255,7 +344,79 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             return;
         }
 
+        if (!inventoryProperty.HasUniqueItemDefinitions(out Key_ItemDefinitionPP duplicateItemKey))
+        {
+            Debug.LogError($"[{nameof(StoreManager)}] Store '{inventoryKey}' contains duplicate item '{duplicateItemKey}'. " +
+                           "Each store item must be configured only once so its inventory can be saved safely.", this);
+            runtimeStoreContainer = new StoreContainer(0);
+            return;
+        }
+
         runtimeStoreContainer = inventoryProperty.CreateRuntimeContainer();
+        ApplyRuntimeStateToCurrentStore();
+    }
+
+    private Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState> GetOrCreateStoreRuntimeState(Key_StoreInventory storeKey)
+    {
+        if (!_storeRuntimeStates.TryGetValue(storeKey, out Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState> itemStates))
+        {
+            itemStates = new Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState>();
+            _storeRuntimeStates.Add(storeKey, itemStates);
+        }
+
+        return itemStates;
+    }
+
+    private void SynchronizeCurrentStoreRuntimeState()
+    {
+        if (inventoryKey == Key_StoreInventory.None || runtimeStoreContainer == null)
+            return;
+
+        Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState> itemStates = GetOrCreateStoreRuntimeState(inventoryKey);
+        for (int i = 0; i < runtimeStoreContainer.MaxSlots; i++)
+        {
+            StoreSlot slot = runtimeStoreContainer.GetSlotByIndex(i);
+            if (slot == null || slot.ItemEnum == Key_ItemDefinitionPP.None)
+                continue;
+
+            itemStates[slot.ItemEnum] = new StoreItemRuntimeState
+            {
+                RemainingCount = Mathf.Max(0, slot.ItemCount),
+                IsLocked = slot.isLocked
+            };
+        }
+    }
+
+    private void ApplyRuntimeStateToCurrentStore()
+    {
+        if (inventoryKey == Key_StoreInventory.None
+            || runtimeStoreContainer == null
+            || !_storeRuntimeStates.TryGetValue(inventoryKey, out Dictionary<Key_ItemDefinitionPP, StoreItemRuntimeState> itemStates))
+        {
+            return;
+        }
+
+        for (int i = 0; i < runtimeStoreContainer.MaxSlots; i++)
+        {
+            StoreSlot slot = runtimeStoreContainer.GetSlotByIndex(i);
+            if (slot == null
+                || slot.ItemEnum == Key_ItemDefinitionPP.None
+                || !itemStates.TryGetValue(slot.ItemEnum, out StoreItemRuntimeState itemState)
+                || itemState == null)
+            {
+                continue;
+            }
+
+            if (!runtimeStoreContainer.TrySetSlotAtIndex(i, slot.ItemEnum, Mathf.Max(0, itemState.RemainingCount), out string failReason))
+            {
+                Debug.LogWarning($"[{nameof(StoreManager)}] Could not restore '{slot.ItemEnum}' in store '{inventoryKey}': {failReason}", this);
+                continue;
+            }
+
+            StoreSlot restoredSlot = runtimeStoreContainer.GetSlotByIndex(i);
+            if (restoredSlot != null)
+                restoredSlot.isLocked = itemState.IsLocked;
+        }
     }
 
     private void RefreshUI()
@@ -294,7 +455,8 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
             if (slot.ItemCount > 0)
             {
-                string priceLabel = sellable.Price + " " + purchaseCurrency;
+                int price = ResolvePrice(slot, sellable);
+                string priceLabel = price + " " + purchaseCurrency;
                 result[i] = new SlotDisplayData(item.Icon, Color.white, slot.ItemCount, priceLabel, SlotState.Default);
             }
             else
@@ -351,7 +513,7 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             return;
         }
 
-        detailPanel?.Show(item, sellable, purchaseCurrency);
+        detailPanel?.Show(item, sellable, ResolvePrice(slot, sellable), purchaseCurrency);
     }
 
     private void RefreshSelectedDetail()
@@ -386,6 +548,14 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
 
         sellable = sellableDatabase.GetByEnum(item.SellableKey);
         return sellable != null;
+    }
+
+    private int ResolvePrice(StoreSlot slot, SellableProperty sellable)
+    {
+        int basePrice = sellable != null ? sellable.Price : 0;
+        return inventoryProperty != null
+            ? inventoryProperty.ResolvePrice(slot, basePrice)
+            : Mathf.Max(1, basePrice);
     }
 
     private void OnEnterStoreButtonClicked()

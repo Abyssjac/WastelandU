@@ -25,20 +25,20 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
 
         // ── Overview ─────────────────────────────────────────────────────────
         Header("Overview");
-        Row("Total Spawned NPCs", mgr.SpawnedNPCs.Count.ToString());
+        Row("Total Registered NPCs", mgr.RegisteredNPCs.Count.ToString());
 
         // ── Persistent NPC progress ──────────────────────────────────────────
         DrawNPCProgressSection(mgr);
 
         // ── Spawned NPC list ──────────────────────────────────────────────────
-        Header("Currently Spawned");
-        if (mgr.SpawnedNPCs.Count == 0)
+        Header("Currently Registered");
+        if (mgr.RegisteredNPCs.Count == 0)
         {
-            EditorGUILayout.HelpBox("No NPCs are currently spawned.", MessageType.None);
+            EditorGUILayout.HelpBox("No NPCs are currently registered.", MessageType.None);
         }
         else
         {
-            foreach (var kvp in mgr.SpawnedNPCs)
+            foreach (var kvp in mgr.RegisteredNPCs)
             {
                 string goName = kvp.Value != null ? kvp.Value.name : "<destroyed>";
                 Row(kvp.Key.ToString(), goName);
@@ -108,7 +108,7 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
         DrawSeparator();
 
         bool keyValid  = _selectedEnumKey != Key_NPC.None;
-        bool isSpawned = keyValid && mgr.IsSpawned(_selectedEnumKey);
+        bool isSpawned = keyValid && mgr.IsRegistered(_selectedEnumKey);
 
         ColoredRow("Status",
             !keyValid ? "—" : isSpawned ? "Spawned" : "Not Spawned",
@@ -155,14 +155,14 @@ public class NPCManagerDebugWindow : DebugEditorWindow<NPCManager>
 
         DrawSeparator();
 
-        bool isSpawned = mgr.IsSpawned(prop.EnumKey);
-        ColoredRow("Currently Spawned",
+        bool isSpawned = mgr.IsRegistered(prop.EnumKey);
+        ColoredRow("Currently Registered",
             isSpawned ? "Yes" : "No",
             isSpawned ? Color.green : Color.gray);
 
         if (isSpawned)
         {
-            GameObject go = mgr.GetSpawnedNPC(prop.EnumKey);
+            GameObject go = mgr.GetRegisteredNPC(prop.EnumKey);
             Row("GameObject", go != null ? go.name : "<destroyed>");
             if (go != null)
                 Row("Position", go.transform.position.ToString());

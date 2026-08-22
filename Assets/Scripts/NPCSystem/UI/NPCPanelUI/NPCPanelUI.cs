@@ -387,7 +387,7 @@ public class NPCPanelUI : MonoBehaviour, IInteractablePanel, IGeneralPanelOwner
         if (NPCManager.Instance == null || _currentNpcKey == Key_NPC.None)
             return null;
 
-        GameObject npcGo = NPCManager.Instance.GetSpawnedNPC(_currentNpcKey);
+        GameObject npcGo = NPCManager.Instance.GetRegisteredNPC(_currentNpcKey);
         return npcGo != null ? npcGo.GetComponent<NPCBehaviour>() : null;
     }
 

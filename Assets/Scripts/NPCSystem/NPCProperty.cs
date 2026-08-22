@@ -53,5 +53,8 @@ public enum Key_NPC
     Eli_Guide = 10,
     Nara_Captain = 11,
     Silas_Merchant = 12,
-    Ivo_Engineer = 13
+    Ivo_Engineer = 13,
+
+
+    Bob_Merchant_Abyss = 50,
 }

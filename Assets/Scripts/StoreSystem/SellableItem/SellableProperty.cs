@@ -27,4 +27,7 @@ public enum Key_SellablePP
     [InspectorName("Bookstore/Table 0")] Sellable_Bookstore_Table_0 = 1,
     [InspectorName("Artstudio/Chair 0")] Sellable_Artstudio_Chair_0 = 2,
     [InspectorName("Bar/Shelf 0")] Sellable_Bar_Shelf_0 = 3,
+    [InspectorName("Resource/Brassscrap 0")] Sellable_Resource_Brassscrap_0  = 10,
+    [InspectorName("Resource/Aether 0")] Sellable_Resourcce_Aether_0 = 11,
+    [InspectorName("Resource/Cloudwood 0")] Sellable_Resource_Cloudwood_0 = 12,
 }

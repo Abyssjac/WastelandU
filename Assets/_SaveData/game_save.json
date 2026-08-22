@@ -1,6 +1,6 @@
 {
     "saveVersion": 1,
-    "savedAt": "2026-07-29 16:55:06",
+    "savedAt": "2026-08-22 16:32:53",
     "sections": [
         {
             "key": "build",
@@ -11,6 +11,16 @@
             "key": "quests",
             "version": 1,
             "json": "{\n    \"entries\": []\n}"
+        },
+        {
+            "key": "stores",
+            "version": 1,
+            "json": "{\n    \"entries\": [\n        {\n            \"storeKey\": 2,\n            \"items\": [\n                {\n                    \"itemKey\": 200,\n                    \"remainingCount\": 3,\n                    \"isLocked\": false\n                },\n                {\n                    \"itemKey\": 201,\n                    \"remainingCount\": 4,\n                    \"isLocked\": false\n                },\n                {\n                    \"itemKey\": 203,\n                    \"remainingCount\": 5,\n                    \"isLocked\": false\n                }\n            ]\n        }\n    ]\n}"
+        },
+        {
+            "key": "npcs",
+            "version": 1,
+            "json": "{\n    \"entries\": [\n        {\n            \"npcKey\": 1,\n            \"npcStatus\": 0,\n            \"unlockedInteractions\": [],\n            \"lockedInteractions\": [],\n            \"hasRuntimeData\": true,\n            \"runtimeData\": {\n                \"dailyInteractionAffinity\": 50.0,\n                \"familiarityAffinity\": 0.0,\n                \"lastInteractionDay\": -1,\n                \"interactedToday\": false,\n                \"hasRoom\": false,\n                \"assignedRoomStableId\": {\n                    \"x\": 0,\n                    \"y\": 0,\n                    \"z\": 0\n                }\n            }\n        },\n        {\n            \"npcKey\": 10,\n            \"npcStatus\": 0,\n            \"unlockedInteractions\": [],\n            \"lockedInteractions\": [],\n            \"hasRuntimeData\": true,\n            \"runtimeData\": {\n                \"dailyInteractionAffinity\": 50.0,\n                \"familiarityAffinity\": 0.0,\n                \"lastInteractionDay\": -1,\n                \"interactedToday\": false,\n                \"hasRoom\": false,\n                \"assignedRoomStableId\": {\n                    \"x\": 0,\n                    \"y\": 0,\n                    \"z\": 0\n                }\n            }\n        },\n        {\n            \"npcKey\": 50,\n            \"npcStatus\": 0,\n            \"unlockedInteractions\": [],\n            \"lockedInteractions\": [],\n            \"hasRuntimeData\": true,\n            \"runtimeData\": {\n                \"dailyInteractionAffinity\": 50.0,\n                \"familiarityAffinity\": 0.0,\n                \"lastInteractionDay\": -1,\n                \"interactedToday\": false,\n                \"hasRoom\": false,\n                \"assignedRoomStableId\": {\n                    \"x\": 0,\n                    \"y\": 0,\n                    \"z\": 0\n                }\n            }\n        }\n    ]\n}"
         }
     ]
 }

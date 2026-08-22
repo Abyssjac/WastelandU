@@ -18,4 +18,4 @@ MonoBehaviour:
   displayName: BrassScrap
   icon: {fileID: 21300000, guid: 38e781669c69d504780932220cdf2b58, type: 3}
   buildableKey: 0
-  sellableKey: 0
+  sellableKey: 10

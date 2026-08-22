@@ -13,5 +13,6 @@ MonoBehaviour:
   m_Name: StoreInventoryDB_Main
   m_EditorClassIdentifier: Assembly-CSharp::StoreInventoryDatabase
   entries:
+  - {fileID: 11400000, guid: 35587691a7d0e144da59bf8a19cfe8b5, type: 2}
   - {fileID: 11400000, guid: bb04951b76d8d7549a0140d811e9e084, type: 2}
   scanFolder: A_Systems/StoreSystem/AllSOs

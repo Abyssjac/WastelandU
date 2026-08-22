@@ -16,4 +16,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: bff259e1d56c7b74abfca32944122f3f, type: 2}
   - {fileID: 11400000, guid: 719625de3f01315448918ccfc7496de6, type: 2}
   - {fileID: 11400000, guid: 60c735c9134b7a041bba57c03063f89a, type: 2}
+  - {fileID: 11400000, guid: 098cf63e10186804494d918adbd195d1, type: 2}
+  - {fileID: 11400000, guid: a1730347da00ed944b1b92ae54fb23da, type: 2}
+  - {fileID: 11400000, guid: 814b33e807cdd2847b9ebaa00d2287f2, type: 2}
   scanFolder: A_Systems/StoreSystem/AllSOs/SellableSOs

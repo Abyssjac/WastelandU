@@ -4811,7 +4811,7 @@ MonoBehaviour:
   lastLineContainer: {fileID: 0}
   lastLineCharacterNameText: {fileID: 0}
   lastLineCharacterNameContainer: {fileID: 0}
-  showUnavailableOptions: 0
+  showUnavailableOptions: 1
   useFadeEffect: 1
   fadeUpDuration: 0.25
   fadeDownDuration: 0.1
@@ -6605,6 +6605,35 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1405187529}
   m_CullTransparentMesh: 1
+--- !u!1 &1428203183 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
+  m_PrefabInstance: {fileID: 3151686250451960352}
+  m_PrefabAsset: {fileID: 0}
+--- !u!114 &1428203185 stripped
+MonoBehaviour:
+  m_CorrespondingSourceObject: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
+  m_PrefabInstance: {fileID: 3151686250451960352}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1428203183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b20b322c73ff4c246a79ab62c4cc916f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoreManager
+--- !u!114 &1428203187
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1428203183}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d1480163361025c40b6e67c7c6f65480, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::StoreSaveAdapter
+  storeManager: {fileID: 1428203185}
 --- !u!1 &1442059821
 GameObject:
   m_ObjectHideFlags: 0
@@ -8168,7 +8197,7 @@ MonoBehaviour:
   - {fileID: 1003898265}
   - {fileID: 732634451}
   verboseLogging: 0
-  autoStart: 1
+  autoStart: 0
   startNode: Tutorial_Resource_Start
   runSelectedOptionAsLine: 0
   allowOptionFallthrough: 1
@@ -9902,7 +9931,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
       propertyPath: inventoryKey
-      value: 1
+      value: 2
       objectReference: {fileID: 0}
     - target: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
       propertyPath: enterStoreButton
@@ -10003,7 +10032,10 @@ PrefabInstance:
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents: []
+    m_AddedComponents:
+    - targetCorrespondingSourceObject: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: 1428203187}
   m_SourcePrefab: {fileID: 100100000, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
 --- !u!114 &3729626630617442192
 MonoBehaviour:

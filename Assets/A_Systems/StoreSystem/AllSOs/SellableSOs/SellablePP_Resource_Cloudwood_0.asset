@@ -1,0 +1,18 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d80b11a5716da4b42aad8c5ecfc3566f, type: 3}
+  m_Name: SellablePP_Resource_Cloudwood_0
+  m_EditorClassIdentifier: Assembly-CSharp::SellableProperty
+  enumKey: 12
+  stringKey: 
+  price: 20
+  detailDescription: "\u751F\u957F\u5728\u5404\u7C7B\u5C9B\u5C7F\u4E4B\u4E0A\uFF0C\u5BB6\u5177\u5EFA\u9020\u7684\u57FA\u7840\u6750\u6599"

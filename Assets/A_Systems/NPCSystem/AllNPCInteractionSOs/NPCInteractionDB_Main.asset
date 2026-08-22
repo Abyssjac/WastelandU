@@ -14,4 +14,5 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   entries:
   - {fileID: 11400000, guid: 34ad821a6bbe7a4459796c96b0945a16, type: 2}
+  - {fileID: 11400000, guid: 89bbc1de2dac16746b1097f1bb1b02df, type: 2}
   scanFolder: A_Systems/NPCSystem/AllNPCInteractionSOs

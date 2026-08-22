@@ -434,7 +434,7 @@ public class NPCRoomAssignmentManager : MonoBehaviour
     {
         if (NPCManager.Instance == null) return;
 
-        GameObject go = NPCManager.Instance.GetSpawnedNPC(npcKey);
+        GameObject go = NPCManager.Instance.GetRegisteredNPC(npcKey);
         if (go == null) return;
 
         NPCBehaviour behaviour = go.GetComponent<NPCBehaviour>();

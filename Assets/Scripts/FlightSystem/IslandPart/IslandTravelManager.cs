@@ -260,18 +260,26 @@ public class IslandTravelManager : MonoBehaviour
             yield break;
         }
 
+        string islandSceneKey = currentIslandSceneKey;
+        if (!string.IsNullOrWhiteSpace(islandSceneKey) && MySceneManager.Instance != null && MySceneManager.Instance.IsAdditivelyLoaded(islandSceneKey))
+        {
+            bool didUnload = false;
+            yield return AdditiveSceneAutoSave.UnloadAdditiveSceneRoutine(
+                islandSceneKey,
+                isNormalLeaving: true,
+                onCompleted: result => didUnload = result);
+
+            if (!didUnload)
+            {
+                AbortReturn($"Could not unload island scene '{islandSceneKey}'.");
+                yield break;
+            }
+        }
+
         RestoreMainWorldPresentationRoots();
         RestoreShipTransform();
         SetShipDocked(false);
         playerMovement.TeleportToPosition(mainWorldReturnAnchor.position, mainWorldReturnAnchor.rotation);
-
-        string islandSceneKey = currentIslandSceneKey;
-        if (!string.IsNullOrWhiteSpace(islandSceneKey) && MySceneManager.Instance != null && MySceneManager.Instance.IsAdditivelyLoaded(islandSceneKey))
-        {
-            AsyncOperation unloadOperation = MySceneManager.Instance.UnloadAdditiveSceneAsync(islandSceneKey);
-            if (unloadOperation != null)
-                yield return unloadOperation;
-        }
 
         ClearIslandRuntimeState();
         location = IslandTravelLocation.MainWorld;
@@ -298,9 +306,9 @@ public class IslandTravelManager : MonoBehaviour
 
     private IEnumerator UnloadAfterFailedEnter(string islandSceneKey)
     {
-        AsyncOperation unloadOperation = MySceneManager.Instance.UnloadAdditiveSceneAsync(islandSceneKey);
-        if (unloadOperation != null)
-            yield return unloadOperation;
+        yield return AdditiveSceneAutoSave.UnloadAdditiveSceneRoutine(
+            islandSceneKey,
+            isNormalLeaving: false);
     }
 
     private void AbortReturn(string reason)

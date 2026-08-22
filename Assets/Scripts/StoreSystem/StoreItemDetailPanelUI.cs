@@ -12,7 +12,7 @@ public class StoreItemDetailPanelUI : MonoBehaviour
     [SerializeField] private string emptyDescription = "";
     [SerializeField] private string emptyPrice = "";
 
-    public void Show(ItemDefinitionSO item, SellableProperty sellable, CurrencyType currency)
+    public void Show(ItemDefinitionSO item, SellableProperty sellable, int finalPrice, CurrencyType currency)
     {
         if (item == null || sellable == null)
         {
@@ -22,7 +22,7 @@ public class StoreItemDetailPanelUI : MonoBehaviour
 
         SetText(displayNameText, item.DisplayName);
         SetText(descriptionText, sellable.DetailDescription);
-        SetText(priceText, $"{sellable.Price} {currency}");
+        SetText(priceText, $"{Mathf.Max(1, finalPrice)} {currency}");
     }
 
     public void ShowEmpty()

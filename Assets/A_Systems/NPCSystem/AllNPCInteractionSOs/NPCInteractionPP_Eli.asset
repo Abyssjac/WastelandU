@@ -18,4 +18,4 @@ MonoBehaviour:
   talkEnabled: 1
   yarnStartNode: Tutorial_Resource_Start
   storeInventoryProperty: {fileID: 11400000, guid: bb04951b76d8d7549a0140d811e9e084, type: 2}
-  storeInitiallyUnlocked: 1
+  storeInitiallyUnlocked: 0
