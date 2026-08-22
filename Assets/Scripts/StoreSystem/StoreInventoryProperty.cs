@@ -8,6 +8,8 @@ public enum Key_StoreInventory
     None = 0,
     StoreInv_Test_0 = 1,
     StoreInv_Bob_0 = 2,
+    StoreInv_Mira_0 = 3,
+    StoreInv_Orren_0 = 4,
 }
 
 [CreateAssetMenu(fileName = "StoreInventoryPropertyPP_", menuName = "AllProperties/StoreInventoryProperty")]

@@ -15,4 +15,6 @@ MonoBehaviour:
   entries:
   - {fileID: 11400000, guid: 35587691a7d0e144da59bf8a19cfe8b5, type: 2}
   - {fileID: 11400000, guid: bb04951b76d8d7549a0140d811e9e084, type: 2}
+  - {fileID: 11400000, guid: fad1eb5a794774341bc78dd8c0ce38e5, type: 2}
+  - {fileID: 11400000, guid: aea82e9f0af6fbc43bb195ce949b3d9e, type: 2}
   scanFolder: A_Systems/StoreSystem/AllSOs

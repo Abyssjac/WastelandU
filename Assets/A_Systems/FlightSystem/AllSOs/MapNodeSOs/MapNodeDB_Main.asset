@@ -21,4 +21,7 @@ MonoBehaviour:
   - {fileID: 11400000, guid: 6ade07a847e7dd443be68f72f7e3926f, type: 2}
   - {fileID: 11400000, guid: 537ba112adf991d4dbfb8ab82f5c9fd4, type: 2}
   - {fileID: 11400000, guid: 94103492e1640064f905b68bbbd8b14e, type: 2}
+  - {fileID: 11400000, guid: efe69a187e074b1b9ab8cedd8a0bee82, type: 2}
+  - {fileID: 11400000, guid: 6600ef5e70f146809edcac5e823f5e2d, type: 2}
+  - {fileID: 11400000, guid: d528c00d3ea942728803a3f542484412, type: 2}
   scanFolder: A_Systems/FlightSystem/AllSOs/MapNodeSOs

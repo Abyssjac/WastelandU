@@ -427,29 +427,29 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
         uiContainer.Refresh(BuildDisplayData());
     }
 
-    private SlotDisplayData[] BuildDisplayData()
+    private StoreSlotDisplayData[] BuildDisplayData()
     {
         int count = runtimeStoreContainer != null ? runtimeStoreContainer.MaxSlots : 0;
-        var result = new SlotDisplayData[count];
+        var result = new StoreSlotDisplayData[count];
 
         for (int i = 0; i < count; i++)
         {
             StoreSlot slot = runtimeStoreContainer.GetSlotByIndex(i);
             if (slot == null || slot.ItemEnum == Key_ItemDefinitionPP.None)
             {
-                result[i] = SlotDisplayData.Empty;
+                result[i] = new StoreSlotDisplayData(null, Color.clear, 0, "", SlotState.Empty);
                 continue;
             }
 
             if (slot.isLocked)
             {
-                result[i] = new SlotDisplayData(null, Color.clear, 0, "", SlotState.Locked);
+                result[i] = new StoreSlotDisplayData(null, Color.clear, 0, "", SlotState.Locked, slot.PriceMultiplier);
                 continue;
             }
 
             if (!TryGetSlotAndProperties(i, out _, out ItemDefinitionSO item, out SellableProperty sellable))
             {
-                result[i] = SlotDisplayData.Empty;
+                result[i] = new StoreSlotDisplayData(null, Color.clear, 0, "", SlotState.Empty);
                 continue;
             }
 
@@ -457,11 +457,23 @@ public class StoreManager : MonoBehaviour, IGeneralPanelOwner
             {
                 int price = ResolvePrice(slot, sellable);
                 string priceLabel = price + " " + purchaseCurrency;
-                result[i] = new SlotDisplayData(item.Icon, Color.white, slot.ItemCount, priceLabel, SlotState.Default);
+                result[i] = new StoreSlotDisplayData(
+                    item.Icon,
+                    Color.white,
+                    slot.ItemCount,
+                    priceLabel,
+                    SlotState.Default,
+                    slot.PriceMultiplier);
             }
             else
             {
-                result[i] = new SlotDisplayData(item.Icon, Color.white, 0, item.DisplayName, SlotState.SoldOut);
+                result[i] = new StoreSlotDisplayData(
+                    item.Icon,
+                    Color.white,
+                    0,
+                    item.DisplayName,
+                    SlotState.SoldOut,
+                    slot.PriceMultiplier);
             }
         }
 

@@ -12,10 +12,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 56a574ef7953f2a4593cd8f7056c54d5, type: 3}
   m_Name: MapNodePP_Main_OldAnchor
   m_EditorClassIdentifier: Assembly-CSharp::MapNodeProperty
-  enumKey: 10
+  enumKey: 14
   stringKey: 
-  displayName: Home Island
-  description: Where u came from
+  displayName: OldAnchor
+  description: A weathered anchorage, holding the echoes of voyages long past.
   icon: {fileID: 21300000, guid: 8b1ff354082044a69b68a599bda02f9b, type: 3}
   nodeType: 5
-  islandSceneKey: S_MainIsland_Home
+  islandSceneKey: S_MainIsland_OldAnchor

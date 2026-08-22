@@ -56,5 +56,7 @@ public enum Key_NPC
     Ivo_Engineer = 13,
 
 
-    Bob_Merchant_Abyss = 50,
+    Bob_Merchant_FairWindDock = 50,
+    Mira_Merchant_MistweilMarket = 51,
+    Orren_Merchant_BrassBell = 52,
 }
