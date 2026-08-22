@@ -3385,8 +3385,8 @@ RectTransform:
   m_Children: []
   m_Father: {fileID: 1226335195}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
-  m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMin: {x: 1, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 50, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -6647,35 +6647,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1405187529}
   m_CullTransparentMesh: 1
---- !u!1 &1428203183 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-  m_PrefabInstance: {fileID: 3151686250451960352}
-  m_PrefabAsset: {fileID: 0}
---- !u!114 &1428203185 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-  m_PrefabInstance: {fileID: 3151686250451960352}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1428203183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b20b322c73ff4c246a79ab62c4cc916f, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StoreManager
---- !u!114 &1428203187
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1428203183}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: d1480163361025c40b6e67c7c6f65480, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: Assembly-CSharp::StoreSaveAdapter
-  storeManager: {fileID: 1428203185}
 --- !u!1 &1442059821
 GameObject:
   m_ObjectHideFlags: 0
@@ -9441,7 +9412,7 @@ RectTransform:
   m_Father: {fileID: 1139690471}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
-  m_AnchorMax: {x: 0, y: 0}
+  m_AnchorMax: {x: 1, y: 1}
   m_AnchoredPosition: {x: 0, y: 0}
   m_SizeDelta: {x: 10, y: 0}
   m_Pivot: {x: 0.5, y: 0.5}
@@ -9614,7 +9585,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!222 &1091751053589301400
 CanvasRenderer:
   m_ObjectHideFlags: 0
@@ -10004,14 +9975,6 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 185340989}
     m_Modifications:
-    - target: {fileID: 45756549099138276, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-      propertyPath: m_IsActive
-      value: 0
-      objectReference: {fileID: 0}
-    - target: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-      propertyPath: inventoryKey
-      value: 2
-      objectReference: {fileID: 0}
     - target: {fileID: 2498664251711352275, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
       propertyPath: enterStoreButton
       value: 
@@ -10019,10 +9982,6 @@ PrefabInstance:
     - target: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
       propertyPath: m_Name
       value: Root_Store
-      objectReference: {fileID: 0}
-    - target: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-      propertyPath: m_IsActive
-      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 6655857419111563175, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
       propertyPath: m_Pivot.x
@@ -10104,17 +10063,10 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
-    - target: {fileID: 7555392742971981821, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-      propertyPath: m_RaycastTarget
-      value: 0
-      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []
-    m_AddedComponents:
-    - targetCorrespondingSourceObject: {fileID: 3253371859628929928, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
-      insertIndex: -1
-      addedObject: {fileID: 1428203187}
+    m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 863a57b5570a47145a4ad2b0f6100145, type: 3}
 --- !u!114 &3729626630617442192
 MonoBehaviour:

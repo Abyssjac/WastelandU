@@ -3,9 +3,9 @@ using UnityEngine;
 
 /// <summary>
 /// Store-specific presentation data for a slot.
-/// <see cref="_priceMultiplier"/> is only the multiplier configured on this
-/// individual <see cref="StoreSlot"/>. It deliberately does not represent a
-/// store-wide default multiplier or a fixed-price override.
+/// <see cref="_priceMultiplier"/> is only the item-level multiplier configured
+/// in <see cref="StoreItemPriceOverride"/>. It deliberately does not represent
+/// a store-wide default multiplier or a fixed-price override.
 /// </summary>
 public class StoreSlotDisplayData : SlotDisplayData
 {

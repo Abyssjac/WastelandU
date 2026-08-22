@@ -9,8 +9,8 @@ using UnityEngine;
 ///     <see cref="UI_ContainerSlot"/> prefab so that store-specific overlays work.
 ///   - Intercepts clicks on <see cref="SlotState.Locked"/> slots before they
 ///     reach the selection system.
-///   - Slot count is fixed to the <see cref="StoreInventoryProperty"/> slot count and
-///     is initialised once when the store opens; it never changes at runtime.
+///   - Slot count is rebuilt for the active Buy or Sell tab. Buy uses the
+///     store inventory; Sell mirrors the player's physical inventory layout.
 /// </summary>
 public class UI_StoreContainer : UI_Container
 {
@@ -27,7 +27,7 @@ public class UI_StoreContainer : UI_Container
     /// <summary>
     /// Creates (or trims) <see cref="UI_StoreSlot"/> instances to match
     /// <paramref name="slotCount"/> and marks all slots empty.
-    /// Call once when the store panel opens.
+    /// Call whenever the active Store tab changes.
     /// </summary>
     public override void InitSlots(int slotCount)
     {

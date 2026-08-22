@@ -14,24 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::StoreInventoryProperty
   enumKey: 4
   stringKey: 
-  _defaultPriceMultiplier: 1
+  _priceOverrideData:
+    _defaultPriceMultiplier: 1
+    _itemPriceOverrides:
+    - _itemKey: 200
+      _fixedPrice: -1
+      _priceMultiplier: 1.5
+    - _itemKey: 201
+      _fixedPrice: -1
+      _priceMultiplier: 0.5
   storeContainer:
     maxSlots: 3
     slots:
     - itemEnum: 200
       itemCount: 5
-      _fixedPrice: -1
-      _priceMultiplier: 1.5
       isLocked: 0
     - itemEnum: 201
       itemCount: 5
-      _fixedPrice: -1
-      _priceMultiplier: 0.5
       isLocked: 0
     - itemEnum: 203
       itemCount: 5
-      _fixedPrice: -1
-      _priceMultiplier: 1
       isLocked: 0
     useMaxStack: 1
     maxStackCount: 99

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using JackyUtility;
 using UnityEngine;
 
@@ -14,6 +15,7 @@ public class InventoryManager : MonoBehaviour
 
     private ItemDefinitionDatabase itemDatabase;
     private bool missingDatabaseLogged;
+    private InventorySaveData _pendingRestoreData;
 
     public InventoryContainer Inventory => inventory;
     public ItemDefinitionDatabase ItemDatabase => itemDatabase;
@@ -39,7 +41,8 @@ public class InventoryManager : MonoBehaviour
 
     private void Start()
     {
-        TryInitializeDatabase();
+        if (TryInitializeDatabase())
+            ApplyPendingRestoreData();
     }
 
     private void OnDestroy()
@@ -120,6 +123,88 @@ public class InventoryManager : MonoBehaviour
         return removed;
     }
 
+    /// <summary>
+    /// Removes items from one exact physical inventory slot. This is used by
+    /// Store Sell mode so the slot selected by the player is the slot that
+    /// actually loses the item.
+    /// </summary>
+    public bool TryRemoveItemAtSlot(int slotIndex, Key_ItemDefinitionPP expectedItemKey, int count, out string failReason)
+    {
+        EnsureInventory();
+        failReason = null;
+
+        if (expectedItemKey == Key_ItemDefinitionPP.None)
+        {
+            failReason = "Expected item key is None.";
+            return false;
+        }
+
+        InventorySlot slot = inventory.GetSlotByIndex(slotIndex);
+        if (slot == null || slot.IsEmpty)
+        {
+            failReason = "Inventory slot " + slotIndex + " is empty.";
+            return false;
+        }
+
+        if (slot.ItemEnum != expectedItemKey)
+        {
+            failReason = "Inventory slot " + slotIndex + " no longer contains " + expectedItemKey + ".";
+            return false;
+        }
+
+        if (!inventory.TryRemoveCountAtIndex(slotIndex, count, out failReason))
+            return false;
+
+        RaiseInventoryChanged(expectedItemKey, -count);
+        return true;
+    }
+
+    /// <summary>
+    /// Captures the complete physical inventory layout. Empty entries are kept
+    /// so stacks remain in the same slots after a save is restored.
+    /// </summary>
+    public InventorySaveData CaptureSaveData()
+    {
+        EnsureInventory();
+
+        var data = new InventorySaveData
+        {
+            slotCount = inventory.MaxSlots,
+            slots = new List<InventorySlotSaveEntry>(inventory.MaxSlots)
+        };
+
+        for (int i = 0; i < inventory.MaxSlots; i++)
+        {
+            InventorySlot slot = inventory.GetSlotByIndex(i);
+            data.slots.Add(new InventorySlotSaveEntry
+            {
+                slotIndex = i,
+                itemKey = slot != null ? slot.ItemEnum : Key_ItemDefinitionPP.None,
+                itemCount = slot != null ? Mathf.Max(0, slot.ItemCount) : 0
+            });
+        }
+
+        return data;
+    }
+
+    /// <summary>
+    /// Restores the complete physical inventory layout from save data. If item
+    /// definitions are not ready yet, restoration is deferred until Start.
+    /// </summary>
+    public void RestoreSaveData(InventorySaveData data)
+    {
+        if (data == null)
+            return;
+
+        if (!TryInitializeDatabase())
+        {
+            _pendingRestoreData = data;
+            return;
+        }
+
+        ApplyRestoreData(data);
+    }
+
     public bool TryGetItemDefinition(Key_ItemDefinitionPP itemKey, out ItemDefinitionSO item, out string failReason)
     {
         item = null;
@@ -153,6 +238,54 @@ public class InventoryManager : MonoBehaviour
         inventory.SetMaxSlots(Mathf.Max(1, initialSlotCount));
         if (itemDatabase != null)
             inventory.SetItemDatabase(itemDatabase);
+    }
+
+    private void ApplyPendingRestoreData()
+    {
+        if (_pendingRestoreData == null)
+            return;
+
+        InventorySaveData pendingData = _pendingRestoreData;
+        _pendingRestoreData = null;
+        ApplyRestoreData(pendingData);
+    }
+
+    private void ApplyRestoreData(InventorySaveData data)
+    {
+        if (data == null)
+            return;
+
+        EnsureInventory();
+        initialSlotCount = Mathf.Max(1, data.slotCount);
+        inventory.SetMaxSlots(initialSlotCount);
+
+        for (int i = 0; i < inventory.MaxSlots; i++)
+            inventory.EmptySlotAtIndex(i);
+
+        if (data.slots == null)
+            return;
+
+        for (int i = 0; i < data.slots.Count; i++)
+        {
+            InventorySlotSaveEntry entry = data.slots[i];
+            if (entry == null
+                || entry.slotIndex < 0
+                || entry.slotIndex >= inventory.MaxSlots
+                || entry.itemKey == Key_ItemDefinitionPP.None
+                || entry.itemCount <= 0)
+            {
+                continue;
+            }
+
+            if (!TryGetItemDefinition(entry.itemKey, out _, out string definitionFailReason))
+            {
+                Debug.LogWarning("[InventoryManager] Skipped saved item '" + entry.itemKey + "': " + definitionFailReason, this);
+                continue;
+            }
+
+            if (!inventory.TrySetSlotAtIndex(entry.slotIndex, entry.itemKey, entry.itemCount, out string setFailReason))
+                Debug.LogWarning("[InventoryManager] Could not restore slot " + entry.slotIndex + ": " + setFailReason, this);
+        }
     }
 
     private bool TryInitializeDatabase()

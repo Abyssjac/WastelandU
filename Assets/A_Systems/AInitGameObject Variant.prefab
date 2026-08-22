@@ -18,15 +18,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[2].sceneName
-      value: S_ResourceIsland_Mountain
+      value: S_MainIsland_BrassBellPort
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[3].sceneName
-      value: S_ResourceIsland_Mine
+      value: S_MainIsland_FairwindDock
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[4].sceneName
-      value: S_ResourceIsland_RuinedVillage
+      value: S_MainIsland_MistweilMarket
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[5].sceneName
@@ -38,15 +38,15 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[2].displayName
-      value: ResourceIsland_Mountain_Additive
+      value: MainIsland_BrassBellPort
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[3].displayName
-      value: ResourceIsland_Mine_Additive
+      value: MainIsland_FairwindDock
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[4].displayName
-      value: ResourceIsland_RuinedVillage_Additive
+      value: MainIsland_MistweilMarket
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[5].displayName
@@ -174,6 +174,9 @@ PrefabInstance:
     - targetCorrespondingSourceObject: {fileID: 233144074376067813, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       insertIndex: -1
       addedObject: {fileID: -2570242563102515045}
+    - targetCorrespondingSourceObject: {fileID: 233144074376067813, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      insertIndex: -1
+      addedObject: {fileID: -1513586384012263607}
   m_SourcePrefab: {fileID: 100100000, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
 --- !u!1 &4978210630323172001 stripped
 GameObject:
@@ -240,3 +243,16 @@ MonoBehaviour:
       itemCount: 0
     useMaxStack: 0
     maxStackCount: 99
+--- !u!114 &-1513586384012263607
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 4978210630323172001}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a19d600d2d4283f4a885846592da2bfc, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::InventorySaveAdapter
+  _inventoryManager: {fileID: -2570242563102515045}
