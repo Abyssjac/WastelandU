@@ -1,27 +1,4 @@
-using System;
-using System.Collections.Generic;
 using UnityEngine;
-
-/// <summary>
-/// Serializable save payload for the player's physical inventory layout.
-/// </summary>
-[Serializable]
-public class InventorySaveData
-{
-    public int slotCount;
-    public List<InventorySlotSaveEntry> slots = new List<InventorySlotSaveEntry>();
-}
-
-/// <summary>
-/// One exact physical inventory slot in a save payload.
-/// </summary>
-[Serializable]
-public class InventorySlotSaveEntry
-{
-    public int slotIndex;
-    public Key_ItemDefinitionPP itemKey = Key_ItemDefinitionPP.None;
-    public int itemCount;
-}
 
 /// <summary>
 /// Bridges <see cref="InventoryManager"/> to the shared game-save pipeline.
