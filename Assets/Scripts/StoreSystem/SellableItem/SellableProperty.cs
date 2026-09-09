@@ -15,6 +15,9 @@ public enum Key_SellablePP
     [InspectorName("Resource/Brassscrap 0")] Sellable_Resource_Brassscrap_0 = 10,
     [InspectorName("Resource/Aether 0")] Sellable_Resourcce_Aether_0 = 11,
     [InspectorName("Resource/Cloudwood 0")] Sellable_Resource_Cloudwood_0 = 12,
+    [InspectorName("Resource/Test A")] Sellable_Resource_Test_A = 20,
+    [InspectorName("Resource/Test B")] Sellable_Resource_Test_B = 21,
+    [InspectorName("Resource/Test C")] Sellable_Resource_Test_C = 22,
 }
 
 /// <summary>
