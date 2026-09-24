@@ -2106,6 +2106,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: AGameSystemSingleton Variant
       objectReference: {fileID: 0}
+    - target: {fileID: 1805078989527481887, guid: 8a1053a9f0a9cf24895c07bbdcd2412e, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects: []

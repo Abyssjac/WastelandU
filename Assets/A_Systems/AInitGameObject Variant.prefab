@@ -13,6 +13,14 @@ PrefabInstance:
       value: 6
       objectReference: {fileID: 0}
     - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[0].hotkey
+      value: 48
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
+      propertyPath: sceneEntries.Array.data[0].modifier
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: -892392489369395350, guid: 6d2e17855d1197545a326b1e823073f3, type: 3}
       propertyPath: sceneEntries.Array.data[1].sceneName
       value: S_BaseBuilding
       objectReference: {fileID: 0}
