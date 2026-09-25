@@ -13,4 +13,8 @@ MonoBehaviour:
   m_Name: UIVisualStyleLibrary_Neon
   m_EditorClassIdentifier: Assembly-CSharp::JackyUIEssential.UIVisualStyleLibrary
   _buttonSprite: {fileID: 21300000, guid: 18e42a51df26eeb4aa81d7ec7ba0cd53, type: 3}
+  _buttonHighlightedSprite: {fileID: 21300000, guid: 153991b365e524449bc260f97a1ad622, type: 3}
+  _buttonPressedSprite: {fileID: 21300000, guid: 87a4b5bc1b0ab93419092d4dd73496b6, type: 3}
+  _buttonSelectedSprite: {fileID: 0}
+  _buttonDisabledSprite: {fileID: 0}
   _panelSprite: {fileID: 21300000, guid: 5630b61b5e5a87943811c222fafc1f6c, type: 3}

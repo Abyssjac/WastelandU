@@ -13,6 +13,7 @@ namespace JackyUIEssential.Editor
         private SerializedProperty _isTracking;
         private SerializedProperty _type;
         private SerializedProperty _buttonImage;
+        private SerializedProperty _button;
         private SerializedProperty _panelImage;
 
         private void OnEnable()
@@ -20,6 +21,7 @@ namespace JackyUIEssential.Editor
             _isTracking = serializedObject.FindProperty("_isTracking");
             _type = serializedObject.FindProperty("_type");
             _buttonImage = serializedObject.FindProperty("_buttonImage");
+            _button = serializedObject.FindProperty("_button");
             _panelImage = serializedObject.FindProperty("_panelImage");
         }
 
@@ -39,6 +41,7 @@ namespace JackyUIEssential.Editor
             {
                 case CustomUIComponentType.Button:
                     EditorGUILayout.PropertyField(_buttonImage, new GUIContent("Button Image"));
+                    EditorGUILayout.PropertyField(_button, new GUIContent("Button Component"));
                     break;
 
                 case CustomUIComponentType.Panel:

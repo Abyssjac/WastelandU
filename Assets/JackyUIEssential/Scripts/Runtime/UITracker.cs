@@ -15,6 +15,7 @@ namespace JackyUIEssential
         [SerializeField] private CustomUIComponentType _type = CustomUIComponentType.None;
 
         [SerializeField] private Image _buttonImage;
+        [SerializeField] private Button _button;
         [SerializeField] private Image _panelImage;
 
         public bool IsTracking => _isTracking;
@@ -42,6 +43,25 @@ namespace JackyUIEssential
             }
 
             return image != null;
+        }
+
+        /// <summary>
+        /// Gets the Button whose Sprite Swap state belongs to this Tracker's
+        /// Button visual. BetterButton is supported through this base type.
+        /// </summary>
+        public bool TryGetButton(out Button button)
+        {
+            button = _type == CustomUIComponentType.Button ? _button : null;
+            return button != null;
+        }
+
+        /// <summary>
+        /// Verifies that a Sprite Swap Button will drive the same Image used as
+        /// this Tracker's normal Button visual.
+        /// </summary>
+        public bool HasMatchingButtonTargetGraphic()
+        {
+            return _button != null && _button.targetGraphic == _buttonImage;
         }
     }
 }

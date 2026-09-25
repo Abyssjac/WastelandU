@@ -20,6 +20,27 @@ namespace JackyUIEssential.Editor
         private const string _activeVisualStyleEditorPrefsKey = "JackyUIEssential.UITrackManager.ActiveVisualStyleLibraryGuid";
         private const string _windowTitle = "UI Track Manager";
 
+        private readonly struct VisualReplacementTarget
+        {
+            public VisualReplacementTarget(
+                Image targetImage,
+                Sprite normalSprite,
+                Button spriteSwapButton,
+                ButtonVisualSprites buttonVisualSprites)
+            {
+                TargetImage = targetImage;
+                NormalSprite = normalSprite;
+                SpriteSwapButton = spriteSwapButton;
+                ButtonVisualSprites = buttonVisualSprites;
+            }
+
+            public Image TargetImage { get; }
+            public Sprite NormalSprite { get; }
+            public Button SpriteSwapButton { get; }
+            public ButtonVisualSprites ButtonVisualSprites { get; }
+            public bool ReplacesSpriteSwapState => SpriteSwapButton != null;
+        }
+
         [MenuItem("Tools/Jacky UI Essential/UI Track Manager")]
         private static void ShowWindow()
         {
@@ -172,22 +193,45 @@ namespace JackyUIEssential.Editor
                 return;
             }
 
-            var replacementSprites = new Dictionary<CustomUIComponentType, Sprite>();
+            bool replaceButton = false;
+            bool replacePanel = false;
             foreach (CustomUIComponentType type in types)
             {
-                if (!visualStyleLibrary.TryGetSprite(type, out Sprite sprite))
+                switch (type)
                 {
-                    Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Sprite configured for '{type}'. No '{type}' images were changed.", visualStyleLibrary);
-                    continue;
-                }
+                    case CustomUIComponentType.Button:
+                        replaceButton = true;
+                        break;
 
-                replacementSprites[type] = sprite;
+                    case CustomUIComponentType.Panel:
+                        replacePanel = true;
+                        break;
+                }
             }
 
-            if (replacementSprites.Count == 0)
+            ButtonVisualSprites buttonVisualSprites = default;
+            Sprite panelSprite = null;
+            bool hasButtonVisuals = !replaceButton
+                                    || visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
+            bool hasPanelSprite = !replacePanel
+                                  || visualStyleLibrary.TryGetPanelSprite(out panelSprite);
+
+            if (replaceButton && !hasButtonVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Button Normal Sprite configured. No Button visuals were changed.", visualStyleLibrary);
+            }
+
+            if (replacePanel && !hasPanelSprite)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Panel Sprite configured. No Panel visuals were changed.", visualStyleLibrary);
+            }
+
+            bool hasAnyRequestedVisuals = (replaceButton && hasButtonVisuals)
+                                          || (replacePanel && hasPanelSprite);
+            if (!hasAnyRequestedVisuals)
                 return;
 
-            var desiredSprites = new Dictionary<Image, Sprite>();
+            var desiredTargets = new Dictionary<Image, VisualReplacementTarget>();
             var conflictingImages = new HashSet<Image>();
             int ignoredTrackers = 0;
 
@@ -195,65 +239,160 @@ namespace JackyUIEssential.Editor
             for (int i = 0; i < trackers.Count; i++)
             {
                 UITracker tracker = trackers[i];
-                if (!tracker.IsTracking || !replacementSprites.TryGetValue(tracker.Type, out Sprite replacementSprite))
+                if (!tracker.IsTracking)
                     continue;
 
-                if (!tracker.TryGetTargetImage(out Image targetImage))
+                VisualReplacementTarget replacementTarget;
+                switch (tracker.Type)
                 {
-                    ignoredTrackers++;
-                    continue;
+                    case CustomUIComponentType.Button:
+                        if (!hasButtonVisuals)
+                            continue;
+
+                        if (!TryCreateButtonReplacementTarget(tracker, buttonVisualSprites, out replacementTarget))
+                        {
+                            ignoredTrackers++;
+                            continue;
+                        }
+
+                        break;
+
+                    case CustomUIComponentType.Panel:
+                        if (!hasPanelSprite)
+                            continue;
+
+                        if (!tracker.TryGetTargetImage(out Image panelImage))
+                        {
+                            ignoredTrackers++;
+                            continue;
+                        }
+
+                        replacementTarget = new VisualReplacementTarget(panelImage, panelSprite, null, default);
+                        break;
+
+                    default:
+                        continue;
                 }
 
+                Image targetImage = replacementTarget.TargetImage;
                 if (conflictingImages.Contains(targetImage))
                     continue;
 
-                if (desiredSprites.TryGetValue(targetImage, out Sprite existingSprite) && existingSprite != replacementSprite)
+                if (desiredTargets.ContainsKey(targetImage))
                 {
-                    desiredSprites.Remove(targetImage);
+                    desiredTargets.Remove(targetImage);
                     conflictingImages.Add(targetImage);
                     continue;
                 }
 
-                desiredSprites[targetImage] = replacementSprite;
+                desiredTargets[targetImage] = replacementTarget;
             }
 
-            var changedImages = new List<Image>();
-            foreach (KeyValuePair<Image, Sprite> entry in desiredSprites)
+            var changedTargets = new List<VisualReplacementTarget>();
+            foreach (VisualReplacementTarget target in desiredTargets.Values)
             {
-                if (entry.Key.sprite != entry.Value)
-                    changedImages.Add(entry.Key);
+                if (NeedsReplacement(target))
+                    changedTargets.Add(target);
             }
 
-            if (changedImages.Count == 0)
+            if (changedTargets.Count == 0)
             {
-                Debug.Log($"[{nameof(UITrackManagerWindow)}] No Image sprites needed replacement in active scene '{SceneManager.GetActiveScene().name}'.");
+                Debug.Log($"[{nameof(UITrackManagerWindow)}] No UI visual sprites needed replacement in active scene '{SceneManager.GetActiveScene().name}'.");
                 return;
+            }
+
+            var undoObjects = new List<UnityEngine.Object>();
+            var seenUndoObjects = new HashSet<UnityEngine.Object>();
+            for (int i = 0; i < changedTargets.Count; i++)
+            {
+                VisualReplacementTarget target = changedTargets[i];
+                AddUndoObject(target.TargetImage, undoObjects, seenUndoObjects);
+                if (target.ReplacesSpriteSwapState)
+                    AddUndoObject(target.SpriteSwapButton, undoObjects, seenUndoObjects);
             }
 
             Undo.IncrementCurrentGroup();
             int undoGroup = Undo.GetCurrentGroup();
             Undo.SetCurrentGroupName("Replace UI Visual Sprites");
-            Undo.RecordObjects(changedImages.ToArray(), "Replace UI Visual Sprites");
+            Undo.RecordObjects(undoObjects.ToArray(), "Replace UI Visual Sprites");
 
-            foreach (KeyValuePair<Image, Sprite> entry in desiredSprites)
+            int spriteSwapButtonCount = 0;
+            for (int i = 0; i < changedTargets.Count; i++)
             {
-                if (entry.Key.sprite == entry.Value)
+                VisualReplacementTarget target = changedTargets[i];
+                target.TargetImage.sprite = target.NormalSprite;
+                EditorUtility.SetDirty(target.TargetImage);
+
+                if (!target.ReplacesSpriteSwapState)
                     continue;
 
-                entry.Key.sprite = entry.Value;
-                EditorUtility.SetDirty(entry.Key);
+                SpriteState spriteState = target.SpriteSwapButton.spriteState;
+                spriteState.highlightedSprite = target.ButtonVisualSprites.HighlightedSprite;
+                spriteState.pressedSprite = target.ButtonVisualSprites.PressedSprite;
+                spriteState.selectedSprite = target.ButtonVisualSprites.SelectedSprite;
+                spriteState.disabledSprite = target.ButtonVisualSprites.DisabledSprite;
+                target.SpriteSwapButton.spriteState = spriteState;
+                EditorUtility.SetDirty(target.SpriteSwapButton);
+                spriteSwapButtonCount++;
             }
 
             EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
             Undo.CollapseUndoOperations(undoGroup);
 
-            string message = $"Replaced {changedImages.Count} UI Image sprite(s) in active scene '{SceneManager.GetActiveScene().name}'.";
+            string message = $"Replaced {changedTargets.Count} UI visual target(s) in active scene '{SceneManager.GetActiveScene().name}'.";
+            if (spriteSwapButtonCount > 0)
+                message += $" Updated Sprite Swap states on {spriteSwapButtonCount} Button(s).";
+
             if (ignoredTrackers > 0 || conflictingImages.Count > 0)
             {
                 message += $" Skipped {ignoredTrackers} tracker(s) without a target Image and {conflictingImages.Count} conflicting Image target(s).";
             }
 
             Debug.Log($"[{nameof(UITrackManagerWindow)}] {message}");
+        }
+
+        private static bool TryCreateButtonReplacementTarget(
+            UITracker tracker,
+            ButtonVisualSprites buttonVisualSprites,
+            out VisualReplacementTarget target)
+        {
+            target = default;
+            if (!tracker.TryGetTargetImage(out Image buttonImage) || !tracker.TryGetButton(out Button button))
+                return false;
+
+            if (button.transition == Selectable.Transition.SpriteSwap && !tracker.HasMatchingButtonTargetGraphic())
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] UITracker on '{tracker.name}' was skipped because its Button Image does not match the Sprite Swap Button Target Graphic.", tracker);
+                return false;
+            }
+
+            Button spriteSwapButton = button.transition == Selectable.Transition.SpriteSwap ? button : null;
+            target = new VisualReplacementTarget(buttonImage, buttonVisualSprites.NormalSprite, spriteSwapButton, buttonVisualSprites);
+            return true;
+        }
+
+        private static bool NeedsReplacement(VisualReplacementTarget target)
+        {
+            if (target.TargetImage.sprite != target.NormalSprite)
+                return true;
+
+            if (!target.ReplacesSpriteSwapState)
+                return false;
+
+            SpriteState spriteState = target.SpriteSwapButton.spriteState;
+            return spriteState.highlightedSprite != target.ButtonVisualSprites.HighlightedSprite
+                   || spriteState.pressedSprite != target.ButtonVisualSprites.PressedSprite
+                   || spriteState.selectedSprite != target.ButtonVisualSprites.SelectedSprite
+                   || spriteState.disabledSprite != target.ButtonVisualSprites.DisabledSprite;
+        }
+
+        private static void AddUndoObject(
+            UnityEngine.Object target,
+            List<UnityEngine.Object> undoObjects,
+            HashSet<UnityEngine.Object> seenUndoObjects)
+        {
+            if (target != null && seenUndoObjects.Add(target))
+                undoObjects.Add(target);
         }
 
         private static List<UITracker> GetActiveSceneTrackers()
