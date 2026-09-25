@@ -1,0 +1,16 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c8fd77af1580641a24cda7505240dd, type: 3}
+  m_Name: UIVisualStyleLibrary_LowPoly
+  m_EditorClassIdentifier: Assembly-CSharp::JackyUIEssential.UIVisualStyleLibrary
+  _buttonSprite: {fileID: 21300000, guid: 8b76e98f67880c9479583de562920960, type: 3}
+  _panelSprite: {fileID: 21300000, guid: e214a86301204e14789266444c946a97, type: 3}
