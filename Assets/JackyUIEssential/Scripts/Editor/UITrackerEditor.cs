@@ -18,6 +18,8 @@ namespace JackyUIEssential.Editor
         private SerializedProperty _slotImage;
         private SerializedProperty _slotButton;
         private SerializedProperty _scrollMenuPanelImage;
+        private SerializedProperty _scrollMenuSlidingAreaImage;
+        private SerializedProperty _scrollMenuHandleImage;
 
         private void OnEnable()
         {
@@ -29,6 +31,8 @@ namespace JackyUIEssential.Editor
             _slotImage = serializedObject.FindProperty("_slotImage");
             _slotButton = serializedObject.FindProperty("_slotButton");
             _scrollMenuPanelImage = serializedObject.FindProperty("_scrollMenuPanelImage");
+            _scrollMenuSlidingAreaImage = serializedObject.FindProperty("_scrollMenuSlidingAreaImage");
+            _scrollMenuHandleImage = serializedObject.FindProperty("_scrollMenuHandleImage");
         }
 
         public override void OnInspectorGUI()
@@ -61,6 +65,8 @@ namespace JackyUIEssential.Editor
 
                 case CustomUIComponentType.ScrollMenu:
                     EditorGUILayout.PropertyField(_scrollMenuPanelImage, new GUIContent("Scroll Menu Panel Image"));
+                    EditorGUILayout.PropertyField(_scrollMenuSlidingAreaImage, new GUIContent("Scroll Menu Sliding Area Image"));
+                    EditorGUILayout.PropertyField(_scrollMenuHandleImage, new GUIContent("Scroll Menu Handle Image"));
                     break;
             }
 

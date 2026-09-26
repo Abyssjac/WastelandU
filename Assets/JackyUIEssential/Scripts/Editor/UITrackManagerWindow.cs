@@ -240,15 +240,15 @@ namespace JackyUIEssential.Editor
             SelectableVisualSprites buttonVisualSprites = default;
             SelectableVisualSprites slotVisualSprites = default;
             Sprite panelSprite = null;
-            Sprite scrollMenuSprite = null;
+            ScrollMenuVisualSprites scrollMenuVisualSprites = default;
             bool hasButtonVisuals = !replaceButton
                                     || visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
             bool hasSlotVisuals = !replaceSlot
                                   || visualStyleLibrary.TryGetSlotVisualSprites(out slotVisualSprites);
             bool hasPanelSprite = !replacePanel
                                   || visualStyleLibrary.TryGetPanelSprite(out panelSprite);
-            bool hasScrollMenuSprite = !replaceScrollMenu
-                                        || visualStyleLibrary.TryGetScrollMenuSprite(out scrollMenuSprite);
+            bool hasScrollMenuVisuals = !replaceScrollMenu
+                                        || visualStyleLibrary.TryGetScrollMenuVisualSprites(out scrollMenuVisualSprites);
 
             if (replaceButton && !hasButtonVisuals)
             {
@@ -265,15 +265,15 @@ namespace JackyUIEssential.Editor
                 Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Panel Sprite configured. No Panel visuals were changed.", visualStyleLibrary);
             }
 
-            if (replaceScrollMenu && !hasScrollMenuSprite)
+            if (replaceScrollMenu && !hasScrollMenuVisuals)
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Scroll Menu Sprite configured. No Scroll Menu visuals were changed.", visualStyleLibrary);
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Scroll Menu Sprites configured. No Scroll Menu visuals were changed.", visualStyleLibrary);
             }
 
             bool hasAnyRequestedVisuals = (replaceButton && hasButtonVisuals)
                                           || (replaceSlot && hasSlotVisuals)
                                           || (replacePanel && hasPanelSprite)
-                                          || (replaceScrollMenu && hasScrollMenuSprite);
+                                          || (replaceScrollMenu && hasScrollMenuVisuals);
             if (!hasAnyRequestedVisuals)
                 return;
 
@@ -329,34 +329,25 @@ namespace JackyUIEssential.Editor
                         break;
 
                     case CustomUIComponentType.ScrollMenu:
-                        if (!hasScrollMenuSprite)
+                        if (!hasScrollMenuVisuals)
                             continue;
 
-                        if (!tracker.TryGetTargetImage(out Image scrollMenuImage))
+                        if (!TryAddScrollMenuReplacementTargets(
+                                tracker,
+                                scrollMenuVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
                         {
                             ignoredTrackers++;
-                            continue;
                         }
 
-                        replacementTarget = new VisualReplacementTarget(scrollMenuImage, scrollMenuSprite, null, default);
-                        break;
+                        continue;
 
                     default:
                         continue;
                 }
 
-                Image targetImage = replacementTarget.TargetImage;
-                if (conflictingImages.Contains(targetImage))
-                    continue;
-
-                if (desiredTargets.ContainsKey(targetImage))
-                {
-                    desiredTargets.Remove(targetImage);
-                    conflictingImages.Add(targetImage);
-                    continue;
-                }
-
-                desiredTargets[targetImage] = replacementTarget;
+                AddDesiredTarget(replacementTarget, desiredTargets, conflictingImages);
             }
 
             var changedTargets = new List<VisualReplacementTarget>();
@@ -440,6 +431,88 @@ namespace JackyUIEssential.Editor
             Button spriteSwapButton = button.transition == Selectable.Transition.SpriteSwap ? button : null;
             target = new VisualReplacementTarget(buttonImage, selectableVisualSprites.NormalSprite, spriteSwapButton, selectableVisualSprites);
             return true;
+        }
+
+        private static bool TryAddScrollMenuReplacementTargets(
+            UITracker tracker,
+            ScrollMenuVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (!tracker.TryGetScrollMenuImages(
+                    out Image panelImage,
+                    out Image slidingAreaImage,
+                    out Image handleImage))
+            {
+                return false;
+            }
+
+            bool addedAnyTarget = false;
+            addedAnyTarget |= TryAddScrollMenuImageTarget(
+                tracker,
+                "Panel",
+                panelImage,
+                sprites.PanelSprite,
+                desiredTargets,
+                conflictingImages);
+            addedAnyTarget |= TryAddScrollMenuImageTarget(
+                tracker,
+                "Sliding Area",
+                slidingAreaImage,
+                sprites.SlidingAreaSprite,
+                desiredTargets,
+                conflictingImages);
+            addedAnyTarget |= TryAddScrollMenuImageTarget(
+                tracker,
+                "Handle",
+                handleImage,
+                sprites.HandleSprite,
+                desiredTargets,
+                conflictingImages);
+            return addedAnyTarget;
+        }
+
+        private static bool TryAddScrollMenuImageTarget(
+            UITracker tracker,
+            string targetName,
+            Image targetImage,
+            Sprite sprite,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (sprite == null)
+                return false;
+
+            if (targetImage == null)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Scroll Menu tracker on '{tracker.name}' has a {targetName} Sprite configured in the active style, but no matching {targetName} Image reference.", tracker);
+                return false;
+            }
+
+            AddDesiredTarget(
+                new VisualReplacementTarget(targetImage, sprite, null, default),
+                desiredTargets,
+                conflictingImages);
+            return true;
+        }
+
+        private static void AddDesiredTarget(
+            VisualReplacementTarget replacementTarget,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            Image targetImage = replacementTarget.TargetImage;
+            if (targetImage == null || conflictingImages.Contains(targetImage))
+                return;
+
+            if (desiredTargets.ContainsKey(targetImage))
+            {
+                desiredTargets.Remove(targetImage);
+                conflictingImages.Add(targetImage);
+                return;
+            }
+
+            desiredTargets[targetImage] = replacementTarget;
         }
 
         private static bool NeedsReplacement(VisualReplacementTarget target)

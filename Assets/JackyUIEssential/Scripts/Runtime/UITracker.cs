@@ -20,6 +20,8 @@ namespace JackyUIEssential
         [SerializeField] private Image _slotImage;
         [SerializeField] private Button _slotButton;
         [SerializeField] private Image _scrollMenuPanelImage;
+        [SerializeField] private Image _scrollMenuSlidingAreaImage;
+        [SerializeField] private Image _scrollMenuHandleImage;
 
         public bool IsTracking => _isTracking;
         public CustomUIComponentType Type => _type;
@@ -98,6 +100,30 @@ namespace JackyUIEssential
                 default:
                     return false;
             }
+        }
+
+        /// <summary>
+        /// Gets the visual Images that belong to a Scroll Menu. The Panel,
+        /// Sliding Area, and Handle remain one composite component owned by
+        /// this single tracker.
+        /// </summary>
+        public bool TryGetScrollMenuImages(
+            out Image panelImage,
+            out Image slidingAreaImage,
+            out Image handleImage)
+        {
+            if (_type != CustomUIComponentType.ScrollMenu)
+            {
+                panelImage = null;
+                slidingAreaImage = null;
+                handleImage = null;
+                return false;
+            }
+
+            panelImage = _scrollMenuPanelImage;
+            slidingAreaImage = _scrollMenuSlidingAreaImage;
+            handleImage = _scrollMenuHandleImage;
+            return panelImage != null || slidingAreaImage != null || handleImage != null;
         }
     }
 }

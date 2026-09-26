@@ -31,6 +31,31 @@ namespace JackyUIEssential
     }
 
     /// <summary>
+    /// The independent visual Sprite targets contained by one Scroll Menu.
+    /// Each Sprite is optional so a style can be introduced incrementally.
+    /// </summary>
+    public struct ScrollMenuVisualSprites
+    {
+        public Sprite PanelSprite;
+        public Sprite SlidingAreaSprite;
+        public Sprite HandleSprite;
+
+        public ScrollMenuVisualSprites(
+            Sprite panelSprite,
+            Sprite slidingAreaSprite,
+            Sprite handleSprite)
+        {
+            PanelSprite = panelSprite;
+            SlidingAreaSprite = slidingAreaSprite;
+            HandleSprite = handleSprite;
+        }
+
+        public bool HasAnySprite => PanelSprite != null
+                                    || SlidingAreaSprite != null
+                                    || HandleSprite != null;
+    }
+
+    /// <summary>
     /// A project visual style used by the editor-only UI Track Manager.
     /// It contains visual Sprite choices only; it does not define UI layouts,
     /// Prefabs, events, or runtime behaviour.
@@ -60,7 +85,10 @@ namespace JackyUIEssential
         [SerializeField] private Sprite _panelSprite;
 
         [Header("Scroll Menu Visuals")]
+        [InspectorName("Panel Sprite")]
         [SerializeField] private Sprite _scrollMenuSprite;
+        [SerializeField] private Sprite _scrollMenuSlidingAreaSprite;
+        [SerializeField] private Sprite _scrollMenuHandleSprite;
 
         public bool TryGetButtonVisualSprites(out SelectableVisualSprites sprites)
         {
@@ -96,6 +124,16 @@ namespace JackyUIEssential
         {
             sprite = _scrollMenuSprite;
             return sprite != null;
+        }
+
+        public bool TryGetScrollMenuVisualSprites(out ScrollMenuVisualSprites sprites)
+        {
+            sprites = new ScrollMenuVisualSprites(
+                _scrollMenuSprite,
+                _scrollMenuSlidingAreaSprite,
+                _scrollMenuHandleSprite);
+
+            return sprites.HasAnySprite;
         }
 
         public bool TryGetSprite(CustomUIComponentType type, out Sprite sprite)
