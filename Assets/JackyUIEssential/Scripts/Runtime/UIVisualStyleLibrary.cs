@@ -4,10 +4,10 @@ using UnityEngine;
 namespace JackyUIEssential
 {
     /// <summary>
-    /// The complete Sprite set required by a Button using Sprite Swap.
+    /// The complete Sprite set required by a Selectable using Sprite Swap.
     /// Normal is required; the other states may be null to fall back to Normal.
     /// </summary>
-    public struct ButtonVisualSprites
+    public struct SelectableVisualSprites
     {
         public Sprite NormalSprite;
         public Sprite HighlightedSprite;
@@ -15,7 +15,7 @@ namespace JackyUIEssential
         public Sprite SelectedSprite;
         public Sprite DisabledSprite;
 
-        public ButtonVisualSprites(
+        public SelectableVisualSprites(
             Sprite normalSprite,
             Sprite highlightedSprite,
             Sprite pressedSprite,
@@ -48,12 +48,23 @@ namespace JackyUIEssential
         [SerializeField] private Sprite _buttonSelectedSprite;
         [SerializeField] private Sprite _buttonDisabledSprite;
 
+        [Header("Slot Visuals")]
+        [InspectorName("Normal Sprite")]
+        [SerializeField] private Sprite _slotSprite;
+        [SerializeField] private Sprite _slotHighlightedSprite;
+        [SerializeField] private Sprite _slotPressedSprite;
+        [SerializeField] private Sprite _slotSelectedSprite;
+        [SerializeField] private Sprite _slotDisabledSprite;
+
         [Header("Panel Visuals")]
         [SerializeField] private Sprite _panelSprite;
 
-        public bool TryGetButtonVisualSprites(out ButtonVisualSprites sprites)
+        [Header("Scroll Menu Visuals")]
+        [SerializeField] private Sprite _scrollMenuSprite;
+
+        public bool TryGetButtonVisualSprites(out SelectableVisualSprites sprites)
         {
-            sprites = new ButtonVisualSprites(
+            sprites = new SelectableVisualSprites(
                 _buttonSprite,
                 _buttonHighlightedSprite,
                 _buttonPressedSprite,
@@ -63,9 +74,27 @@ namespace JackyUIEssential
             return sprites.NormalSprite != null;
         }
 
+        public bool TryGetSlotVisualSprites(out SelectableVisualSprites sprites)
+        {
+            sprites = new SelectableVisualSprites(
+                _slotSprite,
+                _slotHighlightedSprite,
+                _slotPressedSprite,
+                _slotSelectedSprite,
+                _slotDisabledSprite);
+
+            return sprites.NormalSprite != null;
+        }
+
         public bool TryGetPanelSprite(out Sprite sprite)
         {
             sprite = _panelSprite;
+            return sprite != null;
+        }
+
+        public bool TryGetScrollMenuSprite(out Sprite sprite)
+        {
+            sprite = _scrollMenuSprite;
             return sprite != null;
         }
 
@@ -77,8 +106,15 @@ namespace JackyUIEssential
                     sprite = _buttonSprite;
                     break;
 
+                case CustomUIComponentType.Slot:
+                    sprite = _slotSprite;
+                    break;
+
                 case CustomUIComponentType.Panel:
                     return TryGetPanelSprite(out sprite);
+
+                case CustomUIComponentType.ScrollMenu:
+                    return TryGetScrollMenuSprite(out sprite);
 
                 default:
                     sprite = null;

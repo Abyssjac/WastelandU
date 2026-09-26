@@ -15,6 +15,9 @@ namespace JackyUIEssential.Editor
         private SerializedProperty _buttonImage;
         private SerializedProperty _button;
         private SerializedProperty _panelImage;
+        private SerializedProperty _slotImage;
+        private SerializedProperty _slotButton;
+        private SerializedProperty _scrollMenuPanelImage;
 
         private void OnEnable()
         {
@@ -23,6 +26,9 @@ namespace JackyUIEssential.Editor
             _buttonImage = serializedObject.FindProperty("_buttonImage");
             _button = serializedObject.FindProperty("_button");
             _panelImage = serializedObject.FindProperty("_panelImage");
+            _slotImage = serializedObject.FindProperty("_slotImage");
+            _slotButton = serializedObject.FindProperty("_slotButton");
+            _scrollMenuPanelImage = serializedObject.FindProperty("_scrollMenuPanelImage");
         }
 
         public override void OnInspectorGUI()
@@ -48,8 +54,13 @@ namespace JackyUIEssential.Editor
                     EditorGUILayout.PropertyField(_panelImage, new GUIContent("Panel Image"));
                     break;
 
-                case CustomUIComponentType.ScrollPanel:
-                    EditorGUILayout.HelpBox("Scroll Panel visual tracking has not been implemented yet.", MessageType.Info);
+                case CustomUIComponentType.Slot:
+                    EditorGUILayout.PropertyField(_slotImage, new GUIContent("Slot Image"));
+                    EditorGUILayout.PropertyField(_slotButton, new GUIContent("Slot Button"));
+                    break;
+
+                case CustomUIComponentType.ScrollMenu:
+                    EditorGUILayout.PropertyField(_scrollMenuPanelImage, new GUIContent("Scroll Menu Panel Image"));
                     break;
             }
 

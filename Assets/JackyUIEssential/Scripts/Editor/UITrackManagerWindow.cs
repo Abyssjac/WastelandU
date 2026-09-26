@@ -26,18 +26,18 @@ namespace JackyUIEssential.Editor
                 Image targetImage,
                 Sprite normalSprite,
                 Button spriteSwapButton,
-                ButtonVisualSprites buttonVisualSprites)
+                SelectableVisualSprites selectableVisualSprites)
             {
                 TargetImage = targetImage;
                 NormalSprite = normalSprite;
                 SpriteSwapButton = spriteSwapButton;
-                ButtonVisualSprites = buttonVisualSprites;
+                SelectableVisualSprites = selectableVisualSprites;
             }
 
             public Image TargetImage { get; }
             public Sprite NormalSprite { get; }
             public Button SpriteSwapButton { get; }
-            public ButtonVisualSprites ButtonVisualSprites { get; }
+            public SelectableVisualSprites SelectableVisualSprites { get; }
             public bool ReplacesSpriteSwapState => SpriteSwapButton != null;
         }
 
@@ -69,8 +69,14 @@ namespace JackyUIEssential.Editor
                 if (GUILayout.Button("Replace Button"))
                     ReplaceUI(CustomUIComponentType.Button);
 
+                if (GUILayout.Button("Replace Slot"))
+                    ReplaceUI(CustomUIComponentType.Slot);
+
                 if (GUILayout.Button("Replace Panel"))
                     ReplaceUI(CustomUIComponentType.Panel);
+
+                if (GUILayout.Button("Replace Scroll Menu"))
+                    ReplaceUI(CustomUIComponentType.ScrollMenu);
 
                 if (GUILayout.Button("Replace All"))
                     ReplaceAllUI();
@@ -92,14 +98,16 @@ namespace JackyUIEssential.Editor
         }
 
         /// <summary>
-        /// Replaces Button and Panel visual sprites in a single undo operation.
+        /// Replaces all supported visual sprites in a single undo operation.
         /// </summary>
         public void ReplaceAllUI()
         {
             ReplaceTypes(new[]
             {
                 CustomUIComponentType.Button,
+                CustomUIComponentType.Slot,
                 CustomUIComponentType.Panel,
+                CustomUIComponentType.ScrollMenu,
             });
         }
 
@@ -159,7 +167,9 @@ namespace JackyUIEssential.Editor
             List<UITracker> trackers = GetActiveSceneTrackers();
             int trackingCount = 0;
             int buttonCount = 0;
+            int slotCount = 0;
             int panelCount = 0;
+            int scrollMenuCount = 0;
 
             for (int i = 0; i < trackers.Count; i++)
             {
@@ -174,15 +184,23 @@ namespace JackyUIEssential.Editor
                         buttonCount++;
                         break;
 
+                    case CustomUIComponentType.Slot:
+                        slotCount++;
+                        break;
+
                     case CustomUIComponentType.Panel:
                         panelCount++;
+                        break;
+
+                    case CustomUIComponentType.ScrollMenu:
+                        scrollMenuCount++;
                         break;
                 }
             }
 
             EditorGUILayout.LabelField(
                 "Active Scene Trackers",
-                $"{trackers.Count} total / {trackingCount} tracking / {buttonCount} Button / {panelCount} Panel");
+                $"{trackers.Count} total / {trackingCount} tracking / {buttonCount} Button / {slotCount} Slot / {panelCount} Panel / {scrollMenuCount} Scroll Menu");
         }
 
         private static void ReplaceTypes(IReadOnlyCollection<CustomUIComponentType> types)
@@ -194,7 +212,9 @@ namespace JackyUIEssential.Editor
             }
 
             bool replaceButton = false;
+            bool replaceSlot = false;
             bool replacePanel = false;
+            bool replaceScrollMenu = false;
             foreach (CustomUIComponentType type in types)
             {
                 switch (type)
@@ -203,22 +223,41 @@ namespace JackyUIEssential.Editor
                         replaceButton = true;
                         break;
 
+                    case CustomUIComponentType.Slot:
+                        replaceSlot = true;
+                        break;
+
                     case CustomUIComponentType.Panel:
                         replacePanel = true;
+                        break;
+
+                    case CustomUIComponentType.ScrollMenu:
+                        replaceScrollMenu = true;
                         break;
                 }
             }
 
-            ButtonVisualSprites buttonVisualSprites = default;
+            SelectableVisualSprites buttonVisualSprites = default;
+            SelectableVisualSprites slotVisualSprites = default;
             Sprite panelSprite = null;
+            Sprite scrollMenuSprite = null;
             bool hasButtonVisuals = !replaceButton
                                     || visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
+            bool hasSlotVisuals = !replaceSlot
+                                  || visualStyleLibrary.TryGetSlotVisualSprites(out slotVisualSprites);
             bool hasPanelSprite = !replacePanel
                                   || visualStyleLibrary.TryGetPanelSprite(out panelSprite);
+            bool hasScrollMenuSprite = !replaceScrollMenu
+                                        || visualStyleLibrary.TryGetScrollMenuSprite(out scrollMenuSprite);
 
             if (replaceButton && !hasButtonVisuals)
             {
                 Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Button Normal Sprite configured. No Button visuals were changed.", visualStyleLibrary);
+            }
+
+            if (replaceSlot && !hasSlotVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Slot Normal Sprite configured. No Slot visuals were changed.", visualStyleLibrary);
             }
 
             if (replacePanel && !hasPanelSprite)
@@ -226,8 +265,15 @@ namespace JackyUIEssential.Editor
                 Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Panel Sprite configured. No Panel visuals were changed.", visualStyleLibrary);
             }
 
+            if (replaceScrollMenu && !hasScrollMenuSprite)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Scroll Menu Sprite configured. No Scroll Menu visuals were changed.", visualStyleLibrary);
+            }
+
             bool hasAnyRequestedVisuals = (replaceButton && hasButtonVisuals)
-                                          || (replacePanel && hasPanelSprite);
+                                          || (replaceSlot && hasSlotVisuals)
+                                          || (replacePanel && hasPanelSprite)
+                                          || (replaceScrollMenu && hasScrollMenuSprite);
             if (!hasAnyRequestedVisuals)
                 return;
 
@@ -249,7 +295,19 @@ namespace JackyUIEssential.Editor
                         if (!hasButtonVisuals)
                             continue;
 
-                        if (!TryCreateButtonReplacementTarget(tracker, buttonVisualSprites, out replacementTarget))
+                        if (!TryCreateSelectableReplacementTarget(tracker, buttonVisualSprites, out replacementTarget))
+                        {
+                            ignoredTrackers++;
+                            continue;
+                        }
+
+                        break;
+
+                    case CustomUIComponentType.Slot:
+                        if (!hasSlotVisuals)
+                            continue;
+
+                        if (!TryCreateSelectableReplacementTarget(tracker, slotVisualSprites, out replacementTarget))
                         {
                             ignoredTrackers++;
                             continue;
@@ -268,6 +326,19 @@ namespace JackyUIEssential.Editor
                         }
 
                         replacementTarget = new VisualReplacementTarget(panelImage, panelSprite, null, default);
+                        break;
+
+                    case CustomUIComponentType.ScrollMenu:
+                        if (!hasScrollMenuSprite)
+                            continue;
+
+                        if (!tracker.TryGetTargetImage(out Image scrollMenuImage))
+                        {
+                            ignoredTrackers++;
+                            continue;
+                        }
+
+                        replacementTarget = new VisualReplacementTarget(scrollMenuImage, scrollMenuSprite, null, default);
                         break;
 
                     default:
@@ -327,10 +398,10 @@ namespace JackyUIEssential.Editor
                     continue;
 
                 SpriteState spriteState = target.SpriteSwapButton.spriteState;
-                spriteState.highlightedSprite = target.ButtonVisualSprites.HighlightedSprite;
-                spriteState.pressedSprite = target.ButtonVisualSprites.PressedSprite;
-                spriteState.selectedSprite = target.ButtonVisualSprites.SelectedSprite;
-                spriteState.disabledSprite = target.ButtonVisualSprites.DisabledSprite;
+                spriteState.highlightedSprite = target.SelectableVisualSprites.HighlightedSprite;
+                spriteState.pressedSprite = target.SelectableVisualSprites.PressedSprite;
+                spriteState.selectedSprite = target.SelectableVisualSprites.SelectedSprite;
+                spriteState.disabledSprite = target.SelectableVisualSprites.DisabledSprite;
                 target.SpriteSwapButton.spriteState = spriteState;
                 EditorUtility.SetDirty(target.SpriteSwapButton);
                 spriteSwapButtonCount++;
@@ -351,9 +422,9 @@ namespace JackyUIEssential.Editor
             Debug.Log($"[{nameof(UITrackManagerWindow)}] {message}");
         }
 
-        private static bool TryCreateButtonReplacementTarget(
+        private static bool TryCreateSelectableReplacementTarget(
             UITracker tracker,
-            ButtonVisualSprites buttonVisualSprites,
+            SelectableVisualSprites selectableVisualSprites,
             out VisualReplacementTarget target)
         {
             target = default;
@@ -362,12 +433,12 @@ namespace JackyUIEssential.Editor
 
             if (button.transition == Selectable.Transition.SpriteSwap && !tracker.HasMatchingButtonTargetGraphic())
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] UITracker on '{tracker.name}' was skipped because its Button Image does not match the Sprite Swap Button Target Graphic.", tracker);
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] UITracker on '{tracker.name}' was skipped because its tracked Image does not match the Sprite Swap Button Target Graphic.", tracker);
                 return false;
             }
 
             Button spriteSwapButton = button.transition == Selectable.Transition.SpriteSwap ? button : null;
-            target = new VisualReplacementTarget(buttonImage, buttonVisualSprites.NormalSprite, spriteSwapButton, buttonVisualSprites);
+            target = new VisualReplacementTarget(buttonImage, selectableVisualSprites.NormalSprite, spriteSwapButton, selectableVisualSprites);
             return true;
         }
 
@@ -380,10 +451,10 @@ namespace JackyUIEssential.Editor
                 return false;
 
             SpriteState spriteState = target.SpriteSwapButton.spriteState;
-            return spriteState.highlightedSprite != target.ButtonVisualSprites.HighlightedSprite
-                   || spriteState.pressedSprite != target.ButtonVisualSprites.PressedSprite
-                   || spriteState.selectedSprite != target.ButtonVisualSprites.SelectedSprite
-                   || spriteState.disabledSprite != target.ButtonVisualSprites.DisabledSprite;
+            return spriteState.highlightedSprite != target.SelectableVisualSprites.HighlightedSprite
+                   || spriteState.pressedSprite != target.SelectableVisualSprites.PressedSprite
+                   || spriteState.selectedSprite != target.SelectableVisualSprites.SelectedSprite
+                   || spriteState.disabledSprite != target.SelectableVisualSprites.DisabledSprite;
         }
 
         private static void AddUndoObject(

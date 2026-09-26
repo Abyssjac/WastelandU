@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: CustomUIComponentLibrary
   m_EditorClassIdentifier: Abyss.General.Runtime::AbyssToolKitUnity.Utility.CustomUIComponentLibrary
   _components:
-  - _type: 0
+  - _type: 1
     _prefab: {fileID: 8319465637108253111, guid: 7883632f5d879ae49b8f2b374e99972d, type: 3}
     _name: Panel
+  - _type: 3
+    _prefab: {fileID: 9167716851585824518, guid: cc6c23d69947ff747a1525b38106c791, type: 3}
+    _name: Scroll Menu

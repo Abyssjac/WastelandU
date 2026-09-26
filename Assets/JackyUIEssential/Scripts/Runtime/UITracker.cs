@@ -17,6 +17,9 @@ namespace JackyUIEssential
         [SerializeField] private Image _buttonImage;
         [SerializeField] private Button _button;
         [SerializeField] private Image _panelImage;
+        [SerializeField] private Image _slotImage;
+        [SerializeField] private Button _slotButton;
+        [SerializeField] private Image _scrollMenuPanelImage;
 
         public bool IsTracking => _isTracking;
         public CustomUIComponentType Type => _type;
@@ -37,6 +40,14 @@ namespace JackyUIEssential
                     image = _panelImage;
                     break;
 
+                case CustomUIComponentType.Slot:
+                    image = _slotImage;
+                    break;
+
+                case CustomUIComponentType.ScrollMenu:
+                    image = _scrollMenuPanelImage;
+                    break;
+
                 default:
                     image = null;
                     return false;
@@ -47,21 +58,46 @@ namespace JackyUIEssential
 
         /// <summary>
         /// Gets the Button whose Sprite Swap state belongs to this Tracker's
-        /// Button visual. BetterButton is supported through this base type.
+        /// Button or Slot visual. BetterButton is supported through this base
+        /// type.
         /// </summary>
         public bool TryGetButton(out Button button)
         {
-            button = _type == CustomUIComponentType.Button ? _button : null;
+            switch (_type)
+            {
+                case CustomUIComponentType.Button:
+                    button = _button;
+                    break;
+
+                case CustomUIComponentType.Slot:
+                    button = _slotButton;
+                    break;
+
+                default:
+                    button = null;
+                    break;
+            }
+
             return button != null;
         }
 
         /// <summary>
         /// Verifies that a Sprite Swap Button will drive the same Image used as
-        /// this Tracker's normal Button visual.
+        /// this Tracker's normal Button or Slot visual.
         /// </summary>
         public bool HasMatchingButtonTargetGraphic()
         {
-            return _button != null && _button.targetGraphic == _buttonImage;
+            switch (_type)
+            {
+                case CustomUIComponentType.Button:
+                    return _button != null && _button.targetGraphic == _buttonImage;
+
+                case CustomUIComponentType.Slot:
+                    return _slotButton != null && _slotButton.targetGraphic == _slotImage;
+
+                default:
+                    return false;
+            }
         }
     }
 }
