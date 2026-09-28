@@ -28,6 +28,8 @@ namespace JackyUIEssential
             SelectedSprite = selectedSprite;
             DisabledSprite = disabledSprite;
         }
+
+        public bool HasAnySprite => NormalSprite != null;
     }
 
     /// <summary>
@@ -53,6 +55,64 @@ namespace JackyUIEssential
         public bool HasAnySprite => PanelSprite != null
                                     || SlidingAreaSprite != null
                                     || HandleSprite != null;
+    }
+
+    public struct TabVisualSprites
+    {
+        public Sprite BackgroundSprite;
+        public Sprite SelectedSprite;
+
+        public TabVisualSprites(Sprite backgroundSprite, Sprite selectedSprite)
+        {
+            BackgroundSprite = backgroundSprite;
+            SelectedSprite = selectedSprite;
+        }
+
+        public bool HasAnySprite => BackgroundSprite != null || SelectedSprite != null;
+    }
+
+    public struct ToggleVisualSprites
+    {
+        public Sprite BackgroundSprite;
+        public Sprite CheckmarkSprite;
+
+        public ToggleVisualSprites(Sprite backgroundSprite, Sprite checkmarkSprite)
+        {
+            BackgroundSprite = backgroundSprite;
+            CheckmarkSprite = checkmarkSprite;
+        }
+
+        public bool HasAnySprite => BackgroundSprite != null || CheckmarkSprite != null;
+    }
+
+    public struct ProgressBarVisualSprites
+    {
+        public Sprite BackgroundSprite;
+        public Sprite FillSprite;
+
+        public ProgressBarVisualSprites(Sprite backgroundSprite, Sprite fillSprite)
+        {
+            BackgroundSprite = backgroundSprite;
+            FillSprite = fillSprite;
+        }
+
+        public bool HasAnySprite => BackgroundSprite != null || FillSprite != null;
+    }
+
+    public struct SliderVisualSprites
+    {
+        public Sprite BackgroundSprite;
+        public Sprite FillSprite;
+        public Sprite HandleSprite;
+
+        public SliderVisualSprites(Sprite backgroundSprite, Sprite fillSprite, Sprite handleSprite)
+        {
+            BackgroundSprite = backgroundSprite;
+            FillSprite = fillSprite;
+            HandleSprite = handleSprite;
+        }
+
+        public bool HasAnySprite => BackgroundSprite != null || FillSprite != null || HandleSprite != null;
     }
 
     /// <summary>
@@ -90,6 +150,19 @@ namespace JackyUIEssential
         [SerializeField] private Sprite _scrollMenuSlidingAreaSprite;
         [SerializeField] private Sprite _scrollMenuHandleSprite;
 
+        [Header("Tab Visuals")]
+        [SerializeField] private Sprite _tabBackgroundSprite;
+        [SerializeField] private Sprite _tabSelectedSprite;
+
+        [Header("Toggle Visuals")]
+        [SerializeField] private Sprite _toggleBackgroundSprite;
+        [SerializeField] private Sprite _toggleCheckmarkSprite;
+
+        [Header("Slide Bar Visuals (Shared by Progress Bar and Slider)")]
+        [SerializeField] private Sprite _slideBarBackgroundSprite;
+        [SerializeField] private Sprite _slideBarFillSprite;
+        [SerializeField] private Sprite _slideBarHandleSprite;
+
         public bool TryGetButtonVisualSprites(out SelectableVisualSprites sprites)
         {
             sprites = new SelectableVisualSprites(
@@ -99,7 +172,7 @@ namespace JackyUIEssential
                 _buttonSelectedSprite,
                 _buttonDisabledSprite);
 
-            return sprites.NormalSprite != null;
+            return sprites.HasAnySprite;
         }
 
         public bool TryGetSlotVisualSprites(out SelectableVisualSprites sprites)
@@ -111,7 +184,7 @@ namespace JackyUIEssential
                 _slotSelectedSprite,
                 _slotDisabledSprite);
 
-            return sprites.NormalSprite != null;
+            return sprites.HasAnySprite;
         }
 
         public bool TryGetPanelSprite(out Sprite sprite)
@@ -136,6 +209,35 @@ namespace JackyUIEssential
             return sprites.HasAnySprite;
         }
 
+        public bool TryGetTabVisualSprites(out TabVisualSprites sprites)
+        {
+            sprites = new TabVisualSprites(_tabBackgroundSprite, _tabSelectedSprite);
+            return sprites.HasAnySprite;
+        }
+
+        public bool TryGetToggleVisualSprites(out ToggleVisualSprites sprites)
+        {
+            sprites = new ToggleVisualSprites(_toggleBackgroundSprite, _toggleCheckmarkSprite);
+            return sprites.HasAnySprite;
+        }
+
+        public bool TryGetProgressBarVisualSprites(out ProgressBarVisualSprites sprites)
+        {
+            sprites = new ProgressBarVisualSprites(
+                _slideBarBackgroundSprite,
+                _slideBarFillSprite);
+            return sprites.HasAnySprite;
+        }
+
+        public bool TryGetSliderVisualSprites(out SliderVisualSprites sprites)
+        {
+            sprites = new SliderVisualSprites(
+                _slideBarBackgroundSprite,
+                _slideBarFillSprite,
+                _slideBarHandleSprite);
+            return sprites.HasAnySprite;
+        }
+
         public bool TryGetSprite(CustomUIComponentType type, out Sprite sprite)
         {
             switch (type)
@@ -153,6 +255,22 @@ namespace JackyUIEssential
 
                 case CustomUIComponentType.ScrollMenu:
                     return TryGetScrollMenuSprite(out sprite);
+
+                case CustomUIComponentType.Tab:
+                    sprite = _tabBackgroundSprite;
+                    break;
+
+                case CustomUIComponentType.Toggle:
+                    sprite = _toggleBackgroundSprite;
+                    break;
+
+                case CustomUIComponentType.ProgressBar:
+                    sprite = _slideBarBackgroundSprite;
+                    break;
+
+                case CustomUIComponentType.Slider:
+                    sprite = _slideBarBackgroundSprite;
+                    break;
 
                 default:
                     sprite = null;

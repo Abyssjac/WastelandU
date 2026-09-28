@@ -78,6 +78,18 @@ namespace JackyUIEssential.Editor
                 if (GUILayout.Button("Replace Scroll Menu"))
                     ReplaceUI(CustomUIComponentType.ScrollMenu);
 
+                if (GUILayout.Button("Replace Tab"))
+                    ReplaceUI(CustomUIComponentType.Tab);
+
+                if (GUILayout.Button("Replace Toggle"))
+                    ReplaceUI(CustomUIComponentType.Toggle);
+
+                if (GUILayout.Button("Replace Progress Bar"))
+                    ReplaceUI(CustomUIComponentType.ProgressBar);
+
+                if (GUILayout.Button("Replace Slider"))
+                    ReplaceUI(CustomUIComponentType.Slider);
+
                 if (GUILayout.Button("Replace All"))
                     ReplaceAllUI();
             }
@@ -108,6 +120,10 @@ namespace JackyUIEssential.Editor
                 CustomUIComponentType.Slot,
                 CustomUIComponentType.Panel,
                 CustomUIComponentType.ScrollMenu,
+                CustomUIComponentType.Tab,
+                CustomUIComponentType.Toggle,
+                CustomUIComponentType.ProgressBar,
+                CustomUIComponentType.Slider,
             });
         }
 
@@ -170,6 +186,10 @@ namespace JackyUIEssential.Editor
             int slotCount = 0;
             int panelCount = 0;
             int scrollMenuCount = 0;
+            int tabCount = 0;
+            int toggleCount = 0;
+            int progressBarCount = 0;
+            int sliderCount = 0;
 
             for (int i = 0; i < trackers.Count; i++)
             {
@@ -195,12 +215,30 @@ namespace JackyUIEssential.Editor
                     case CustomUIComponentType.ScrollMenu:
                         scrollMenuCount++;
                         break;
+
+                    case CustomUIComponentType.Tab:
+                        tabCount++;
+                        break;
+
+                    case CustomUIComponentType.Toggle:
+                        toggleCount++;
+                        break;
+
+                    case CustomUIComponentType.ProgressBar:
+                        progressBarCount++;
+                        break;
+
+                    case CustomUIComponentType.Slider:
+                        sliderCount++;
+                        break;
                 }
             }
 
             EditorGUILayout.LabelField(
                 "Active Scene Trackers",
-                $"{trackers.Count} total / {trackingCount} tracking / {buttonCount} Button / {slotCount} Slot / {panelCount} Panel / {scrollMenuCount} Scroll Menu");
+                $"{trackers.Count} total / {trackingCount} tracking / " +
+                $"{buttonCount} Button / {slotCount} Slot / {panelCount} Panel / {scrollMenuCount} Scroll Menu / " +
+                $"{tabCount} Tab / {toggleCount} Toggle / {progressBarCount} Progress Bar / {sliderCount} Slider");
         }
 
         private static void ReplaceTypes(IReadOnlyCollection<CustomUIComponentType> types)
@@ -215,6 +253,10 @@ namespace JackyUIEssential.Editor
             bool replaceSlot = false;
             bool replacePanel = false;
             bool replaceScrollMenu = false;
+            bool replaceTab = false;
+            bool replaceToggle = false;
+            bool replaceProgressBar = false;
+            bool replaceSlider = false;
             foreach (CustomUIComponentType type in types)
             {
                 switch (type)
@@ -234,6 +276,22 @@ namespace JackyUIEssential.Editor
                     case CustomUIComponentType.ScrollMenu:
                         replaceScrollMenu = true;
                         break;
+
+                    case CustomUIComponentType.Tab:
+                        replaceTab = true;
+                        break;
+
+                    case CustomUIComponentType.Toggle:
+                        replaceToggle = true;
+                        break;
+
+                    case CustomUIComponentType.ProgressBar:
+                        replaceProgressBar = true;
+                        break;
+
+                    case CustomUIComponentType.Slider:
+                        replaceSlider = true;
+                        break;
                 }
             }
 
@@ -241,6 +299,10 @@ namespace JackyUIEssential.Editor
             SelectableVisualSprites slotVisualSprites = default;
             Sprite panelSprite = null;
             ScrollMenuVisualSprites scrollMenuVisualSprites = default;
+            TabVisualSprites tabVisualSprites = default;
+            ToggleVisualSprites toggleVisualSprites = default;
+            ProgressBarVisualSprites progressBarVisualSprites = default;
+            SliderVisualSprites sliderVisualSprites = default;
             bool hasButtonVisuals = !replaceButton
                                     || visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
             bool hasSlotVisuals = !replaceSlot
@@ -249,15 +311,23 @@ namespace JackyUIEssential.Editor
                                   || visualStyleLibrary.TryGetPanelSprite(out panelSprite);
             bool hasScrollMenuVisuals = !replaceScrollMenu
                                         || visualStyleLibrary.TryGetScrollMenuVisualSprites(out scrollMenuVisualSprites);
+            bool hasTabVisuals = !replaceTab
+                                 || visualStyleLibrary.TryGetTabVisualSprites(out tabVisualSprites);
+            bool hasToggleVisuals = !replaceToggle
+                                    || visualStyleLibrary.TryGetToggleVisualSprites(out toggleVisualSprites);
+            bool hasProgressBarVisuals = !replaceProgressBar
+                                         || visualStyleLibrary.TryGetProgressBarVisualSprites(out progressBarVisualSprites);
+            bool hasSliderVisuals = !replaceSlider
+                                    || visualStyleLibrary.TryGetSliderVisualSprites(out sliderVisualSprites);
 
             if (replaceButton && !hasButtonVisuals)
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Button Normal Sprite configured. No Button visuals were changed.", visualStyleLibrary);
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Button sprites configured. No Button visuals were changed.", visualStyleLibrary);
             }
 
             if (replaceSlot && !hasSlotVisuals)
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Slot Normal Sprite configured. No Slot visuals were changed.", visualStyleLibrary);
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Slot sprites configured. No Slot visuals were changed.", visualStyleLibrary);
             }
 
             if (replacePanel && !hasPanelSprite)
@@ -270,10 +340,34 @@ namespace JackyUIEssential.Editor
                 Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Scroll Menu Sprites configured. No Scroll Menu visuals were changed.", visualStyleLibrary);
             }
 
+            if (replaceTab && !hasTabVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Tab Sprites configured. No Tab visuals were changed.", visualStyleLibrary);
+            }
+
+            if (replaceToggle && !hasToggleVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Toggle Sprites configured. No Toggle visuals were changed.", visualStyleLibrary);
+            }
+
+            if (replaceProgressBar && !hasProgressBarVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Progress Bar Sprites configured. No Progress Bar visuals were changed.", visualStyleLibrary);
+            }
+
+            if (replaceSlider && !hasSliderVisuals)
+            {
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Visual Style Library '{visualStyleLibrary.name}' has no Slider Sprites configured. No Slider visuals were changed.", visualStyleLibrary);
+            }
+
             bool hasAnyRequestedVisuals = (replaceButton && hasButtonVisuals)
                                           || (replaceSlot && hasSlotVisuals)
                                           || (replacePanel && hasPanelSprite)
-                                          || (replaceScrollMenu && hasScrollMenuVisuals);
+                                          || (replaceScrollMenu && hasScrollMenuVisuals)
+                                          || (replaceTab && hasTabVisuals)
+                                          || (replaceToggle && hasToggleVisuals)
+                                          || (replaceProgressBar && hasProgressBarVisuals)
+                                          || (replaceSlider && hasSliderVisuals);
             if (!hasAnyRequestedVisuals)
                 return;
 
@@ -295,25 +389,31 @@ namespace JackyUIEssential.Editor
                         if (!hasButtonVisuals)
                             continue;
 
-                        if (!TryCreateSelectableReplacementTarget(tracker, buttonVisualSprites, out replacementTarget))
+                        if (!TryAddSelectableReplacementTargets(
+                                tracker,
+                                buttonVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
                         {
                             ignoredTrackers++;
-                            continue;
                         }
 
-                        break;
+                        continue;
 
                     case CustomUIComponentType.Slot:
                         if (!hasSlotVisuals)
                             continue;
 
-                        if (!TryCreateSelectableReplacementTarget(tracker, slotVisualSprites, out replacementTarget))
+                        if (!TryAddSelectableReplacementTargets(
+                                tracker,
+                                slotVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
                         {
                             ignoredTrackers++;
-                            continue;
                         }
 
-                        break;
+                        continue;
 
                     case CustomUIComponentType.Panel:
                         if (!hasPanelSprite)
@@ -335,6 +435,66 @@ namespace JackyUIEssential.Editor
                         if (!TryAddScrollMenuReplacementTargets(
                                 tracker,
                                 scrollMenuVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
+                        {
+                            ignoredTrackers++;
+                        }
+
+                        continue;
+
+                    case CustomUIComponentType.Tab:
+                        if (!hasTabVisuals)
+                            continue;
+
+                        if (!TryAddTabReplacementTargets(
+                                tracker,
+                                tabVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
+                        {
+                            ignoredTrackers++;
+                        }
+
+                        continue;
+
+                    case CustomUIComponentType.Toggle:
+                        if (!hasToggleVisuals)
+                            continue;
+
+                        if (!TryAddToggleReplacementTargets(
+                                tracker,
+                                toggleVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
+                        {
+                            ignoredTrackers++;
+                        }
+
+                        continue;
+
+                    case CustomUIComponentType.ProgressBar:
+                        if (!hasProgressBarVisuals)
+                            continue;
+
+                        if (!TryAddProgressBarReplacementTargets(
+                                tracker,
+                                progressBarVisualSprites,
+                                desiredTargets,
+                                conflictingImages))
+                        {
+                            ignoredTrackers++;
+                        }
+
+                        continue;
+
+                    case CustomUIComponentType.Slider:
+                        if (!hasSliderVisuals)
+                            continue;
+
+                        if (!TryAddSliderReplacementTargets(
+                                tracker,
+                                sliderVisualSprites,
                                 desiredTargets,
                                 conflictingImages))
                         {
@@ -433,6 +593,22 @@ namespace JackyUIEssential.Editor
             return true;
         }
 
+        private static bool TryAddSelectableReplacementTargets(
+            UITracker tracker,
+            SelectableVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (sprites.NormalSprite == null
+                || !TryCreateSelectableReplacementTarget(tracker, sprites, out VisualReplacementTarget mainTarget))
+            {
+                return false;
+            }
+
+            AddDesiredTarget(mainTarget, desiredTargets, conflictingImages);
+            return true;
+        }
+
         private static bool TryAddScrollMenuReplacementTargets(
             UITracker tracker,
             ScrollMenuVisualSprites sprites,
@@ -448,22 +624,25 @@ namespace JackyUIEssential.Editor
             }
 
             bool addedAnyTarget = false;
-            addedAnyTarget |= TryAddScrollMenuImageTarget(
+            addedAnyTarget |= TryAddCompositeImageTarget(
                 tracker,
+                "Scroll Menu",
                 "Panel",
                 panelImage,
                 sprites.PanelSprite,
                 desiredTargets,
                 conflictingImages);
-            addedAnyTarget |= TryAddScrollMenuImageTarget(
+            addedAnyTarget |= TryAddCompositeImageTarget(
                 tracker,
+                "Scroll Menu",
                 "Sliding Area",
                 slidingAreaImage,
                 sprites.SlidingAreaSprite,
                 desiredTargets,
                 conflictingImages);
-            addedAnyTarget |= TryAddScrollMenuImageTarget(
+            addedAnyTarget |= TryAddCompositeImageTarget(
                 tracker,
+                "Scroll Menu",
                 "Handle",
                 handleImage,
                 sprites.HandleSprite,
@@ -472,8 +651,70 @@ namespace JackyUIEssential.Editor
             return addedAnyTarget;
         }
 
-        private static bool TryAddScrollMenuImageTarget(
+        private static bool TryAddTabReplacementTargets(
             UITracker tracker,
+            TabVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (!tracker.TryGetTabImages(out Image backgroundImage, out Image selectedImage))
+                return false;
+
+            bool addedAnyTarget = false;
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Tab", "Background", backgroundImage, sprites.BackgroundSprite, desiredTargets, conflictingImages);
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Tab", "Selected", selectedImage, sprites.SelectedSprite, desiredTargets, conflictingImages);
+            return addedAnyTarget;
+        }
+
+        private static bool TryAddToggleReplacementTargets(
+            UITracker tracker,
+            ToggleVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (!tracker.TryGetToggleImages(out Image backgroundImage, out Image checkmarkImage))
+                return false;
+
+            bool addedAnyTarget = false;
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Toggle", "Background", backgroundImage, sprites.BackgroundSprite, desiredTargets, conflictingImages);
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Toggle", "Checkmark", checkmarkImage, sprites.CheckmarkSprite, desiredTargets, conflictingImages);
+            return addedAnyTarget;
+        }
+
+        private static bool TryAddProgressBarReplacementTargets(
+            UITracker tracker,
+            ProgressBarVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (!tracker.TryGetProgressBarImages(out Image backgroundImage, out Image fillImage))
+                return false;
+
+            bool addedAnyTarget = false;
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Progress Bar", "Background", backgroundImage, sprites.BackgroundSprite, desiredTargets, conflictingImages);
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Progress Bar", "Fill", fillImage, sprites.FillSprite, desiredTargets, conflictingImages);
+            return addedAnyTarget;
+        }
+
+        private static bool TryAddSliderReplacementTargets(
+            UITracker tracker,
+            SliderVisualSprites sprites,
+            Dictionary<Image, VisualReplacementTarget> desiredTargets,
+            HashSet<Image> conflictingImages)
+        {
+            if (!tracker.TryGetSliderImages(out Image backgroundImage, out Image fillImage, out Image handleImage))
+                return false;
+
+            bool addedAnyTarget = false;
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Slider", "Background", backgroundImage, sprites.BackgroundSprite, desiredTargets, conflictingImages);
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Slider", "Fill", fillImage, sprites.FillSprite, desiredTargets, conflictingImages);
+            addedAnyTarget |= TryAddCompositeImageTarget(tracker, "Slider", "Handle", handleImage, sprites.HandleSprite, desiredTargets, conflictingImages);
+            return addedAnyTarget;
+        }
+
+        private static bool TryAddCompositeImageTarget(
+            UITracker tracker,
+            string componentName,
             string targetName,
             Image targetImage,
             Sprite sprite,
@@ -485,7 +726,7 @@ namespace JackyUIEssential.Editor
 
             if (targetImage == null)
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] Scroll Menu tracker on '{tracker.name}' has a {targetName} Sprite configured in the active style, but no matching {targetName} Image reference.", tracker);
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] {componentName} tracker on '{tracker.name}' has a {targetName} Sprite configured in the active style, but no matching {targetName} Image reference.", tracker);
                 return false;
             }
 

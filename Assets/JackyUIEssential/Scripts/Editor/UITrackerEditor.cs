@@ -20,6 +20,15 @@ namespace JackyUIEssential.Editor
         private SerializedProperty _scrollMenuPanelImage;
         private SerializedProperty _scrollMenuSlidingAreaImage;
         private SerializedProperty _scrollMenuHandleImage;
+        private SerializedProperty _tabBackgroundImage;
+        private SerializedProperty _tabSelectedImage;
+        private SerializedProperty _toggleBackgroundImage;
+        private SerializedProperty _toggleCheckmarkImage;
+        private SerializedProperty _progressBarBackgroundImage;
+        private SerializedProperty _progressBarFillImage;
+        private SerializedProperty _sliderBackgroundImage;
+        private SerializedProperty _sliderFillImage;
+        private SerializedProperty _sliderHandleImage;
 
         private void OnEnable()
         {
@@ -33,6 +42,15 @@ namespace JackyUIEssential.Editor
             _scrollMenuPanelImage = serializedObject.FindProperty("_scrollMenuPanelImage");
             _scrollMenuSlidingAreaImage = serializedObject.FindProperty("_scrollMenuSlidingAreaImage");
             _scrollMenuHandleImage = serializedObject.FindProperty("_scrollMenuHandleImage");
+            _tabBackgroundImage = serializedObject.FindProperty("_tabBackgroundImage");
+            _tabSelectedImage = serializedObject.FindProperty("_tabSelectedImage");
+            _toggleBackgroundImage = serializedObject.FindProperty("_toggleBackgroundImage");
+            _toggleCheckmarkImage = serializedObject.FindProperty("_toggleCheckmarkImage");
+            _progressBarBackgroundImage = serializedObject.FindProperty("_progressBarBackgroundImage");
+            _progressBarFillImage = serializedObject.FindProperty("_progressBarFillImage");
+            _sliderBackgroundImage = serializedObject.FindProperty("_sliderBackgroundImage");
+            _sliderFillImage = serializedObject.FindProperty("_sliderFillImage");
+            _sliderHandleImage = serializedObject.FindProperty("_sliderHandleImage");
         }
 
         public override void OnInspectorGUI()
@@ -67,6 +85,27 @@ namespace JackyUIEssential.Editor
                     EditorGUILayout.PropertyField(_scrollMenuPanelImage, new GUIContent("Scroll Menu Panel Image"));
                     EditorGUILayout.PropertyField(_scrollMenuSlidingAreaImage, new GUIContent("Scroll Menu Sliding Area Image"));
                     EditorGUILayout.PropertyField(_scrollMenuHandleImage, new GUIContent("Scroll Menu Handle Image"));
+                    break;
+
+                case CustomUIComponentType.Tab:
+                    EditorGUILayout.PropertyField(_tabBackgroundImage, new GUIContent("Tab Background Image"));
+                    EditorGUILayout.PropertyField(_tabSelectedImage, new GUIContent("Tab Selected Image"));
+                    break;
+
+                case CustomUIComponentType.Toggle:
+                    EditorGUILayout.PropertyField(_toggleBackgroundImage, new GUIContent("Toggle Background Image"));
+                    EditorGUILayout.PropertyField(_toggleCheckmarkImage, new GUIContent("Toggle Checkmark Image"));
+                    break;
+
+                case CustomUIComponentType.ProgressBar:
+                    EditorGUILayout.PropertyField(_progressBarBackgroundImage, new GUIContent("Progress Bar Background Image"));
+                    EditorGUILayout.PropertyField(_progressBarFillImage, new GUIContent("Progress Bar Fill Image"));
+                    break;
+
+                case CustomUIComponentType.Slider:
+                    EditorGUILayout.PropertyField(_sliderBackgroundImage, new GUIContent("Slider Background Image"));
+                    EditorGUILayout.PropertyField(_sliderFillImage, new GUIContent("Slider Fill Image"));
+                    EditorGUILayout.PropertyField(_sliderHandleImage, new GUIContent("Slider Handle Image"));
                     break;
             }
 

@@ -22,6 +22,15 @@ namespace JackyUIEssential
         [SerializeField] private Image _scrollMenuPanelImage;
         [SerializeField] private Image _scrollMenuSlidingAreaImage;
         [SerializeField] private Image _scrollMenuHandleImage;
+        [SerializeField] private Image _tabBackgroundImage;
+        [SerializeField] private Image _tabSelectedImage;
+        [SerializeField] private Image _toggleBackgroundImage;
+        [SerializeField] private Image _toggleCheckmarkImage;
+        [SerializeField] private Image _progressBarBackgroundImage;
+        [SerializeField] private Image _progressBarFillImage;
+        [SerializeField] private Image _sliderBackgroundImage;
+        [SerializeField] private Image _sliderFillImage;
+        [SerializeField] private Image _sliderHandleImage;
 
         public bool IsTracking => _isTracking;
         public CustomUIComponentType Type => _type;
@@ -48,6 +57,22 @@ namespace JackyUIEssential
 
                 case CustomUIComponentType.ScrollMenu:
                     image = _scrollMenuPanelImage;
+                    break;
+
+                case CustomUIComponentType.Tab:
+                    image = _tabBackgroundImage;
+                    break;
+
+                case CustomUIComponentType.Toggle:
+                    image = _toggleBackgroundImage;
+                    break;
+
+                case CustomUIComponentType.ProgressBar:
+                    image = _progressBarBackgroundImage;
+                    break;
+
+                case CustomUIComponentType.Slider:
+                    image = _sliderBackgroundImage;
                     break;
 
                 default:
@@ -124,6 +149,69 @@ namespace JackyUIEssential
             slidingAreaImage = _scrollMenuSlidingAreaImage;
             handleImage = _scrollMenuHandleImage;
             return panelImage != null || slidingAreaImage != null || handleImage != null;
+        }
+
+        public bool TryGetTabImages(out Image backgroundImage, out Image selectedImage)
+        {
+            if (_type != CustomUIComponentType.Tab)
+            {
+                backgroundImage = null;
+                selectedImage = null;
+                return false;
+            }
+
+            backgroundImage = _tabBackgroundImage;
+            selectedImage = _tabSelectedImage;
+            return backgroundImage != null || selectedImage != null;
+        }
+
+        public bool TryGetToggleImages(out Image backgroundImage, out Image checkmarkImage)
+        {
+            if (_type != CustomUIComponentType.Toggle)
+            {
+                backgroundImage = null;
+                checkmarkImage = null;
+                return false;
+            }
+
+            backgroundImage = _toggleBackgroundImage;
+            checkmarkImage = _toggleCheckmarkImage;
+            return backgroundImage != null || checkmarkImage != null;
+        }
+
+        public bool TryGetProgressBarImages(
+            out Image backgroundImage,
+            out Image fillImage)
+        {
+            if (_type != CustomUIComponentType.ProgressBar)
+            {
+                backgroundImage = null;
+                fillImage = null;
+                return false;
+            }
+
+            backgroundImage = _progressBarBackgroundImage;
+            fillImage = _progressBarFillImage;
+            return backgroundImage != null || fillImage != null;
+        }
+
+        public bool TryGetSliderImages(
+            out Image backgroundImage,
+            out Image fillImage,
+            out Image handleImage)
+        {
+            if (_type != CustomUIComponentType.Slider)
+            {
+                backgroundImage = null;
+                fillImage = null;
+                handleImage = null;
+                return false;
+            }
+
+            backgroundImage = _sliderBackgroundImage;
+            fillImage = _sliderFillImage;
+            handleImage = _sliderHandleImage;
+            return backgroundImage != null || fillImage != null || handleImage != null;
         }
     }
 }

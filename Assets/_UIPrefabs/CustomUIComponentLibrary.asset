@@ -14,8 +14,26 @@ MonoBehaviour:
   m_EditorClassIdentifier: Abyss.General.Runtime::AbyssToolKitUnity.Utility.CustomUIComponentLibrary
   _components:
   - _type: 1
-    _prefab: {fileID: 8319465637108253111, guid: 7883632f5d879ae49b8f2b374e99972d, type: 3}
+    _prefab: {fileID: 294660349600937255, guid: 60a38bbc8b05d0840ae463177035c3d3, type: 3}
     _name: Panel
+  - _type: 2
+    _prefab: {fileID: 1096920751825057347, guid: 4d14c18fdc0e19349884efa497ce85dd, type: 3}
+    _name: Button
   - _type: 3
     _prefab: {fileID: 9167716851585824518, guid: cc6c23d69947ff747a1525b38106c791, type: 3}
     _name: Scroll Menu
+  - _type: 4
+    _prefab: {fileID: 7203508536733403721, guid: c926aac423b376d4eaa294e568c869bc, type: 3}
+    _name: Slot
+  - _type: 5
+    _prefab: {fileID: 5665233563115789142, guid: 1971184a3c3000342aa8d70b4fa25052, type: 3}
+    _name: Tab
+  - _type: 6
+    _prefab: {fileID: 1576314357136679221, guid: 78d4981e379956d4fad7da8096cffe1a, type: 3}
+    _name: Toggle
+  - _type: 7
+    _prefab: {fileID: 2034036944192678655, guid: 56d277541fef5c14f908a691b399e8b0, type: 3}
+    _name: Progress Bar
+  - _type: 8
+    _prefab: {fileID: 4117440417285524237, guid: c94eb3759283d0a46920fd94cdb91e46, type: 3}
+    _name: Slider
