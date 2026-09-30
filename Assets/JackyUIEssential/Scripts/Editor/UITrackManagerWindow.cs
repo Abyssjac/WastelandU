@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using AbyssToolKitUnity.Editor.Utility;
 using AbyssToolKitUnity.Utility;
+using JackyUtility;
 using UnityEditor;
 using UnityEditor.SceneManagement;
 using UnityEngine;
@@ -11,14 +12,31 @@ using UnityEngine.UI;
 namespace JackyUIEssential.Editor
 {
     /// <summary>
-    /// Editor-only authority for the active Custom UI Component Library and
-    /// visual style. It replaces only configured Image.sprite values in the
-    /// current active scene.
+    /// Editor-only authority for one active <see cref="UIStyleProperty"/>.
+    /// It replaces only configured Image.sprite values in the current active
+    /// scene and keeps Custom UI creation synchronized to the same style.
     /// </summary>
     public sealed class UITrackManagerWindow : EditorWindow
     {
-        private const string _activeVisualStyleEditorPrefsKey = "JackyUIEssential.UITrackManager.ActiveVisualStyleLibraryGuid";
         private const string _windowTitle = "UI Track Manager";
+
+        [SerializeField] private UIStyleDatabase _uiStyleDatabase;
+
+        [SerializeField]
+        [PropertyDatabaseLink(nameof(_uiStyleDatabase))]
+        private Key_UIStylePP _activeUIStyleKey = Key_UIStylePP.None;
+
+        [SerializeField] private bool _replacementSelectionInitialized;
+        [SerializeField] private bool _replaceButton = true;
+        [SerializeField] private bool _replaceSlot = true;
+        [SerializeField] private bool _replacePanel = true;
+        [SerializeField] private bool _replaceScrollMenu = true;
+        [SerializeField] private bool _replaceTab = true;
+        [SerializeField] private bool _replaceToggle = true;
+        [SerializeField] private bool _replaceProgressBar = true;
+        [SerializeField] private bool _replaceSlider = true;
+
+        private SerializedObject _serializedWindow;
 
         private readonly struct VisualReplacementTarget
         {
@@ -46,17 +64,33 @@ namespace JackyUIEssential.Editor
         {
             UITrackManagerWindow window = GetWindow<UITrackManagerWindow>();
             window.titleContent = new GUIContent(_windowTitle);
-            window.minSize = new Vector2(360f, 280f);
+            window.minSize = new Vector2(360f, 480f);
             window.Show();
+        }
+
+        private void OnEnable()
+        {
+            _serializedWindow = new SerializedObject(this);
+
+            if (!_replacementSelectionInitialized)
+            {
+                SetAllReplacementSelections(true);
+                _replacementSelectionInitialized = true;
+            }
+
+            if (TryGetActiveUIStyleProperty(out UIStyleProperty styleProperty, out _))
+                SynchronizeComponentLibrary(styleProperty);
+            else
+                SynchronizeComponentLibrary(null);
         }
 
         private void OnGUI()
         {
             EditorGUILayout.Space(8f);
-            EditorGUILayout.LabelField("Library Authority", EditorStyles.boldLabel);
+            EditorGUILayout.LabelField("UI Style Authority", EditorStyles.boldLabel);
 
-            DrawComponentLibraryField();
-            UIVisualStyleLibrary visualStyleLibrary = DrawVisualStyleLibraryField();
+            UIStyleProperty styleProperty = DrawUIStylePropertyField();
+            bool hasCompleteStyle = styleProperty != null && styleProperty.IsComplete;
 
             EditorGUILayout.Space(8f);
             DrawActiveSceneSummary();
@@ -64,40 +98,12 @@ namespace JackyUIEssential.Editor
             EditorGUILayout.Space(8f);
             EditorGUILayout.LabelField("Replace Active Scene Visuals", EditorStyles.boldLabel);
 
-            using (new EditorGUI.DisabledScope(visualStyleLibrary == null))
-            {
-                if (GUILayout.Button("Replace Button"))
-                    ReplaceUI(CustomUIComponentType.Button);
+            DrawReplacementSelection(hasCompleteStyle);
 
-                if (GUILayout.Button("Replace Slot"))
-                    ReplaceUI(CustomUIComponentType.Slot);
-
-                if (GUILayout.Button("Replace Panel"))
-                    ReplaceUI(CustomUIComponentType.Panel);
-
-                if (GUILayout.Button("Replace Scroll Menu"))
-                    ReplaceUI(CustomUIComponentType.ScrollMenu);
-
-                if (GUILayout.Button("Replace Tab"))
-                    ReplaceUI(CustomUIComponentType.Tab);
-
-                if (GUILayout.Button("Replace Toggle"))
-                    ReplaceUI(CustomUIComponentType.Toggle);
-
-                if (GUILayout.Button("Replace Progress Bar"))
-                    ReplaceUI(CustomUIComponentType.ProgressBar);
-
-                if (GUILayout.Button("Replace Slider"))
-                    ReplaceUI(CustomUIComponentType.Slider);
-
-                if (GUILayout.Button("Replace All"))
-                    ReplaceAllUI();
-            }
-
-            if (visualStyleLibrary == null)
-            {
-                EditorGUILayout.HelpBox("Select an Active Visual Style Library before replacing sprites.", MessageType.Info);
-            }
+            if (styleProperty == null)
+                EditorGUILayout.HelpBox("Select an Active UI Style Property before replacing sprites.", MessageType.Info);
+            else if (!styleProperty.IsComplete)
+                EditorGUILayout.HelpBox("The active UI Style Property needs both a Component Library and a Visual Style Library.", MessageType.Warning);
         }
 
         /// <summary>
@@ -114,7 +120,115 @@ namespace JackyUIEssential.Editor
         /// </summary>
         public void ReplaceAllUI()
         {
-            ReplaceTypes(new[]
+            ReplaceTypes(GetAllSupportedTypes());
+        }
+
+        private UIStyleProperty DrawUIStylePropertyField()
+        {
+            EnsureSerializedWindow();
+            _serializedWindow.Update();
+
+            SerializedProperty styleDatabase = _serializedWindow.FindProperty(nameof(_uiStyleDatabase));
+            SerializedProperty activeStyleKey = _serializedWindow.FindProperty(nameof(_activeUIStyleKey));
+            EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(styleDatabase, new GUIContent("UI Style Database"));
+            EditorGUILayout.PropertyField(activeStyleKey, new GUIContent("Active UI Style"));
+            bool changed = EditorGUI.EndChangeCheck();
+            _serializedWindow.ApplyModifiedProperties();
+
+            UIStyleProperty activeProperty = TryGetActiveUIStyleProperty(out UIStyleProperty property, out string message)
+                ? property
+                : null;
+            if (changed)
+            {
+                SynchronizeComponentLibrary(activeProperty);
+            }
+
+            if (activeProperty != null)
+            {
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUILayout.ObjectField("Component Library", activeProperty.ComponentLibrary, typeof(CustomUIComponentLibrary), false);
+                    EditorGUILayout.ObjectField("Visual Style Library", activeProperty.VisualStyleLibrary, typeof(UIVisualStyleLibrary), false);
+                }
+            }
+            else if (!string.IsNullOrEmpty(message))
+            {
+                EditorGUILayout.HelpBox(message, MessageType.Info);
+            }
+
+            return activeProperty;
+        }
+
+        private void DrawReplacementSelection(bool hasCompleteStyle)
+        {
+            using (new EditorGUI.DisabledScope(!hasCompleteStyle))
+            {
+                EditorGUILayout.BeginHorizontal();
+                if (GUILayout.Button("Select All"))
+                    SetAllReplacementSelections(true);
+
+                if (GUILayout.Button("Deselect All"))
+                    SetAllReplacementSelections(false);
+                EditorGUILayout.EndHorizontal();
+
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                _replaceButton = EditorGUILayout.ToggleLeft("Button", _replaceButton);
+                _replaceSlot = EditorGUILayout.ToggleLeft("Slot", _replaceSlot);
+                _replacePanel = EditorGUILayout.ToggleLeft("Panel", _replacePanel);
+                _replaceScrollMenu = EditorGUILayout.ToggleLeft("Scroll Menu", _replaceScrollMenu);
+                _replaceTab = EditorGUILayout.ToggleLeft("Tab", _replaceTab);
+                _replaceToggle = EditorGUILayout.ToggleLeft("Toggle", _replaceToggle);
+                _replaceProgressBar = EditorGUILayout.ToggleLeft("Progress Bar", _replaceProgressBar);
+                _replaceSlider = EditorGUILayout.ToggleLeft("Slider", _replaceSlider);
+                EditorGUILayout.EndVertical();
+
+                List<CustomUIComponentType> selectedTypes = GetSelectedReplacementTypes();
+                using (new EditorGUI.DisabledScope(selectedTypes.Count == 0))
+                {
+                    if (GUILayout.Button($"Replace Selected ({selectedTypes.Count} Types)"))
+                        ReplaceTypes(selectedTypes);
+                }
+            }
+        }
+
+        private void SetAllReplacementSelections(bool selected)
+        {
+            _replaceButton = selected;
+            _replaceSlot = selected;
+            _replacePanel = selected;
+            _replaceScrollMenu = selected;
+            _replaceTab = selected;
+            _replaceToggle = selected;
+            _replaceProgressBar = selected;
+            _replaceSlider = selected;
+        }
+
+        private List<CustomUIComponentType> GetSelectedReplacementTypes()
+        {
+            var selectedTypes = new List<CustomUIComponentType>();
+            if (_replaceButton)
+                selectedTypes.Add(CustomUIComponentType.Button);
+            if (_replaceSlot)
+                selectedTypes.Add(CustomUIComponentType.Slot);
+            if (_replacePanel)
+                selectedTypes.Add(CustomUIComponentType.Panel);
+            if (_replaceScrollMenu)
+                selectedTypes.Add(CustomUIComponentType.ScrollMenu);
+            if (_replaceTab)
+                selectedTypes.Add(CustomUIComponentType.Tab);
+            if (_replaceToggle)
+                selectedTypes.Add(CustomUIComponentType.Toggle);
+            if (_replaceProgressBar)
+                selectedTypes.Add(CustomUIComponentType.ProgressBar);
+            if (_replaceSlider)
+                selectedTypes.Add(CustomUIComponentType.Slider);
+            return selectedTypes;
+        }
+
+        private static IReadOnlyCollection<CustomUIComponentType> GetAllSupportedTypes()
+        {
+            return new[]
             {
                 CustomUIComponentType.Button,
                 CustomUIComponentType.Slot,
@@ -124,58 +238,7 @@ namespace JackyUIEssential.Editor
                 CustomUIComponentType.Toggle,
                 CustomUIComponentType.ProgressBar,
                 CustomUIComponentType.Slider,
-            });
-        }
-
-        private static void DrawComponentLibraryField()
-        {
-            CustomUIComponentLibrary activeLibrary = null;
-            bool hasActiveLibrary = CustomUICreationMenu.TryGetActiveComponentLibrary(out activeLibrary, out string message);
-
-            EditorGUI.BeginChangeCheck();
-            CustomUIComponentLibrary selectedLibrary = (CustomUIComponentLibrary)EditorGUILayout.ObjectField(
-                new GUIContent("Active Component Library"),
-                hasActiveLibrary ? activeLibrary : null,
-                typeof(CustomUIComponentLibrary),
-                false);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                CustomUICreationMenu.SetActiveComponentLibrary(selectedLibrary);
-            }
-
-            if (!hasActiveLibrary)
-            {
-                EditorGUILayout.HelpBox(message, MessageType.Info);
-            }
-        }
-
-        private static UIVisualStyleLibrary DrawVisualStyleLibraryField()
-        {
-            UIVisualStyleLibrary activeLibrary = TryGetActiveVisualStyleLibrary(out UIVisualStyleLibrary library, out string message)
-                ? library
-                : null;
-
-            EditorGUI.BeginChangeCheck();
-            UIVisualStyleLibrary selectedLibrary = (UIVisualStyleLibrary)EditorGUILayout.ObjectField(
-                new GUIContent("Active Visual Style Library"),
-                activeLibrary,
-                typeof(UIVisualStyleLibrary),
-                false);
-
-            if (EditorGUI.EndChangeCheck())
-            {
-                SetActiveVisualStyleLibrary(selectedLibrary);
-                activeLibrary = selectedLibrary;
-                message = string.Empty;
-            }
-
-            if (activeLibrary == null && !string.IsNullOrEmpty(message))
-            {
-                EditorGUILayout.HelpBox(message, MessageType.Info);
-            }
-
-            return activeLibrary;
+            };
         }
 
         private static void DrawActiveSceneSummary()
@@ -241,13 +304,24 @@ namespace JackyUIEssential.Editor
                 $"{tabCount} Tab / {toggleCount} Toggle / {progressBarCount} Progress Bar / {sliderCount} Slider");
         }
 
-        private static void ReplaceTypes(IReadOnlyCollection<CustomUIComponentType> types)
+        private void ReplaceTypes(IReadOnlyCollection<CustomUIComponentType> types)
         {
-            if (!TryGetActiveVisualStyleLibrary(out UIVisualStyleLibrary visualStyleLibrary, out string visualStyleMessage))
+            if (!TryGetActiveUIStyleProperty(out UIStyleProperty styleProperty, out string styleMessage))
             {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] {visualStyleMessage}");
+                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] {styleMessage}");
                 return;
             }
+
+            if (!styleProperty.IsComplete)
+            {
+                Debug.LogWarning(
+                    $"[{nameof(UITrackManagerWindow)}] Active UI Style Property '{styleProperty.name}' " +
+                    "must assign both a Component Library and a Visual Style Library.",
+                    styleProperty);
+                return;
+            }
+
+            UIVisualStyleLibrary visualStyleLibrary = styleProperty.VisualStyleLibrary;
 
             bool replaceButton = false;
             bool replaceSlot = false;
@@ -802,28 +876,27 @@ namespace JackyUIEssential.Editor
             return activeSceneTrackers;
         }
 
-        private static bool TryGetActiveVisualStyleLibrary(out UIVisualStyleLibrary library, out string message)
+        private bool TryGetActiveUIStyleProperty(out UIStyleProperty property, out string message)
         {
-            string guid = EditorPrefs.GetString(_activeVisualStyleEditorPrefsKey, string.Empty);
-            if (string.IsNullOrWhiteSpace(guid))
+            if (_activeUIStyleKey == Key_UIStylePP.None)
             {
-                library = null;
-                message = "No active UI Visual Style Library is selected.";
+                property = null;
+                message = "No active UI Style Property is selected.";
                 return false;
             }
 
-            string assetPath = AssetDatabase.GUIDToAssetPath(guid);
-            if (string.IsNullOrWhiteSpace(assetPath))
+            if (_uiStyleDatabase == null)
             {
-                library = null;
-                message = "The active UI Visual Style Library could not be found. Select another library.";
+                property = null;
+                message = "Assign a UI Style Database in UI Track Manager before selecting a style.";
                 return false;
             }
 
-            library = AssetDatabase.LoadAssetAtPath<UIVisualStyleLibrary>(assetPath);
-            if (library == null)
+            property = _uiStyleDatabase.GetByEnum(_activeUIStyleKey);
+            if (property == null)
             {
-                message = "The active UI Visual Style Library could not be loaded. Select another library.";
+                message = $"UI Style Database '{_uiStyleDatabase.name}' has no UIStyleProperty for '{_activeUIStyleKey}'. " +
+                          "Create the Property SO and collect the database entries.";
                 return false;
             }
 
@@ -831,23 +904,16 @@ namespace JackyUIEssential.Editor
             return true;
         }
 
-        private static void SetActiveVisualStyleLibrary(UIVisualStyleLibrary library)
+        private void EnsureSerializedWindow()
         {
-            if (library == null)
-            {
-                EditorPrefs.DeleteKey(_activeVisualStyleEditorPrefsKey);
-                return;
-            }
+            if (_serializedWindow == null)
+                _serializedWindow = new SerializedObject(this);
+        }
 
-            string assetPath = AssetDatabase.GetAssetPath(library);
-            string guid = AssetDatabase.AssetPathToGUID(assetPath);
-            if (string.IsNullOrWhiteSpace(guid))
-            {
-                Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] '{library.name}' is not a persistent asset and cannot be selected as the active Visual Style Library.", library);
-                return;
-            }
-
-            EditorPrefs.SetString(_activeVisualStyleEditorPrefsKey, guid);
+        private static void SynchronizeComponentLibrary(UIStyleProperty property)
+        {
+            CustomUICreationMenu.SetActiveComponentLibrary(
+                property != null ? property.ComponentLibrary : null);
         }
     }
 }

@@ -1,0 +1,204 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 0ce03fcf8dcb5e44fb8642528447ac3c, type: 3}
+  m_Name: UIStyleAssemblySchema_HighDef
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::JackyUIEssential.Editor.UIStyleAssemblySchema
+  _requirements:
+  - _slot: 0
+    _assetId: button_main_normal_background
+    _expectedSize: {x: 640, y: 320}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 1
+    _assetId: button_main_hovered_background
+    _expectedSize: {x: 640, y: 320}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 2
+    _assetId: button_main_pressed_background
+    _expectedSize: {x: 640, y: 320}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 3
+    _assetId: button_main_selected_background
+    _expectedSize: {x: 640, y: 320}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 4
+    _assetId: button_main_disabled_background
+    _expectedSize: {x: 640, y: 320}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 5
+    _assetId: panel_background
+    _expectedSize: {x: 1280, y: 800}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 6
+    _assetId: slot_background
+    _expectedSize: {x: 512, y: 512}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 7
+    _assetId: slot_highlight_background
+    _expectedSize: {x: 512, y: 512}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 8
+    _assetId: slot_pressed_background
+    _expectedSize: {x: 512, y: 512}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 9
+    _assetId: slot_selected_background
+    _expectedSize: {x: 512, y: 512}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 10
+    _assetId: slot_disabled_background
+    _expectedSize: {x: 512, y: 512}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 11
+    _assetId: tab_background
+    _expectedSize: {x: 768, y: 192}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 12
+    _assetId: tab_selected_overlay
+    _expectedSize: {x: 768, y: 192}
+    _presentation: 1
+    _sliceBorder:
+      _left: 96
+      _right: 96
+      _top: 48
+      _bottom: 48
+  - _slot: 13
+    _assetId: toggle_background
+    _expectedSize: {x: 256, y: 256}
+    _presentation: 1
+    _sliceBorder:
+      _left: 48
+      _right: 48
+      _top: 48
+      _bottom: 48
+  - _slot: 14
+    _assetId: toggle_selected_indicator
+    _expectedSize: {x: 192, y: 192}
+    _presentation: 0
+    _sliceBorder:
+      _left: 0
+      _right: 0
+      _top: 0
+      _bottom: 0
+  - _slot: 15
+    _assetId: scrollmenu_background
+    _expectedSize: {x: 1280, y: 800}
+    _presentation: 1
+    _sliceBorder:
+      _left: 64
+      _right: 64
+      _top: 64
+      _bottom: 64
+  - _slot: 16
+    _assetId: scrollmenu_scrollbar_track
+    _expectedSize: {x: 64, y: 384}
+    _presentation: 1
+    _sliceBorder:
+      _left: 16
+      _right: 16
+      _top: 48
+      _bottom: 48
+  - _slot: 17
+    _assetId: scrollmenu_scrollbar_handle
+    _expectedSize: {x: 64, y: 192}
+    _presentation: 1
+    _sliceBorder:
+      _left: 16
+      _right: 16
+      _top: 48
+      _bottom: 48
+  - _slot: 18
+    _assetId: slidebar_background
+    _expectedSize: {x: 320, y: 40}
+    _presentation: 1
+    _sliceBorder:
+      _left: 36
+      _right: 36
+      _top: 12
+      _bottom: 12
+  - _slot: 19
+    _assetId: slidebar_filling
+    _expectedSize: {x: 320, y: 40}
+    _presentation: 1
+    _sliceBorder:
+      _left: 36
+      _right: 36
+      _top: 12
+      _bottom: 12
+  - _slot: 20
+    _assetId: slidebar_handle
+    _expectedSize: {x: 192, y: 192}
+    _presentation: 0
+    _sliceBorder:
+      _left: 0
+      _right: 0
+      _top: 0
+      _bottom: 0

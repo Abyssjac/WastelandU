@@ -22,7 +22,7 @@ namespace JackyUIEssential.Editor
         {
             UIStyleBuilderWindow window = GetWindow<UIStyleBuilderWindow>();
             window.titleContent = new GUIContent(_windowTitle);
-            window.minSize = new Vector2(660f, 430f);
+            window.minSize = new Vector2(660f, 620f);
             window.Show();
         }
 
@@ -172,9 +172,11 @@ namespace JackyUIEssential.Editor
                 $"Preflight: {result.ResolvedCount} / {result.RequiredCount} required assets resolved",
                 EditorStyles.boldLabel);
 
+            float footerHeight = result.CanBuild ? 48f : 108f;
+            float reportHeight = Mathf.Max(215f, position.height - 265f - footerHeight);
             _scrollPosition = EditorGUILayout.BeginScrollView(
                 _scrollPosition,
-                GUILayout.MinHeight(215f));
+                GUILayout.Height(reportHeight));
 
             for (int index = 0; index < _schema.Requirements.Count; index++)
             {
@@ -200,10 +202,10 @@ namespace JackyUIEssential.Editor
                 EditorGUILayout.EndVertical();
             }
 
-            EditorGUILayout.EndScrollView();
-
             DrawMessages("Errors", result.Errors, MessageType.Error);
             DrawMessages("Warnings", result.Warnings, MessageType.Warning);
+
+            EditorGUILayout.EndScrollView();
         }
 
         private static void DrawMessages(

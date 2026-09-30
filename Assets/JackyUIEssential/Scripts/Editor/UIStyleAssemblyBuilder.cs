@@ -106,7 +106,7 @@ namespace JackyUIEssential.Editor
     public static class UIStyleAssemblyBuilder
     {
         public const string DefaultSchemaAssetPath =
-            "Assets/JackyUIEssential/SOs/UIStyleAssemblySchema.asset";
+            "Assets/JackyUIEssential/Settings/UIStyleAssemblySchema.asset";
 
         public const string BaseComponentLibraryAssetPath =
             "Assets/JackyUIEssential/SOs/CustomUIComponentLibrary_GibiliArt.asset";
