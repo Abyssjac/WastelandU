@@ -26,7 +26,7 @@ public class AllCameraManagerDebugWindow : DebugEditorWindow<AllCameraManager>
 
     private CameraMode _selectedMode = CameraMode.FollowTarget;
 
-    [MenuItem("Jacky Tools/All Camera Manager")]
+    [MenuItem("AbyssTools/GeneralManager/All Camera Manager")]
     public static void ShowWindow() =>
         GetWindow<AllCameraManagerDebugWindow>("All Camera Manager").Show();
 

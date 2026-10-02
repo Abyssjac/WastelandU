@@ -34,7 +34,7 @@ public class InventoryManagerDebugWindow : DebugEditorWindow<InventoryManager>
     private string lastResult = "No operation has been run.";
     private MessageType lastResultType = MessageType.None;
 
-    [MenuItem("Jacky Tools/Inventory Manager")]
+    [MenuItem("AbyssTools/GeneralManager/Inventory Manager")]
     public static void ShowWindow()
     {
         GetWindow<InventoryManagerDebugWindow>("Inventory Manager Debug").Show();

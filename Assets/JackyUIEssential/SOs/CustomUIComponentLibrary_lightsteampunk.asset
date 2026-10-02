@@ -1,0 +1,39 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: fcdb617912a53984082993605e9cda3e, type: 3}
+  m_Name: CustomUIComponentLibrary_lightsteampunk
+  m_EditorClassIdentifier: Abyss.General.Runtime::AbyssToolKitUnity.Utility.CustomUIComponentLibrary
+  _components:
+  - _type: 1
+    _prefab: {fileID: 294660349600937255, guid: ac81da8f4c5e52a4d907c7653b5370a7, type: 3}
+    _name: 
+  - _type: 2
+    _prefab: {fileID: 1096920751825057347, guid: 502d550d257e4bd4896966ea0f42884b, type: 3}
+    _name: 
+  - _type: 3
+    _prefab: {fileID: 9167716851585824518, guid: 4048c8eae7fdbeb4a9dab6f4d1f3bbcf, type: 3}
+    _name: 
+  - _type: 4
+    _prefab: {fileID: 7203508536733403721, guid: 93860f5006895b742b0e5527f44d998b, type: 3}
+    _name: 
+  - _type: 5
+    _prefab: {fileID: 5665233563115789142, guid: 5f1d1c9822eb90e4d9e6e5213e20ddab, type: 3}
+    _name: 
+  - _type: 6
+    _prefab: {fileID: 1576314357136679221, guid: 5d0f59d40ff5a414c892abc5d4a043e3, type: 3}
+    _name: 
+  - _type: 7
+    _prefab: {fileID: 2034036944192678655, guid: 638bc92934268a847a3d49481afe3a09, type: 3}
+    _name: 
+  - _type: 8
+    _prefab: {fileID: 4117440417285524237, guid: 32cc123fa2edede4ca3b58b558c74dd6, type: 3}
+    _name: 

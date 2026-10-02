@@ -7,7 +7,7 @@ public class TimelineManagerEditorWindow : EditorWindow
 {
     private PlayableAsset selectedTimeline;
 
-    [MenuItem("Jacky Tools/Timeline Manager")]
+    [MenuItem("AbyssTools/GeneralManager/Timeline Manager")]
     public static void ShowWindow()
     {
         GetWindow<TimelineManagerEditorWindow>("Timeline Manager").Show();

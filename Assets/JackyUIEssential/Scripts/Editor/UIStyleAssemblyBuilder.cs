@@ -105,18 +105,6 @@ namespace JackyUIEssential.Editor
     /// </summary>
     public static class UIStyleAssemblyBuilder
     {
-        public const string DefaultSchemaAssetPath =
-            "Assets/JackyUIEssential/Settings/UIStyleAssemblySchema.asset";
-
-        public const string BaseComponentLibraryAssetPath =
-            "Assets/JackyUIEssential/SOs/CustomUIComponentLibrary_GibiliArt.asset";
-
-        public const string PrefabOutputRoot =
-            "Assets/JackyUIEssential/Prefabs/UIPrefabs";
-
-        public const string ScriptableObjectOutputRoot =
-            "Assets/JackyUIEssential/SOs";
-
         private static readonly CustomUIComponentType[] _componentTypes =
         {
             CustomUIComponentType.Panel,
@@ -130,13 +118,30 @@ namespace JackyUIEssential.Editor
         };
 
         public static UIStyleAssemblyScanResult Scan(
-            UIStyleAssemblySchema schema,
+            UIStyleToolSettings settings,
             string sourceFolder)
         {
             string normalizedSourceFolder = NormalizeAssetPath(sourceFolder);
             string styleName = GetStyleName(normalizedSourceFolder);
             var result = new UIStyleAssemblyScanResult(normalizedSourceFolder, styleName);
 
+            if (settings == null)
+            {
+                result.Errors.Add("Assign UI Style Tool Settings before scanning.");
+                return result;
+            }
+
+            if (!settings.TryGetBuildPaths(
+                    out string prefabOutputRoot,
+                    out string visualLibraryOutputFolder,
+                    out string componentLibraryOutputFolder,
+                    out string settingsMessage))
+            {
+                result.Errors.Add(settingsMessage);
+                return result;
+            }
+
+            UIStyleAssemblySchema schema = settings.AssemblySchema;
             if (schema == null)
             {
                 result.Errors.Add("Assign a UI Style Assembly Schema before scanning.");
@@ -258,16 +263,20 @@ namespace JackyUIEssential.Editor
                 }
             }
 
-            ValidateBaseComponentLibrary(result);
-            ValidateOutputTargets(result);
+            ValidateBaseComponentLibrary(result, settings.BaseComponentLibrary);
+            ValidateOutputTargets(
+                result,
+                prefabOutputRoot,
+                visualLibraryOutputFolder,
+                componentLibraryOutputFolder);
             return result;
         }
 
         public static UIStyleAssemblyBuildResult Build(
-            UIStyleAssemblySchema schema,
+            UIStyleToolSettings settings,
             string sourceFolder)
         {
-            UIStyleAssemblyScanResult scanResult = Scan(schema, sourceFolder);
+            UIStyleAssemblyScanResult scanResult = Scan(settings, sourceFolder);
             var buildResult = new UIStyleAssemblyBuildResult(scanResult);
 
             if (!scanResult.CanBuild)
@@ -281,9 +290,19 @@ namespace JackyUIEssential.Editor
 
             try
             {
+                if (!settings.TryGetBuildPaths(
+                        out string prefabOutputRoot,
+                        out string visualLibraryOutputFolder,
+                        out string componentLibraryOutputFolder,
+                        out string settingsMessage))
+                {
+                    throw new InvalidOperationException(settingsMessage);
+                }
+
+                UIStyleAssemblySchema schema = settings.AssemblySchema;
                 Dictionary<UIStyleVisualSlot, Sprite> sprites = ImportAndLoadSprites(scanResult, schema);
 
-                string prefabFolder = GetPrefabOutputFolder(scanResult.StyleName);
+                string prefabFolder = GetPrefabOutputFolder(prefabOutputRoot, scanResult.StyleName);
                 if (!CreateAssetFolder(prefabFolder))
                 {
                     throw new InvalidOperationException($"Could not create Prefab output folder '{prefabFolder}'.");
@@ -295,6 +314,7 @@ namespace JackyUIEssential.Editor
                     scanResult.StyleName,
                     schema,
                     sprites,
+                    visualLibraryOutputFolder,
                     createdAssetPaths);
 
                 Dictionary<CustomUIComponentType, GameObject> generatedPrefabs =
@@ -302,11 +322,13 @@ namespace JackyUIEssential.Editor
                         scanResult.StyleName,
                         prefabFolder,
                         sprites,
+                        settings.BaseComponentLibrary,
                         createdAssetPaths);
 
                 CustomUIComponentLibrary componentLibrary = CreateComponentLibrary(
                     scanResult.StyleName,
                     generatedPrefabs,
+                    componentLibraryOutputFolder,
                     createdAssetPaths);
 
                 AssetDatabase.SaveAssets();
@@ -385,9 +407,10 @@ namespace JackyUIEssential.Editor
             string styleName,
             UIStyleAssemblySchema schema,
             IReadOnlyDictionary<UIStyleVisualSlot, Sprite> sprites,
+            string visualLibraryOutputFolder,
             List<string> createdAssetPaths)
         {
-            string assetPath = GetVisualStyleLibraryPath(styleName);
+            string assetPath = GetVisualStyleLibraryPath(visualLibraryOutputFolder, styleName);
             var library = ScriptableObject.CreateInstance<UIVisualStyleLibrary>();
             AssetDatabase.CreateAsset(library, assetPath);
             createdAssetPaths.Add(assetPath);
@@ -417,15 +440,13 @@ namespace JackyUIEssential.Editor
             string styleName,
             string outputFolder,
             IReadOnlyDictionary<UIStyleVisualSlot, Sprite> sprites,
+            CustomUIComponentLibrary baseLibrary,
             List<string> createdAssetPaths)
         {
-            CustomUIComponentLibrary baseLibrary =
-                AssetDatabase.LoadAssetAtPath<CustomUIComponentLibrary>(BaseComponentLibraryAssetPath);
-
             if (baseLibrary == null)
             {
                 throw new InvalidOperationException(
-                    $"Could not load Base Component Library at '{BaseComponentLibraryAssetPath}'.");
+                    "The configured Base Component Library is missing.");
             }
 
             var generatedPrefabs = new Dictionary<CustomUIComponentType, GameObject>();
@@ -726,9 +747,10 @@ namespace JackyUIEssential.Editor
         private static CustomUIComponentLibrary CreateComponentLibrary(
             string styleName,
             IReadOnlyDictionary<CustomUIComponentType, GameObject> generatedPrefabs,
+            string componentLibraryOutputFolder,
             List<string> createdAssetPaths)
         {
-            string assetPath = GetComponentLibraryPath(styleName);
+            string assetPath = GetComponentLibraryPath(componentLibraryOutputFolder, styleName);
             var library = ScriptableObject.CreateInstance<CustomUIComponentLibrary>();
             AssetDatabase.CreateAsset(library, assetPath);
             createdAssetPaths.Add(assetPath);
@@ -760,15 +782,13 @@ namespace JackyUIEssential.Editor
             return library;
         }
 
-        private static void ValidateBaseComponentLibrary(UIStyleAssemblyScanResult result)
+        private static void ValidateBaseComponentLibrary(
+            UIStyleAssemblyScanResult result,
+            CustomUIComponentLibrary baseLibrary)
         {
-            CustomUIComponentLibrary baseLibrary =
-                AssetDatabase.LoadAssetAtPath<CustomUIComponentLibrary>(BaseComponentLibraryAssetPath);
-
             if (baseLibrary == null)
             {
-                result.Errors.Add(
-                    $"Base Component Library is missing at '{BaseComponentLibraryAssetPath}'.");
+                result.Errors.Add("Assign a valid Base Component Library in UI Style Tool Settings.");
                 return;
             }
 
@@ -910,28 +930,32 @@ namespace JackyUIEssential.Editor
             }
         }
 
-        private static void ValidateOutputTargets(UIStyleAssemblyScanResult result)
+        private static void ValidateOutputTargets(
+            UIStyleAssemblyScanResult result,
+            string prefabOutputRoot,
+            string visualLibraryOutputFolder,
+            string componentLibraryOutputFolder)
         {
             if (string.IsNullOrWhiteSpace(result.StyleName))
             {
                 return;
             }
 
-            string prefabFolder = GetPrefabOutputFolder(result.StyleName);
+            string prefabFolder = GetPrefabOutputFolder(prefabOutputRoot, result.StyleName);
             if (AssetDatabase.IsValidFolder(prefabFolder))
             {
                 result.Errors.Add(
                     $"Prefab output folder '{prefabFolder}' already exists. Existing styles are never overwritten.");
             }
 
-            string visualStylePath = GetVisualStyleLibraryPath(result.StyleName);
+            string visualStylePath = GetVisualStyleLibraryPath(visualLibraryOutputFolder, result.StyleName);
             if (AssetDatabase.LoadMainAssetAtPath(visualStylePath) != null)
             {
                 result.Errors.Add(
                     $"Visual Style Library '{visualStylePath}' already exists. Existing styles are never overwritten.");
             }
 
-            string componentLibraryPath = GetComponentLibraryPath(result.StyleName);
+            string componentLibraryPath = GetComponentLibraryPath(componentLibraryOutputFolder, result.StyleName);
             if (AssetDatabase.LoadMainAssetAtPath(componentLibraryPath) != null)
             {
                 result.Errors.Add(
@@ -986,19 +1010,19 @@ namespace JackyUIEssential.Editor
                 : Path.GetFileName(sourceFolder.TrimEnd('/'));
         }
 
-        private static string GetPrefabOutputFolder(string styleName)
+        private static string GetPrefabOutputFolder(string prefabOutputRoot, string styleName)
         {
-            return $"{PrefabOutputRoot}/{styleName}";
+            return $"{prefabOutputRoot}/{styleName}";
         }
 
-        private static string GetVisualStyleLibraryPath(string styleName)
+        private static string GetVisualStyleLibraryPath(string visualLibraryOutputFolder, string styleName)
         {
-            return $"{ScriptableObjectOutputRoot}/UIVisualStyleLibrary_{styleName}.asset";
+            return $"{visualLibraryOutputFolder}/UIVisualStyleLibrary_{styleName}.asset";
         }
 
-        private static string GetComponentLibraryPath(string styleName)
+        private static string GetComponentLibraryPath(string componentLibraryOutputFolder, string styleName)
         {
-            return $"{ScriptableObjectOutputRoot}/CustomUIComponentLibrary_{styleName}.asset";
+            return $"{componentLibraryOutputFolder}/CustomUIComponentLibrary_{styleName}.asset";
         }
 
         private static string GetStyledPrefabName(string basePrefabName, string styleName)

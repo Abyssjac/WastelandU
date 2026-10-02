@@ -18,8 +18,6 @@ public class QuestListItemUI : MonoBehaviour
     [SerializeField] private GameObject ongoingVisual;
     [SerializeField] private GameObject completedVisual;
     [SerializeField] private Image backgroundImage;
-    [SerializeField] private Color ongoingColor = Color.white;
-    [SerializeField] private Color completedColor = new Color(0.4f, 1f, 0.55f, 1f);
 
     private Key_Quest questKey;
     private Action<Key_Quest> onSelected;
@@ -64,7 +62,7 @@ public class QuestListItemUI : MonoBehaviour
             completedVisual.SetActive(completed);
 
         if (backgroundImage != null)
-            backgroundImage.color = completed ? completedColor : ongoingColor;
+            backgroundImage.color = Color.white;
     }
 
     private void HandleClicked()

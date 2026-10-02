@@ -14,8 +14,6 @@ public class QuestRequirementRowUI : MonoBehaviour
     [SerializeField] private GameObject satisfiedVisual;
     [SerializeField] private GameObject unsatisfiedVisual;
     [SerializeField] private Image backgroundImage;
-    [SerializeField] private Color satisfiedColor = new Color(0.4f, 1f, 0.55f, 1f);
-    [SerializeField] private Color unsatisfiedColor = Color.white;
 
     public void Bind(QuestProperty.RequirementDisplayData data)
     {
@@ -36,6 +34,6 @@ public class QuestRequirementRowUI : MonoBehaviour
             unsatisfiedVisual.SetActive(!satisfied);
 
         if (backgroundImage != null)
-            backgroundImage.color = satisfied ? satisfiedColor : unsatisfiedColor;
+            backgroundImage.color = Color.white;
     }
 }

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using AbyssToolKitUnity.Editor.Utility;
 using AbyssToolKitUnity.Utility;
 using JackyUtility;
@@ -20,6 +21,8 @@ namespace JackyUIEssential.Editor
     {
         private const string _windowTitle = "UI Track Manager";
 
+        [SerializeField] private UIStyleToolSettings _toolSettings;
+        [SerializeField] private UIStyleProperty _directUIStyleProperty;
         [SerializeField] private UIStyleDatabase _uiStyleDatabase;
 
         [SerializeField]
@@ -35,6 +38,33 @@ namespace JackyUIEssential.Editor
         [SerializeField] private bool _replaceToggle = true;
         [SerializeField] private bool _replaceProgressBar = true;
         [SerializeField] private bool _replaceSlider = true;
+        [SerializeField] private List<TrackedPrefabEntry> _trackedPrefabEntries =
+            new List<TrackedPrefabEntry>();
+        [SerializeField] private Vector2 _prefabEntryScrollPosition;
+
+        [Serializable]
+        private sealed class TrackedPrefabEntry
+        {
+            [SerializeField] private GameObject _prefab;
+            [SerializeField] private bool _isSelected = true;
+            [SerializeField] private int _trackerCount;
+
+            public TrackedPrefabEntry(GameObject prefab, bool isSelected, int trackerCount)
+            {
+                _prefab = prefab;
+                _isSelected = isSelected;
+                _trackerCount = trackerCount;
+            }
+
+            public GameObject Prefab => _prefab;
+            public bool IsSelected
+            {
+                get => _isSelected;
+                set => _isSelected = value;
+            }
+
+            public int TrackerCount => _trackerCount;
+        }
 
         private SerializedObject _serializedWindow;
 
@@ -59,7 +89,7 @@ namespace JackyUIEssential.Editor
             public bool ReplacesSpriteSwapState => SpriteSwapButton != null;
         }
 
-        [MenuItem("Tools/Jacky UI Essential/UI Track Manager")]
+        [MenuItem("AbyssTools/UIEssential/UI Track Manager")]
         private static void ShowWindow()
         {
             UITrackManagerWindow window = GetWindow<UITrackManagerWindow>();
@@ -100,6 +130,9 @@ namespace JackyUIEssential.Editor
 
             DrawReplacementSelection(hasCompleteStyle);
 
+            EditorGUILayout.Space(12f);
+            DrawTrackedPrefabReplacement(hasCompleteStyle);
+
             if (styleProperty == null)
                 EditorGUILayout.HelpBox("Select an Active UI Style Property before replacing sprites.", MessageType.Info);
             else if (!styleProperty.IsComplete)
@@ -128,11 +161,19 @@ namespace JackyUIEssential.Editor
             EnsureSerializedWindow();
             _serializedWindow.Update();
 
+            SerializedProperty toolSettings = _serializedWindow.FindProperty(nameof(_toolSettings));
+            SerializedProperty directStyleProperty = _serializedWindow.FindProperty(nameof(_directUIStyleProperty));
             SerializedProperty styleDatabase = _serializedWindow.FindProperty(nameof(_uiStyleDatabase));
             SerializedProperty activeStyleKey = _serializedWindow.FindProperty(nameof(_activeUIStyleKey));
+            UIStyleToolSettings previousToolSettings = _toolSettings;
             EditorGUI.BeginChangeCheck();
+            EditorGUILayout.PropertyField(toolSettings, new GUIContent("UI Style Tool Settings"));
+            EditorGUILayout.PropertyField(
+                directStyleProperty,
+                new GUIContent("Direct UI Style Property", "Optional. When assigned, this Property is used before the Database and enum fallback."));
+            EditorGUILayout.Space(3f);
             EditorGUILayout.PropertyField(styleDatabase, new GUIContent("UI Style Database"));
-            EditorGUILayout.PropertyField(activeStyleKey, new GUIContent("Active UI Style"));
+            EditorGUILayout.PropertyField(activeStyleKey, new GUIContent("Active UI Style", "Used only when Direct UI Style Property is empty."));
             bool changed = EditorGUI.EndChangeCheck();
             _serializedWindow.ApplyModifiedProperties();
 
@@ -141,11 +182,21 @@ namespace JackyUIEssential.Editor
                 : null;
             if (changed)
             {
+                if (previousToolSettings != _toolSettings)
+                {
+                    _trackedPrefabEntries.Clear();
+                }
+
                 SynchronizeComponentLibrary(activeProperty);
             }
 
             if (activeProperty != null)
             {
+                using (new EditorGUI.DisabledScope(true))
+                {
+                    EditorGUILayout.ObjectField("Resolved UI Style Property", activeProperty, typeof(UIStyleProperty), false);
+                }
+
                 using (new EditorGUI.DisabledScope(true))
                 {
                     EditorGUILayout.ObjectField("Component Library", activeProperty.ComponentLibrary, typeof(CustomUIComponentLibrary), false);
@@ -202,6 +253,263 @@ namespace JackyUIEssential.Editor
             _replaceToggle = selected;
             _replaceProgressBar = selected;
             _replaceSlider = selected;
+        }
+
+        private void DrawTrackedPrefabReplacement(bool hasCompleteStyle)
+        {
+            EditorGUILayout.LabelField("Replace Tracked Prefab Visuals", EditorStyles.boldLabel);
+
+            if (_toolSettings == null)
+            {
+                EditorGUILayout.HelpBox(
+                    "Assign UI Style Tool Settings to scan its Tracked Prefab Folders recursively.",
+                    MessageType.Info);
+                return;
+            }
+
+            List<string> folderPaths = _toolSettings.GetTrackedPrefabFolderPaths();
+            if (folderPaths.Count == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    "Add one or more Tracked Prefab Folders to the selected UI Style Tool Settings asset.",
+                    MessageType.Info);
+                return;
+            }
+
+            EditorGUILayout.LabelField("Configured Folders", $"{folderPaths.Count} recursive folder(s)");
+            EditorGUILayout.BeginHorizontal();
+            if (GUILayout.Button("Scan Prefab Folders"))
+            {
+                RefreshTrackedPrefabEntries();
+            }
+
+            using (new EditorGUI.DisabledScope(_trackedPrefabEntries.Count == 0))
+            {
+                if (GUILayout.Button("Select All Prefabs"))
+                    SetAllTrackedPrefabSelections(true);
+
+                if (GUILayout.Button("Deselect All Prefabs"))
+                    SetAllTrackedPrefabSelections(false);
+            }
+            EditorGUILayout.EndHorizontal();
+
+            if (_trackedPrefabEntries.Count == 0)
+            {
+                EditorGUILayout.HelpBox(
+                    "No scanned Prefabs are currently listed. Scan the configured folders to find Prefabs that contain UITracker components.",
+                    MessageType.Info);
+                return;
+            }
+
+            int selectedPrefabCount = 0;
+            _prefabEntryScrollPosition = EditorGUILayout.BeginScrollView(
+                _prefabEntryScrollPosition,
+                GUILayout.MaxHeight(190f));
+            for (int index = 0; index < _trackedPrefabEntries.Count; index++)
+            {
+                TrackedPrefabEntry entry = _trackedPrefabEntries[index];
+                if (entry == null || entry.Prefab == null)
+                {
+                    continue;
+                }
+
+                EditorGUILayout.BeginVertical(EditorStyles.helpBox);
+                entry.IsSelected = EditorGUILayout.ToggleLeft(
+                    $"{entry.Prefab.name} ({entry.TrackerCount} tracker(s))",
+                    entry.IsSelected);
+                EditorGUILayout.LabelField(
+                    AssetDatabase.GetAssetPath(entry.Prefab),
+                    EditorStyles.miniLabel);
+                EditorGUILayout.EndVertical();
+
+                if (entry.IsSelected)
+                    selectedPrefabCount++;
+            }
+            EditorGUILayout.EndScrollView();
+
+            List<CustomUIComponentType> selectedTypes = GetSelectedReplacementTypes();
+            using (new EditorGUI.DisabledScope(
+                       !hasCompleteStyle
+                       || selectedPrefabCount == 0
+                       || selectedTypes.Count == 0))
+            {
+                if (GUILayout.Button($"Replace Selected Prefabs ({selectedPrefabCount})"))
+                {
+                    ReplaceSelectedPrefabAssets(selectedTypes);
+                }
+            }
+        }
+
+        private void RefreshTrackedPrefabEntries()
+        {
+            if (_toolSettings == null)
+            {
+                return;
+            }
+
+            var previousSelections = new Dictionary<string, bool>(StringComparer.OrdinalIgnoreCase);
+            for (int index = 0; index < _trackedPrefabEntries.Count; index++)
+            {
+                TrackedPrefabEntry entry = _trackedPrefabEntries[index];
+                if (entry?.Prefab == null)
+                {
+                    continue;
+                }
+
+                previousSelections[AssetDatabase.GetAssetPath(entry.Prefab)] = entry.IsSelected;
+            }
+
+            _trackedPrefabEntries.Clear();
+            List<string> folderPaths = _toolSettings.GetTrackedPrefabFolderPaths();
+            if (folderPaths.Count == 0)
+            {
+                return;
+            }
+
+            string prefabOutputRoot = GetPrefabOutputRootPath(_toolSettings);
+            string[] guids = AssetDatabase.FindAssets("t:Prefab", folderPaths.ToArray());
+            Array.Sort(guids, (left, right) => string.CompareOrdinal(
+                AssetDatabase.GUIDToAssetPath(left),
+                AssetDatabase.GUIDToAssetPath(right)));
+
+            int skippedGeneratedStylePrefabCount = 0;
+            for (int index = 0; index < guids.Length; index++)
+            {
+                string assetPath = AssetDatabase.GUIDToAssetPath(guids[index]);
+                if (IsPathInsideFolder(assetPath, prefabOutputRoot))
+                {
+                    skippedGeneratedStylePrefabCount++;
+                    continue;
+                }
+
+                GameObject prefab = AssetDatabase.LoadAssetAtPath<GameObject>(assetPath);
+                if (prefab == null)
+                {
+                    continue;
+                }
+
+                UITracker[] trackers = prefab.GetComponentsInChildren<UITracker>(true);
+                if (trackers == null || trackers.Length == 0)
+                {
+                    continue;
+                }
+
+                bool isSelected = !previousSelections.TryGetValue(assetPath, out bool previousSelection)
+                                  || previousSelection;
+                _trackedPrefabEntries.Add(new TrackedPrefabEntry(prefab, isSelected, trackers.Length));
+            }
+
+            if (skippedGeneratedStylePrefabCount > 0)
+            {
+                Debug.Log(
+                    $"[{nameof(UITrackManagerWindow)}] Skipped {skippedGeneratedStylePrefabCount} Prefab(s) inside configured Prefab Output Root '{prefabOutputRoot}' to avoid overwriting generated style templates.");
+            }
+        }
+
+        private void SetAllTrackedPrefabSelections(bool selected)
+        {
+            for (int index = 0; index < _trackedPrefabEntries.Count; index++)
+            {
+                TrackedPrefabEntry entry = _trackedPrefabEntries[index];
+                if (entry != null)
+                {
+                    entry.IsSelected = selected;
+                }
+            }
+        }
+
+        private void ReplaceSelectedPrefabAssets(IReadOnlyCollection<CustomUIComponentType> types)
+        {
+            int changedPrefabCount = 0;
+            int changedTargetCount = 0;
+
+            Undo.IncrementCurrentGroup();
+            int undoGroup = Undo.GetCurrentGroup();
+            Undo.SetCurrentGroupName("Replace Tracked Prefab UI Visual Sprites");
+
+            try
+            {
+                for (int index = 0; index < _trackedPrefabEntries.Count; index++)
+                {
+                    TrackedPrefabEntry entry = _trackedPrefabEntries[index];
+                    if (entry?.Prefab == null || !entry.IsSelected)
+                    {
+                        continue;
+                    }
+
+                    string prefabPath = AssetDatabase.GetAssetPath(entry.Prefab);
+                    if (string.IsNullOrWhiteSpace(prefabPath))
+                    {
+                        continue;
+                    }
+
+                    GameObject prefabContents = PrefabUtility.LoadPrefabContents(prefabPath);
+                    try
+                    {
+                        UITracker[] trackers = prefabContents.GetComponentsInChildren<UITracker>(true);
+                        int changedTargets = ReplaceTypes(
+                            types,
+                            new List<UITracker>(trackers),
+                            $"Prefab asset '{prefabPath}'",
+                            false,
+                            false);
+                        if (changedTargets <= 0)
+                        {
+                            continue;
+                        }
+
+                        PrefabUtility.SaveAsPrefabAsset(prefabContents, prefabPath);
+                        changedPrefabCount++;
+                        changedTargetCount += changedTargets;
+                    }
+                    finally
+                    {
+                        PrefabUtility.UnloadPrefabContents(prefabContents);
+                    }
+                }
+            }
+            finally
+            {
+                Undo.CollapseUndoOperations(undoGroup);
+            }
+
+            if (changedPrefabCount > 0)
+            {
+                AssetDatabase.SaveAssets();
+                AssetDatabase.Refresh();
+            }
+
+            Debug.Log(
+                $"[{nameof(UITrackManagerWindow)}] Replaced {changedTargetCount} UI visual target(s) across {changedPrefabCount} selected Prefab asset(s).");
+        }
+
+        private static string GetPrefabOutputRootPath(UIStyleToolSettings settings)
+        {
+            if (settings == null
+                || !settings.TryGetBuildPaths(
+                    out string prefabOutputRoot,
+                    out _,
+                    out _,
+                    out _))
+            {
+                return string.Empty;
+            }
+
+            return prefabOutputRoot;
+        }
+
+        private static bool IsPathInsideFolder(string assetPath, string folderPath)
+        {
+            if (string.IsNullOrWhiteSpace(assetPath) || string.IsNullOrWhiteSpace(folderPath))
+            {
+                return false;
+            }
+
+            string normalizedAssetPath = assetPath.Replace("\\", "/");
+            string normalizedFolderPath = folderPath.Replace("\\", "/").TrimEnd('/');
+            return normalizedAssetPath.StartsWith(
+                normalizedFolderPath + "/",
+                StringComparison.OrdinalIgnoreCase);
         }
 
         private List<CustomUIComponentType> GetSelectedReplacementTypes()
@@ -304,12 +612,17 @@ namespace JackyUIEssential.Editor
                 $"{tabCount} Tab / {toggleCount} Toggle / {progressBarCount} Progress Bar / {sliderCount} Slider");
         }
 
-        private void ReplaceTypes(IReadOnlyCollection<CustomUIComponentType> types)
+        private int ReplaceTypes(
+            IReadOnlyCollection<CustomUIComponentType> types,
+            List<UITracker> targetTrackers = null,
+            string targetDescription = null,
+            bool markActiveSceneDirty = true,
+            bool manageUndoGroup = true)
         {
             if (!TryGetActiveUIStyleProperty(out UIStyleProperty styleProperty, out string styleMessage))
             {
                 Debug.LogWarning($"[{nameof(UITrackManagerWindow)}] {styleMessage}");
-                return;
+                return 0;
             }
 
             if (!styleProperty.IsComplete)
@@ -318,7 +631,7 @@ namespace JackyUIEssential.Editor
                     $"[{nameof(UITrackManagerWindow)}] Active UI Style Property '{styleProperty.name}' " +
                     "must assign both a Component Library and a Visual Style Library.",
                     styleProperty);
-                return;
+                return 0;
             }
 
             UIVisualStyleLibrary visualStyleLibrary = styleProperty.VisualStyleLibrary;
@@ -377,22 +690,22 @@ namespace JackyUIEssential.Editor
             ToggleVisualSprites toggleVisualSprites = default;
             ProgressBarVisualSprites progressBarVisualSprites = default;
             SliderVisualSprites sliderVisualSprites = default;
-            bool hasButtonVisuals = !replaceButton
-                                    || visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
-            bool hasSlotVisuals = !replaceSlot
-                                  || visualStyleLibrary.TryGetSlotVisualSprites(out slotVisualSprites);
-            bool hasPanelSprite = !replacePanel
-                                  || visualStyleLibrary.TryGetPanelSprite(out panelSprite);
-            bool hasScrollMenuVisuals = !replaceScrollMenu
-                                        || visualStyleLibrary.TryGetScrollMenuVisualSprites(out scrollMenuVisualSprites);
-            bool hasTabVisuals = !replaceTab
-                                 || visualStyleLibrary.TryGetTabVisualSprites(out tabVisualSprites);
-            bool hasToggleVisuals = !replaceToggle
-                                    || visualStyleLibrary.TryGetToggleVisualSprites(out toggleVisualSprites);
-            bool hasProgressBarVisuals = !replaceProgressBar
-                                         || visualStyleLibrary.TryGetProgressBarVisualSprites(out progressBarVisualSprites);
-            bool hasSliderVisuals = !replaceSlider
-                                    || visualStyleLibrary.TryGetSliderVisualSprites(out sliderVisualSprites);
+            bool hasButtonVisuals = replaceButton
+                                    && visualStyleLibrary.TryGetButtonVisualSprites(out buttonVisualSprites);
+            bool hasSlotVisuals = replaceSlot
+                                  && visualStyleLibrary.TryGetSlotVisualSprites(out slotVisualSprites);
+            bool hasPanelSprite = replacePanel
+                                  && visualStyleLibrary.TryGetPanelSprite(out panelSprite);
+            bool hasScrollMenuVisuals = replaceScrollMenu
+                                        && visualStyleLibrary.TryGetScrollMenuVisualSprites(out scrollMenuVisualSprites);
+            bool hasTabVisuals = replaceTab
+                                 && visualStyleLibrary.TryGetTabVisualSprites(out tabVisualSprites);
+            bool hasToggleVisuals = replaceToggle
+                                    && visualStyleLibrary.TryGetToggleVisualSprites(out toggleVisualSprites);
+            bool hasProgressBarVisuals = replaceProgressBar
+                                         && visualStyleLibrary.TryGetProgressBarVisualSprites(out progressBarVisualSprites);
+            bool hasSliderVisuals = replaceSlider
+                                    && visualStyleLibrary.TryGetSliderVisualSprites(out sliderVisualSprites);
 
             if (replaceButton && !hasButtonVisuals)
             {
@@ -443,13 +756,13 @@ namespace JackyUIEssential.Editor
                                           || (replaceProgressBar && hasProgressBarVisuals)
                                           || (replaceSlider && hasSliderVisuals);
             if (!hasAnyRequestedVisuals)
-                return;
+                return 0;
 
             var desiredTargets = new Dictionary<Image, VisualReplacementTarget>();
             var conflictingImages = new HashSet<Image>();
             int ignoredTrackers = 0;
 
-            List<UITracker> trackers = GetActiveSceneTrackers();
+            List<UITracker> trackers = targetTrackers ?? GetActiveSceneTrackers();
             for (int i = 0; i < trackers.Count; i++)
             {
                 UITracker tracker = trackers[i];
@@ -593,8 +906,11 @@ namespace JackyUIEssential.Editor
 
             if (changedTargets.Count == 0)
             {
-                Debug.Log($"[{nameof(UITrackManagerWindow)}] No UI visual sprites needed replacement in active scene '{SceneManager.GetActiveScene().name}'.");
-                return;
+                string unchangedTargetDescription = string.IsNullOrWhiteSpace(targetDescription)
+                    ? $"active scene '{SceneManager.GetActiveScene().name}'"
+                    : targetDescription;
+                Debug.Log($"[{nameof(UITrackManagerWindow)}] No UI visual sprites needed replacement in {unchangedTargetDescription}.");
+                return 0;
             }
 
             var undoObjects = new List<UnityEngine.Object>();
@@ -607,9 +923,13 @@ namespace JackyUIEssential.Editor
                     AddUndoObject(target.SpriteSwapButton, undoObjects, seenUndoObjects);
             }
 
-            Undo.IncrementCurrentGroup();
-            int undoGroup = Undo.GetCurrentGroup();
-            Undo.SetCurrentGroupName("Replace UI Visual Sprites");
+            int undoGroup = -1;
+            if (manageUndoGroup)
+            {
+                Undo.IncrementCurrentGroup();
+                undoGroup = Undo.GetCurrentGroup();
+                Undo.SetCurrentGroupName("Replace UI Visual Sprites");
+            }
             Undo.RecordObjects(undoObjects.ToArray(), "Replace UI Visual Sprites");
 
             int spriteSwapButtonCount = 0;
@@ -632,10 +952,19 @@ namespace JackyUIEssential.Editor
                 spriteSwapButtonCount++;
             }
 
-            EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
-            Undo.CollapseUndoOperations(undoGroup);
+            if (markActiveSceneDirty)
+            {
+                EditorSceneManager.MarkSceneDirty(SceneManager.GetActiveScene());
+            }
+            if (manageUndoGroup)
+            {
+                Undo.CollapseUndoOperations(undoGroup);
+            }
 
-            string message = $"Replaced {changedTargets.Count} UI visual target(s) in active scene '{SceneManager.GetActiveScene().name}'.";
+            string changedTargetDescription = string.IsNullOrWhiteSpace(targetDescription)
+                ? $"active scene '{SceneManager.GetActiveScene().name}'"
+                : targetDescription;
+            string message = $"Replaced {changedTargets.Count} UI visual target(s) in {changedTargetDescription}.";
             if (spriteSwapButtonCount > 0)
                 message += $" Updated Sprite Swap states on {spriteSwapButtonCount} Button(s).";
 
@@ -645,6 +974,7 @@ namespace JackyUIEssential.Editor
             }
 
             Debug.Log($"[{nameof(UITrackManagerWindow)}] {message}");
+            return changedTargets.Count;
         }
 
         private static bool TryCreateSelectableReplacementTarget(
@@ -878,10 +1208,17 @@ namespace JackyUIEssential.Editor
 
         private bool TryGetActiveUIStyleProperty(out UIStyleProperty property, out string message)
         {
+            if (_directUIStyleProperty != null)
+            {
+                property = _directUIStyleProperty;
+                message = string.Empty;
+                return true;
+            }
+
             if (_activeUIStyleKey == Key_UIStylePP.None)
             {
                 property = null;
-                message = "No active UI Style Property is selected.";
+                message = "Assign a Direct UI Style Property, or assign a UI Style Database and select an Active UI Style.";
                 return false;
             }
 

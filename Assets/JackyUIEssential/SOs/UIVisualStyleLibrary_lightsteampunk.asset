@@ -1,0 +1,35 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f7c8fd77af1580641a24cda7505240dd, type: 3}
+  m_Name: UIVisualStyleLibrary_lightsteampunk
+  m_EditorClassIdentifier: Assembly-CSharp::JackyUIEssential.UIVisualStyleLibrary
+  _buttonSprite: {fileID: 21300000, guid: e920a70a364206b4e9ad2f5fa05acca6, type: 3}
+  _buttonHighlightedSprite: {fileID: 21300000, guid: 6f1132b8492e66e4eaac37e453d9106a, type: 3}
+  _buttonPressedSprite: {fileID: 21300000, guid: 5cf1888eb7984bf43a15c505da477c0a, type: 3}
+  _buttonSelectedSprite: {fileID: 21300000, guid: de24c800558ea474588788f5de1bd873, type: 3}
+  _buttonDisabledSprite: {fileID: 21300000, guid: 377b61ad1e281a743a8a8a95ace3b245, type: 3}
+  _slotSprite: {fileID: 21300000, guid: c76cab609690d6f408f025c5f782da42, type: 3}
+  _slotHighlightedSprite: {fileID: 21300000, guid: beb381f90d130ad449f7bb872ce07ccc, type: 3}
+  _slotPressedSprite: {fileID: 21300000, guid: 8db7e83e350718e4884d45399af416f3, type: 3}
+  _slotSelectedSprite: {fileID: 21300000, guid: 19d4513fe73f72d49b3b51bb83ea6d8a, type: 3}
+  _slotDisabledSprite: {fileID: 21300000, guid: 996dd3718072b754594978d0fd900b95, type: 3}
+  _panelSprite: {fileID: 21300000, guid: a0bd94e6e22a0524ba28b487d7cc13a4, type: 3}
+  _scrollMenuSprite: {fileID: 21300000, guid: e16bf9c9f41f0384886d6d4b0ab9a2cf, type: 3}
+  _scrollMenuSlidingAreaSprite: {fileID: 21300000, guid: 47f2eab7c3ca8f241b0506feee1d3fed, type: 3}
+  _scrollMenuHandleSprite: {fileID: 21300000, guid: b556ffbecb17bdc40924c6a0b485a2be, type: 3}
+  _tabBackgroundSprite: {fileID: 21300000, guid: b4dc21be84ee2b34391db802dff632e5, type: 3}
+  _tabSelectedSprite: {fileID: 21300000, guid: d3835e3a09401d94eaa7ef2cec28ea9f, type: 3}
+  _toggleBackgroundSprite: {fileID: 21300000, guid: 2026ad04e3055264b863de50a0cafe05, type: 3}
+  _toggleCheckmarkSprite: {fileID: 21300000, guid: 62e12cfee3901394bb8f695bfdf6e8af, type: 3}
+  _slideBarBackgroundSprite: {fileID: 21300000, guid: 14060c7c1c511f14dab5c622a49aa642, type: 3}
+  _slideBarFillSprite: {fileID: 21300000, guid: 7d4b441dc4626054c8c4e98061901549, type: 3}
+  _slideBarHandleSprite: {fileID: 21300000, guid: 6b1f5da45f6bcb645b26f69b5468206d, type: 3}

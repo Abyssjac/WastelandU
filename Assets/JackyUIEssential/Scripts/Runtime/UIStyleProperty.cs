@@ -12,9 +12,10 @@ namespace JackyUIEssential
     public enum Key_UIStylePP
     {
         None = 0,
-        GibiliArt = 1,
+        GibiliArt_0 = 1,
         Cyberpunk_0 = 2,
         Cyberpunk_1 = 3,
+        Lightsteampunk_0 = 4,
     }
 
     /// <summary>

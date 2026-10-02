@@ -5,7 +5,7 @@ using UnityEngine;
 
 public class PlayerManagerDebugWindow : DebugEditorWindow<PlayerManager>
 {
-    [MenuItem("Jacky Tools/Player Manager")]
+    [MenuItem("AbyssTools/GeneralManager/Player Manager")]
     public static void ShowWindow() =>
         GetWindow<PlayerManagerDebugWindow>("Player Manager").Show();
 

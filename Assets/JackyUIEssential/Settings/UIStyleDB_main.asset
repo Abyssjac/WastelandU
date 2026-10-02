@@ -14,6 +14,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::JackyUIEssential.UIStyleDatabase
   entries:
   - {fileID: 11400000, guid: 6473d963bb4a31040b0228b4bae74567, type: 2}
+  - {fileID: 11400000, guid: d2c65166b65148e4ca7f13a82aeb4b3d, type: 2}
   - {fileID: 11400000, guid: 1dcbcf549ea36004ca3fa7f337f3d4f9, type: 2}
   - {fileID: 11400000, guid: e5dd4888bb9f2d94f942f12510432935, type: 2}
   scanFolder: JackyUIEssential/Settings
