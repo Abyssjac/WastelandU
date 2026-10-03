@@ -1,0 +1,21 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: cdd72c6c8b4dcbd4592951e25c5051aa, type: 3}
+  m_Name: UIStyleToolSettings_main
+  m_EditorClassIdentifier: Assembly-CSharp-Editor::JackyUIEssential.Editor.UIStyleToolSettings
+  _assemblySchema: {fileID: 11400000, guid: f74c596fa6367504483efaf6b8c2ef1d, type: 2}
+  _baseComponentLibrary: {fileID: 11400000, guid: 4acd21670f0d4ef4791e11c343ac9353, type: 2}
+  _prefabOutputRoot: {fileID: 102900000, guid: 842a16360e122674e97a346794a8e106, type: 3}
+  _visualLibraryOutputFolder: {fileID: 102900000, guid: 528e3a3b3ff2e3a40b5e161790292221, type: 3}
+  _componentLibraryOutputFolder: {fileID: 102900000, guid: 528e3a3b3ff2e3a40b5e161790292221, type: 3}
+  _trackedPrefabFolders:
+  - {fileID: 102900000, guid: b800f3d63fc9c2d4cb1abc245d0af58b, type: 3}

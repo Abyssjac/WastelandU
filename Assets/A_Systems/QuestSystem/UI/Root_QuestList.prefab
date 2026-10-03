@@ -420,19 +420,19 @@ PrefabInstance:
     - target: {fileID: 118575322946983495, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_SpriteState.m_PressedSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 1bd20b4f206e08c40a7cc9fe29d4c65a, type: 3}
+      objectReference: {fileID: 21300000, guid: 4e34ad38d78b1154b87fe71770c463f7, type: 3}
     - target: {fileID: 118575322946983495, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_SpriteState.m_DisabledSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 076f4d4ea26ad364287f2c67acc288d7, type: 3}
+      objectReference: {fileID: 21300000, guid: 0f06d590877de20458179269afb9b261, type: 3}
     - target: {fileID: 118575322946983495, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_SpriteState.m_SelectedSprite
       value: 
-      objectReference: {fileID: 21300000, guid: 6271492185ef8164ba423dc4e09db605, type: 3}
+      objectReference: {fileID: 21300000, guid: e2dfda91e094e6641a5a084c74808680, type: 3}
     - target: {fileID: 118575322946983495, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_SpriteState.m_HighlightedSprite
       value: 
-      objectReference: {fileID: 21300000, guid: fa0d5ad028b324d469b6deccb0696595, type: 3}
+      objectReference: {fileID: 21300000, guid: ac68c5b490cf75a4aa0ffd3ea6b8cfaf, type: 3}
     - target: {fileID: 1001098802119553646, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -520,7 +520,7 @@ PrefabInstance:
     - target: {fileID: 3423418104342134520, guid: 9a44fa96b558fa84db196d5da33e1934, type: 3}
       propertyPath: m_Sprite
       value: 
-      objectReference: {fileID: 21300000, guid: c9262941fa194e747a0c2095ad455bb3, type: 3}
+      objectReference: {fileID: 21300000, guid: 2e290ebff1d1de1499573fa7695cabaf, type: 3}
     m_RemovedComponents: []
     m_RemovedGameObjects: []
     m_AddedGameObjects:
